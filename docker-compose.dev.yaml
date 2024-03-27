@@ -1,0 +1,35 @@
+version: '3.8'
+
+networks:
+  default:
+    driver: bridge
+
+services:
+  api:
+    build: https://github.com/helldivers-2/helldivers2-api.git
+    environment:
+      SECRET_KEY_BASE: D1gbVjUDtxprcNF6B8rQryhIfHXyWqC6QCoILsXEkRDXarkuVxh9Z6azHzQKvSS1X7rHWLYb8SQAnXuVqvDaXQ==
+      FLY_APP_NAME: helldivers-2
+      FLY_IMAGE_REF: 0
+      FLY_PRIVATE_IP: 127.0.0.1
+      RATE_LIMIT_MAX_REQUESTS: 0 # disabled
+      RATE_LIMIT_INTERVAL: 0 # disabled
+      ENABLE_IPV6: false
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4000/api"]
+      interval: 1m
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - default
+
+  db:
+    image: mongo:7.0.7
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: dev
+    ports:
+      - 27017:27017
+    networks:
+      - default

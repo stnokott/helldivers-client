@@ -4,6 +4,21 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
+			"label": "Run tests",
+			"type": "shell",
+			"command": "docker",
+			"args": [
+				"compose",
+				"-f",
+				"docker-compose.test.yaml",
+				"up",
+				"--exit-code-from=app",
+				"--attach=app"
+			],
+			"group": "test",
+			"problemMatcher": []
+		},
+		{
 			"label": "build snapshot",
 			"type": "shell",
 			"command": "goreleaser build --clean --snapshot --config=build/.goreleaser.yaml",
