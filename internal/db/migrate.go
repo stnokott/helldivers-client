@@ -9,7 +9,7 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file" // load migrations from file
 )
 
-func (c *Client) newMigration() (*migrate.Migrate, error) {
+func (c *Client) newMigration(scriptFolder string) (*migrate.Migrate, error) {
 	// create new migration instance from existing connection
 	driver, err := mongodb.WithInstance(c.mongo, &mongodb.Config{
 		DatabaseName: c.dbName,
@@ -18,7 +18,7 @@ func (c *Client) newMigration() (*migrate.Migrate, error) {
 		return nil, err
 	}
 	migration, err := migrate.NewWithDatabaseInstance(
-		"file://migrations",
+		"file://"+scriptFolder,
 		c.dbName,
 		driver,
 	)
@@ -33,7 +33,7 @@ func (c *Client) newMigration() (*migrate.Migrate, error) {
 //
 // This should be run before any other operations.
 func (c *Client) MigrateUp() error {
-	migration, err := c.newMigration()
+	migration, err := c.newMigration("./migrations")
 	if err != nil {
 		return err
 	}

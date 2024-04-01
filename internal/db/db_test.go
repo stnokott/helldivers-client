@@ -47,8 +47,7 @@ func TestNew(t *testing.T) {
 }
 
 func TestClientDisconnect(t *testing.T) {
-	logger := log.Default()
-	client, err := New(mongoURI, "test_client_disconnect", logger)
+	client, err := New(mongoURI, "test_client_disconnect", log.Default())
 	if err != nil {
 		t.Skipf("could not initialize DB connection: %v", err)
 	}

@@ -56,3 +56,7 @@ func (c *Client) Disconnect() error {
 	c.log.Println("disconnected from MongoDB")
 	return nil
 }
+
+func (c *Client) database() *mongo.Database {
+	return c.mongo.Database(c.dbName)
+}
