@@ -32,7 +32,7 @@ func TestNew(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			client, err := New(tt.args.uri, logger)
+			client, err := New(tt.args.uri, tt.name+" db", logger)
 			defer func() {
 				if client != nil {
 					client.Disconnect()
@@ -48,7 +48,7 @@ func TestNew(t *testing.T) {
 
 func TestClientDisconnect(t *testing.T) {
 	logger := log.Default()
-	client, err := New(mongoURI, logger)
+	client, err := New(mongoURI, "test_client_disconnect", logger)
 	if err != nil {
 		t.Skipf("could not initialize DB connection: %v", err)
 	}

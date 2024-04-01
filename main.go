@@ -9,16 +9,19 @@ import (
 	"github.com/stnokott/helldivers-client/internal/db"
 )
 
+const databaseName = "helldivers2"
+
 func main() {
 	cfg := config.Get()
+	logger := loggerFor("main")
 
-	dbClient, err := db.New(cfg.MongoURI, loggerFor("mongo"))
+	dbClient, err := db.New(cfg.MongoURI, databaseName, loggerFor("mongo"))
 	if err != nil {
-		log.Fatalf("MongoDB client could not be initialized: %v", err)
+		logger.Fatalf("MongoDB client could not be initialized: %v", err)
 	}
 	defer dbClient.Disconnect()
-	if err = dbClient.PrepareDB(); err != nil {
-		log.Fatalf("db preparation failed: %v", err)
+	if err = dbClient.MigrateUp(); err != nil {
+		logger.Fatalf("db migration failed: %v", err)
 	}
 }
 

@@ -1,0 +1,7 @@
+[
+	{
+		"create": "planets",
+		"comment": "create planets collection with schema",
+		"capped": false
+	}
+]
