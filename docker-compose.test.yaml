@@ -13,6 +13,7 @@ services:
       - api
     volumes:
       - ./:/code
+    env_file: .env.test
     networks:
       - default
 

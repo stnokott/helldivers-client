@@ -21,6 +21,18 @@
 			"problemMatcher": []
 		},
 		{
+			"type": "go",
+			"label": "Run DB unit tests locally",
+			"command": "test",
+			"args": [
+				"${workspaceFolder}/internal/db"
+			],
+			"problemMatcher": [
+				"$go"
+			],
+			"group": "test",
+		},
+		{
 			"label": "build snapshot",
 			"type": "shell",
 			"command": "goreleaser build --clean --snapshot --config=build/.goreleaser.yaml",

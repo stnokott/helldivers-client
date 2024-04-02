@@ -9,7 +9,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func withDB(t *testing.T, do func(client *Client)) {
+func withClient(t *testing.T, do func(client *Client)) {
+	mongoURI := getMongoURI()
 	client, err := New(mongoURI, t.Name(), log.Default())
 	if err != nil {
 		t.Skipf("could not initialize DB connection: %v", err)
@@ -26,7 +27,7 @@ func withDB(t *testing.T, do func(client *Client)) {
 }
 
 func TestClientMigration(t *testing.T) {
-	withDB(t, func(client *Client) {
+	withClient(t, func(client *Client) {
 		migration, err := client.newMigration("../../migrations")
 		if err != nil {
 			t.Fatalf("client.newMigration() error = %v, want nil", err)

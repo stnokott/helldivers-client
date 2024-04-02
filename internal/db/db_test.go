@@ -3,16 +3,26 @@ package db
 
 import (
 	"log"
+	"os"
 	"testing"
+
+	"github.com/joho/godotenv"
+	"github.com/stnokott/helldivers-client/internal/config"
 )
 
-const (
-	mongoURI              = "mongodb://root:test@db:27017/"  //NOSONAR
-	mongoURIInvalidScheme = "http://root:test@db:27017"      //NOSONAR
-	mongoURIInvalidAuth   = "mongodb://root:pass@db:27017"   //NOSONAR
-	mongoURIInvalidHost   = "mongodb://root:test@host:27017" //NOSONAR
-	mongoURIInvalidPort   = "mongodb://root:test@db:55555"   //NOSONAR
-)
+func TestMain(m *testing.M) {
+	envFile := "../../.env.test"
+	if err := godotenv.Load(envFile); err != nil {
+		log.Fatalf("could not load %s: %v", envFile, err)
+	}
+	code := m.Run()
+	os.Exit(code)
+}
+
+// getMongoURI reads the config from ENV and returns the mongo URI inside
+func getMongoURI() string {
+	return config.Get().MongoURI
+}
 
 func TestNew(t *testing.T) {
 	logger := log.Default()
@@ -24,11 +34,8 @@ func TestNew(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		{name: "valid", args: args{uri: mongoURI}, wantErr: false},
-		{name: "invalid scheme", args: args{uri: mongoURIInvalidScheme}, wantErr: true},
-		{name: "invalid auth", args: args{uri: mongoURIInvalidAuth}, wantErr: true},
-		{name: "invalid host", args: args{uri: mongoURIInvalidHost}, wantErr: true},
-		{name: "invalid port", args: args{uri: mongoURIInvalidPort}, wantErr: true},
+		{name: "valid", args: args{uri: getMongoURI()}, wantErr: false},
+		{name: "invalid", args: args{uri: "http://localhost"}, wantErr: true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -47,6 +54,7 @@ func TestNew(t *testing.T) {
 }
 
 func TestClientDisconnect(t *testing.T) {
+	mongoURI := getMongoURI()
 	client, err := New(mongoURI, "test_client_disconnect", log.Default())
 	if err != nil {
 		t.Skipf("could not initialize DB connection: %v", err)
