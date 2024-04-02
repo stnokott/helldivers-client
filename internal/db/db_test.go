@@ -57,7 +57,7 @@ func TestClientDisconnect(t *testing.T) {
 	mongoURI := getMongoURI()
 	client, err := New(mongoURI, "test_client_disconnect", log.Default())
 	if err != nil {
-		t.Skipf("could not initialize DB connection: %v", err)
+		t.Fatalf("could not initialize DB connection: %v", err)
 	}
 	if err := client.Disconnect(); err != nil {
 		t.Fatalf("Disconnect() error = %v, want nil", err)

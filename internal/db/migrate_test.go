@@ -5,17 +5,23 @@ import (
 	"log"
 	"testing"
 
+	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/stnokott/helldivers-client/internal/db/structs"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func withClient(t *testing.T, do func(client *Client)) {
+func withClient(t *testing.T, do func(client *Client, migration *migrate.Migrate)) {
 	mongoURI := getMongoURI()
 	client, err := New(mongoURI, t.Name(), log.Default())
 	if err != nil {
-		t.Skipf("could not initialize DB connection: %v", err)
+		t.Fatalf("could not initialize DB connection: %v", err)
 	}
-	do(client)
+	migration, err := client.newMigration("../../migrations")
+	if err != nil {
+		t.Fatalf("client.newMigration() error = %v, want nil", err)
+	}
+	do(client, migration)
 	defer func() {
 		if err = client.mongo.Database(client.dbName).Drop(context.Background()); err != nil {
 			t.Logf("could not drop database: %v", err)
@@ -27,13 +33,8 @@ func withClient(t *testing.T, do func(client *Client)) {
 }
 
 func TestClientMigration(t *testing.T) {
-	withClient(t, func(client *Client) {
-		migration, err := client.newMigration("../../migrations")
-		if err != nil {
-			t.Fatalf("client.newMigration() error = %v, want nil", err)
-		}
-
-		if err = migration.Up(); err != nil {
+	withClient(t, func(client *Client, migration *migrate.Migrate) {
+		if err := migration.Up(); err != nil {
 			t.Fatalf("failed to migrate up: %v", err)
 		}
 		fnPlanetCollectionExists := func() bool {
@@ -47,11 +48,86 @@ func TestClientMigration(t *testing.T) {
 		if !fnPlanetCollectionExists() {
 			t.Error("expected collection with name 'planets', none found")
 		}
-		if err = migration.Down(); err != nil {
+		if err := migration.Down(); err != nil {
 			t.Fatalf("failed to migrate down: %v", err)
 		}
 		if fnPlanetCollectionExists() {
 			t.Error("expected collection with name 'planets' to not exist")
+		}
+	})
+}
+
+func TestPlanetsSchema(t *testing.T) {
+	withClient(t, func(client *Client, migration *migrate.Migrate) {
+		type document any
+		tests := []struct {
+			name    string
+			doc     document
+			wantErr bool
+		}{
+			{
+				name: "valid struct complete",
+				doc: structs.Planet{
+					ID:           1,
+					Name:         "foobar",
+					Disabled:     false,
+					InitialOwner: "gopher",
+					MaxHealth:    100.0,
+					Position:     structs.Position{X: 1, Y: 3},
+					Sector:       "Alpha Centauri",
+					Waypoints:    []int{1, 2, 3},
+				},
+				wantErr: false,
+			},
+			{
+				name: "valid struct missing embedded",
+				doc: structs.Planet{
+					ID:           1,
+					Name:         "foobar",
+					Disabled:     false,
+					InitialOwner: "gopher",
+					MaxHealth:    100.0,
+					Position:     structs.Position{},
+					Sector:       "Alpha Centauri",
+					Waypoints:    []int{1, 2, 3},
+				},
+				wantErr: true,
+			},
+			{
+				name: "valid struct incomplete",
+				doc: structs.Planet{
+					ID:   1,
+					Name: "foobar",
+				},
+				wantErr: true,
+			},
+			{
+				name: "invalid struct",
+				doc: struct {
+					Foo string
+				}{
+					Foo: "bar",
+				},
+				wantErr: true,
+			},
+			{
+				name:    "nil struct",
+				doc:     nil,
+				wantErr: true,
+			},
+		}
+		if err := migration.Up(); err != nil {
+			t.Fatalf("failed to migrate up: %v", err)
+		}
+		for _, tt := range tests {
+			t.Run(tt.name, func(t *testing.T) {
+				coll := client.database().Collection("planets")
+				_, err := coll.InsertOne(context.Background(), tt.doc)
+				if (err != nil) != tt.wantErr {
+					t.Errorf("InsertOne() error = %v, wantErr %v", err, tt.wantErr)
+					return
+				}
+			})
 		}
 	})
 }

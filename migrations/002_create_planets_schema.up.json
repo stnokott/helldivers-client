@@ -3,20 +3,65 @@
 		"collMod": "planets",
 		"validator": {
 			"$jsonSchema": {
-				"required": [
-					"_id",
-					"name"
-				],
+				"title": "Represents a planet in the galactic war that must receive Managed democracy",
 				"properties": {
 					"_id": {
 						"bsonType": "int",
-						"description": "index from API, required"
+						"description": "The index of this planet, for convenience kept the same as in the official API"
 					},
 					"name": {
 						"bsonType": "string",
-						"description": "name of the planet, required"
+						"description": "The human readable name of the planet, or unknown if it's not a known name"
+					},
+					"disabled": {
+						"bsonType": "bool",
+						"description": "Whether or not this planet is currently playable (enabled)"
+					},
+					"initial_owner": {
+						"bsonType": "string",
+						"description": "Which faction originally claimed this planet"
+					},
+					"max_health": {
+						"bsonType": "double",
+						"description": "maximum health of this planet, used in conflict states"
+					},
+					"position": {
+						"bsonType": "object",
+						"description": "The coordinates in the galaxy where this planet is located",
+						"properties": {
+							"x": {
+								"bsonType": "int",
+								"description": "X coordinate"
+							},
+							"y": {
+								"bsonType": "int",
+								"description": "Y coordinate"
+							}
+						},
+						"required": [
+							"x",
+							"y"
+						]
+					},
+					"sector": {
+						"bsonType": "string",
+						"description": "The name of the sector this planet resides in (or the identifier as a string if it's not a known sector)"
+					},
+					"waypoints": {
+						"bsonType": "array",
+						"description": "Waypoints, seems to link planets together but purpose unclear"
 					}
-				}
+				},
+				"required": [
+					"_id",
+					"name",
+					"disabled",
+					"initial_owner",
+					"max_health",
+					"position",
+					"sector",
+					"waypoints"
+				]
 			}
 		},
 		"validationLevel": "strict",
