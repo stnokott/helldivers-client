@@ -25,6 +25,7 @@ type Position struct {
 type PlanetStatus struct {
 	Timestamp      time.Time `bson:"_id"`
 	PlanetID       int       `bson:"planet_id"`
+	WarID          int       `bson:"war_id"`
 	Health         float64
 	Liberation     float64
 	Owner          string

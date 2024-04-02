@@ -13,6 +13,10 @@
 						"bsonType": "int",
 						"description": "Planet index from 'planets' collection"
 					},
+					"war_id": {
+						"bsonType": "int",
+						"description": "ID of the war season"
+					},
 					"health": {
 						"bsonType": "double",
 						"description": "The current 'health' of this planet"

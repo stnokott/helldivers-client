@@ -146,6 +146,7 @@ func TestPlanetStatusSchema(t *testing.T) {
 				doc: structs.PlanetStatus{
 					Timestamp:      time.Now(),
 					PlanetID:       1,
+					WarID:          1,
 					Health:         99.9,
 					Liberation:     50.5,
 					Owner:          "foobar",
