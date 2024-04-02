@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"testing"
+	"time"
 
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -17,11 +18,6 @@ func withClient(t *testing.T, do func(client *Client, migration *migrate.Migrate
 	if err != nil {
 		t.Fatalf("could not initialize DB connection: %v", err)
 	}
-	migration, err := client.newMigration("../../migrations")
-	if err != nil {
-		t.Fatalf("client.newMigration() error = %v, want nil", err)
-	}
-	do(client, migration)
 	defer func() {
 		if err = client.mongo.Database(client.dbName).Drop(context.Background()); err != nil {
 			t.Logf("could not drop database: %v", err)
@@ -30,6 +26,11 @@ func withClient(t *testing.T, do func(client *Client, migration *migrate.Migrate
 			t.Logf("could not disconnect: %v", err)
 		}
 	}()
+	migration, err := client.newMigration("../../migrations")
+	if err != nil {
+		t.Fatalf("client.newMigration() error = %v, want nil", err)
+	}
+	do(client, migration)
 }
 
 func TestClientMigration(t *testing.T) {
@@ -122,6 +123,66 @@ func TestPlanetsSchema(t *testing.T) {
 		for _, tt := range tests {
 			t.Run(tt.name, func(t *testing.T) {
 				coll := client.database().Collection("planets")
+				_, err := coll.InsertOne(context.Background(), tt.doc)
+				if (err != nil) != tt.wantErr {
+					t.Errorf("InsertOne() error = %v, wantErr %v", err, tt.wantErr)
+					return
+				}
+			})
+		}
+	})
+}
+
+func TestPlanetStatusSchema(t *testing.T) {
+	withClient(t, func(client *Client, migration *migrate.Migrate) {
+		type document any
+		tests := []struct {
+			name    string
+			doc     document
+			wantErr bool
+		}{
+			{
+				name: "valid struct complete",
+				doc: structs.PlanetStatus{
+					Timestamp:      time.Now(),
+					PlanetID:       1,
+					Health:         99.9,
+					Liberation:     50.5,
+					Owner:          "foobar",
+					PlayerCount:    123456,
+					RegenPerSecond: 0.7,
+				},
+				wantErr: false,
+			},
+			{
+				name: "valid struct incomplete",
+				doc: structs.PlanetStatus{
+					Timestamp: time.Now(),
+					PlanetID:  1,
+				},
+				wantErr: true,
+			},
+			{
+				name: "invalid struct",
+				doc: struct {
+					Foo string
+				}{
+					Foo: "bar",
+				},
+				wantErr: true,
+			},
+			{
+				name:    "nil struct",
+				doc:     nil,
+				wantErr: true,
+			},
+		}
+		if err := migration.Up(); err != nil {
+			t.Fatalf("failed to migrate up: %v", err)
+		}
+		for _, tt := range tests {
+			t.Run(tt.name, func(t *testing.T) {
+				coll := client.database().Collection("planet_status")
 				_, err := coll.InsertOne(context.Background(), tt.doc)
 				if (err != nil) != tt.wantErr {
 					t.Errorf("InsertOne() error = %v, wantErr %v", err, tt.wantErr)

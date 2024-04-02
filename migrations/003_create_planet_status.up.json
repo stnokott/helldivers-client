@@ -1,0 +1,14 @@
+[
+	{
+		"create": "planet_status",
+		"comment": "create planet_status collection",
+		"capped": false,
+		"clusteredIndex": {
+			"key": {
+				"_id": 1
+			},
+			"unique": true,
+			"name": "planet status clustered key (timestamp)"
+		}
+	}
+]

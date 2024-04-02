@@ -1,0 +1,51 @@
+[
+	{
+		"collMod": "planet_status",
+		"validator": {
+			"$jsonSchema": {
+				"title": "The current offense status of a planet (owner, health, regen, player count)",
+				"properties": {
+					"_id": {
+						"bsonType": "date",
+						"description": "Time at which this status was retrieved from the API"
+					},
+					"planet_id": {
+						"bsonType": "int",
+						"description": "Planet index from 'planets' collection"
+					},
+					"health": {
+						"bsonType": "double",
+						"description": "The current 'health' of this planet"
+					},
+					"liberation": {
+						"bsonType": "double",
+						"description": "The progression of liberation on this planet, presented as a %"
+					},
+					"owner": {
+						"bsonType": "string",
+						"description": "The faction that owns the planet at this moment"
+					},
+					"players": {
+						"bsonType": "int",
+						"description": "The amount of helldivers currently on this planet"
+					},
+					"regen_per_second": {
+						"bsonType": "double",
+						"description": "At which rate this planet will regenerate it's health"
+					}
+				},
+				"required": [
+					"_id",
+					"planet_id",
+					"health",
+					"liberation",
+					"owner",
+					"players",
+					"regen_per_second"
+				]
+			}
+		},
+		"validationLevel": "strict",
+		"validationAction": "error"
+	}
+]
