@@ -1,7 +1,6 @@
 [
 	{
 		"create": "planets",
-		"comment": "create planets collection",
-		"capped": false
+		"comment": "create planets collection"
 	}
 ]
