@@ -32,8 +32,8 @@ func (c *Client) newMigration(scriptFolder string) (*migrate.Migrate, error) {
 // MigrateUp runs required migrations to get to the latest version.
 //
 // This should be run before any other operations.
-func (c *Client) MigrateUp() error {
-	migration, err := c.newMigration("./migrations")
+func (c *Client) MigrateUp(migrationsFolder string) error {
+	migration, err := c.newMigration(migrationsFolder)
 	if err != nil {
 		return err
 	}

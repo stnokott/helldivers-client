@@ -1,0 +1,9 @@
+[
+	{
+		"dropIndexes": "war_seasons",
+		"index": [
+			"planet initial owner index",
+			"planet current owner index"
+		]
+	}
+]

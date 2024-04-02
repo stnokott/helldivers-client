@@ -33,7 +33,15 @@ func withClient(t *testing.T, do func(client *Client, migration *migrate.Migrate
 	do(client, migration)
 }
 
-func TestClientMigration(t *testing.T) {
+func TestMigrateUp(t *testing.T) {
+	withClient(t, func(client *Client, _ *migrate.Migrate) {
+		if err := client.MigrateUp("../../migrations"); err != nil {
+			t.Errorf("client.MigrateUp() error = %v, expected nil", err)
+		}
+	})
+}
+
+func TestMigration(t *testing.T) {
 	withClient(t, func(client *Client, migration *migrate.Migrate) {
 		if err := migration.Up(); err != nil {
 			t.Fatalf("failed to migrate up: %v", err)
@@ -75,7 +83,7 @@ func TestWarSeasonsSchema(t *testing.T) {
 					StartDate:              time.Now(),
 					EndDate:                time.Now().Add(24 * time.Hour),
 					Planets: []structs.Planet{
-						structs.Planet{
+						{
 							ID:           1,
 							Name:         "foo",
 							Disabled:     false,
@@ -85,7 +93,7 @@ func TestWarSeasonsSchema(t *testing.T) {
 							Sector:       "Alpha Centauri",
 							Waypoints:    []int{42},
 							History: []structs.PlanetHistory{
-								structs.PlanetHistory{
+								{
 									Timestamp:      time.Now(),
 									Health:         95.2,
 									Liberation:     4.8,
@@ -160,6 +168,26 @@ func TestWarSeasonsSchema(t *testing.T) {
 					return
 				}
 			})
+		}
+	})
+}
+
+func TestIndexes(t *testing.T) {
+	withClient(t, func(client *Client, migration *migrate.Migrate) {
+		if err := migration.Up(); err != nil {
+			t.Fatalf("failed to migrate up: %v", err)
+		}
+		coll := client.database().Collection("war_seasons")
+		indexes, err := coll.Indexes().List(context.Background())
+		if err != nil {
+			t.Fatalf("failed to retrieve indexes: %v", err)
+		}
+		var results []any
+		if err = indexes.All(context.Background(), &results); err != nil {
+			t.Fatalf("failed to decode indexes response: %v", err)
+		}
+		if len(results) == 0 {
+			t.Error("expected len(indexes) > 0, got 0")
 		}
 	})
 }
