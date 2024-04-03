@@ -4,6 +4,12 @@
 		"indexes": [
 			{
 				"key": {
+					"planets._id": 1
+				},
+				"name": "planet id index"
+			},
+			{
+				"key": {
 					"planets.initial_owner": 1
 				},
 				"name": "planet initial owner index"
