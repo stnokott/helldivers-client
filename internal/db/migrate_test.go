@@ -117,6 +117,32 @@ func TestWarSeasonsSchema(t *testing.T) {
 					PlanetPermanentEffects: []any{},
 					StartDate:              time.Now(),
 					EndDate:                time.Now().Add(24 * time.Hour),
+					History: []structs.WarSeasonHistory{
+						{
+							Timestamp:                   time.Now(),
+							ActiveElectionPolicyEffects: []int{2},
+							CommunityTargets:            []int{1},
+							ImpactMultiplier:            1.5,
+							GlobalEvents: []structs.WarSeasonHistoryGlobalEvent{
+								{
+									Title:     "my event",
+									Effects:   []string{"active effect"},
+									PlanetIDs: []int{2},
+									Race:      "Humans",
+									Message: structs.WarNewsMessage{
+										DE: "de",
+										EN: "en",
+										ES: "es",
+										FR: "fr",
+										IT: "it",
+										PL: "pl",
+										RU: "ru",
+										ZH: "zh",
+									},
+								},
+							},
+						},
+					},
 					Planets: []structs.Planet{
 						{
 							ID:           1,
@@ -135,6 +161,11 @@ func TestWarSeasonsSchema(t *testing.T) {
 									Owner:          "Humans",
 									PlayerCount:    1234567,
 									RegenPerSecond: 1.3,
+									AttackTargets:  []int{234},
+									Campaign: &structs.PlanetCampaign{
+										Count: 3,
+										Type:  2,
+									},
 								},
 							},
 						},
@@ -145,8 +176,35 @@ func TestWarSeasonsSchema(t *testing.T) {
 			{
 				name: "valid struct incomplete",
 				doc: structs.WarSeason{
-					ID:       1,
-					Capitals: []any{},
+					ID:                     1,
+					Capitals:               []any{},
+					PlanetPermanentEffects: []any{},
+					StartDate:              time.Now(),
+					EndDate:                time.Now().Add(24 * time.Hour),
+					History: []structs.WarSeasonHistory{
+						{
+							Timestamp:                   time.Now(),
+							ActiveElectionPolicyEffects: []int{2},
+							CommunityTargets:            []int{1},
+							ImpactMultiplier:            1.5,
+							GlobalEvents: []structs.WarSeasonHistoryGlobalEvent{
+								{
+									Title:   "my event",
+									Effects: []string{"active effect"},
+									Message: structs.WarNewsMessage{
+										DE: "de",
+										EN: "en",
+										ES: "es",
+										FR: "fr",
+										IT: "it",
+										PL: "pl",
+										RU: "ru",
+										ZH: "zh",
+									},
+								},
+							},
+						},
+					},
 				},
 				wantErr: true,
 			},
@@ -158,7 +216,6 @@ func TestWarSeasonsSchema(t *testing.T) {
 					PlanetPermanentEffects: []any{},
 					StartDate:              time.Now(),
 					EndDate:                time.Now().Add(24 * time.Hour),
-					Planets:                []structs.Planet{},
 				},
 				wantErr: true,
 			},

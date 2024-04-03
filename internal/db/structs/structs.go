@@ -17,6 +17,8 @@ type WarSeason struct {
 	EndDate time.Time `bson:"end_date"`
 	// All planets present in this war season
 	Planets []Planet
+	// War season change over time
+	History []WarSeasonHistory
 }
 
 // Planet is a planet on the galaxy map
@@ -61,6 +63,46 @@ type PlanetHistory struct {
 	PlayerCount int `bson:"players"`
 	// At which rate this planet will regenerate it's health
 	RegenPerSecond float64 `bson:"regen_per_second"`
+	// Planets being currently attacked from this planet
+	AttackTargets []int `bson:"attack_targets"`
+	// active campaign on this planet (optional)
+	Campaign *PlanetCampaign
+}
+
+// WarSeasonHistory captures the historic status of the Helldivers offensive in the galactic war
+type WarSeasonHistory struct {
+	// Time at which this status was retrieved from the API
+	Timestamp time.Time `bson:"_id"`
+	// Always empty AFAIK, haven't figured this out
+	ActiveElectionPolicyEffects []int `bson:"active_election_policy_effects"`
+	// Always empty AFAIK, haven't figured this out
+	CommunityTargets []int `bson:"community_targets"`
+	// I don't fully understand what this does, feel free to ping me if you know
+	ImpactMultiplier float64 `bson:"impact_multiplier"`
+	// Currently active global event, past and present
+	GlobalEvents []WarSeasonHistoryGlobalEvent `bson:"global_events"`
+}
+
+// PlanetCampaign contains information about a currently active campaign
+type PlanetCampaign struct {
+	// not sure what this counts, it's generally a low number
+	Count int
+	// The type of this campaign, haven't found out what they mean yet
+	Type int
+}
+
+// WarSeasonHistoryGlobalEvent contains information about a global event, past and present
+type WarSeasonHistoryGlobalEvent struct {
+	// The title of the global event, appears to be more a status than an actual title
+	Title string
+	// A list of effects, usually strategems or bonuses
+	Effects []string
+	// Planets affected by this event
+	PlanetIDs []int `bson:"planet_ids"`
+	// The race involved in this campaign (so far seems to always be 'Human')
+	Race string
+	// The localized message from Super Earth about the global event
+	Message WarNewsMessage
 }
 
 // WarNews represents a message in the Helldivers 2 newsfeed

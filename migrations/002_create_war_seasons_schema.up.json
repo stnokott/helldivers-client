@@ -115,6 +115,31 @@
 											"regen_per_second": {
 												"bsonType": "double",
 												"description": "At which rate this planet will regenerate it's health"
+											},
+											"attack_targets": {
+												"bsonType": "array",
+												"description": "Planets being currently attacked from this planet",
+												"items": {
+													"bsonType": "int"
+												}
+											},
+											"campaign": {
+												"bsonType": "object",
+												"description": "active campaign on this planet (optional)",
+												"properties": {
+													"count": {
+														"bsonType": "int",
+														"description": "not sure what this counts, it's generally a low number"
+													},
+													"type": {
+														"bsonType": "int",
+														"description": "The type of this campaign, haven't found out what they mean yet"
+													}
+												},
+												"required": [
+													"count",
+													"type"
+												]
 											}
 										},
 										"required": [
@@ -123,7 +148,8 @@
 											"liberation",
 											"owner",
 											"players",
-											"regen_per_second"
+											"regen_per_second",
+											"attack_targets"
 										]
 									}
 								}
@@ -140,6 +166,131 @@
 								"history"
 							]
 						}
+					},
+					"history": {
+						"bsonType": "array",
+						"description": "War season change over time",
+						"items": {
+							"bsonType": "object",
+							"properties": {
+								"_id": {
+									"bsonType": "date",
+									"description": "Time at which this status was retrieved from the API"
+								},
+								"active_election_policy_effects": {
+									"bsonType": "array",
+									"description": "Always empty AFAIK, haven't figured this out",
+									"items": {
+										"bsonType": "int"
+									}
+								},
+								"community_targets": {
+									"bsonType": "array",
+									"description": "Always empty AFAIK, haven't figured this out",
+									"items": {
+										"bsonType": "int"
+									}
+								},
+								"impact_multiplier": {
+									"bsonType": "double",
+									"description": "I don't fully understand what this does, feel free to ping me if you know"
+								},
+								"global_events": {
+									"bsonType": "array",
+									"description": "Currently active global event, past and present",
+									"items": {
+										"bsonType": "object",
+										"description": "contains information about a global event, past and present",
+										"properties": {
+											"title": {
+												"bsonType": "string",
+												"description": "The title of the global event, appears to be more a status than an actual title"
+											},
+											"effects": {
+												"bsonType": "array",
+												"description": "A list of effects, usually strategems or bonuses",
+												"items": {
+													"bsonType": "string"
+												}
+											},
+											"planet_ids": {
+												"bsonType": "array",
+												"description": "Planets affected by this event",
+												"items": {
+													"bsonType": "int"
+												}
+											},
+											"race": {
+												"bsonType": "string",
+												"description": "The race involved in this campaign (so far seems to always be 'Human')"
+											},
+											"message": {
+												"bsonType": "object",
+												"description": "The localized message from Super Earth about the global event",
+												"properties": {
+													"de": {
+														"bsonType": "string",
+														"description": "The message from Super Earth about the global event in de-DE"
+													},
+													"en": {
+														"bsonType": "string",
+														"description": "The message from Super Earth about the global event in en-US"
+													},
+													"es": {
+														"bsonType": "string",
+														"description": "The message from Super Earth about the global event in es-ES"
+													},
+													"fr": {
+														"bsonType": "string",
+														"description": "The message from Super Earth about the global event in fr-FR"
+													},
+													"it": {
+														"bsonType": "string",
+														"description": "The message from Super Earth about the global event in it-IT"
+													},
+													"pl": {
+														"bsonType": "string",
+														"description": "The message from Super Earth about the global event in pl-PL"
+													},
+													"ru": {
+														"bsonType": "string",
+														"description": "The message from Super Earth about the global event in ru-RU"
+													},
+													"zh": {
+														"bsonType": "string",
+														"description": "The message from Super Earth about the global event in zh-Hans"
+													}
+												},
+												"required": [
+													"de",
+													"en",
+													"es",
+													"fr",
+													"it",
+													"pl",
+													"ru",
+													"zh"
+												]
+											}
+										},
+										"required": [
+											"title",
+											"effects",
+											"message",
+											"planet_ids",
+											"race"
+										]
+									}
+								}
+							},
+							"required": [
+								"_id",
+								"active_election_policy_effects",
+								"community_targets",
+								"impact_multiplier",
+								"global_events"
+							]
+						}
 					}
 				},
 				"required": [
@@ -148,7 +299,8 @@
 					"planet_permanent_effects",
 					"start_date",
 					"end_date",
-					"planets"
+					"planets",
+					"history"
 				]
 			}
 		},
