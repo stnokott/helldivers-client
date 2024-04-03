@@ -41,27 +41,62 @@ func TestMigrateUp(t *testing.T) {
 	})
 }
 
-func TestMigration(t *testing.T) {
+func TestCollectionsExist(t *testing.T) {
+	collections := []string{
+		"war_seasons",
+		"war_news",
+	}
 	withClient(t, func(client *Client, migration *migrate.Migrate) {
 		if err := migration.Up(); err != nil {
 			t.Fatalf("failed to migrate up: %v", err)
 		}
-		fnPlanetCollectionExists := func() bool {
-			colls, errList := client.database().ListCollectionNames(context.Background(), bson.D{{Key: "name", Value: "war_seasons"}})
+
+		fnPlanetCollections := func() []string {
+			colls, errList := client.mongo.Database(t.Name()).ListCollectionNames(
+				context.Background(),
+				bson.D{{Key: "name", Value: bson.D{{Key: "$in", Value: collections}}}},
+			)
 			if errList != nil {
 				t.Errorf("could not list collections: %v", errList)
-				return false
+				return []string{}
 			}
-			return len(colls) == 1
+			return colls
 		}
-		if !fnPlanetCollectionExists() {
-			t.Error("expected collection with name 'war_seasons', none found")
+		if colls := fnPlanetCollections(); len(colls) != len(collections) {
+			t.Fatalf("expected %d collections, got %d (%v)", len(collections), len(colls), colls)
 		}
 		if err := migration.Down(); err != nil {
 			t.Fatalf("failed to migrate down: %v", err)
 		}
-		if fnPlanetCollectionExists() {
-			t.Error("expected collection with name 'war_seasons' to not exist")
+		if colls := fnPlanetCollections(); len(colls) > 0 {
+			t.Fatalf("expected no collections, got %d (%v)", len(colls), colls)
+		}
+	})
+}
+
+func TestIndexesExist(t *testing.T) {
+	collections := []string{
+		"war_seasons",
+		"war_news",
+	}
+	withClient(t, func(client *Client, migration *migrate.Migrate) {
+		if err := migration.Up(); err != nil {
+			t.Fatalf("failed to migrate up: %v", err)
+		}
+
+		for _, collection := range collections {
+			coll := client.mongo.Database(t.Name()).Collection(collection)
+			indexes, err := coll.Indexes().List(context.Background())
+			if err != nil {
+				t.Fatalf("failed to retrieve indexes: %v", err)
+			}
+			var results []any
+			if err = indexes.All(context.Background(), &results); err != nil {
+				t.Fatalf("failed to decode indexes response: %v", err)
+			}
+			if len(results) == 0 {
+				t.Error("expected len(indexes) > 0, got 0")
+			}
 		}
 	})
 }
@@ -172,22 +207,93 @@ func TestWarSeasonsSchema(t *testing.T) {
 	})
 }
 
-func TestIndexes(t *testing.T) {
+func TestWarNewsSchema(t *testing.T) {
 	withClient(t, func(client *Client, migration *migrate.Migrate) {
+		type document any
+		tests := []struct {
+			name    string
+			doc     document
+			wantErr bool
+		}{
+			{
+				name: "valid struct complete",
+				doc: structs.WarNews{
+					ID: 1,
+					Message: structs.WarNewsMessage{
+						DE: "Das Rauschen der Meereswellen beruhigt meine Seele",
+						EN: "The sound of ocean waves calms my soul",
+						ES: "El sonido de las olas del mar calma mi alma",
+						FR: "Le bruit des vagues de l'océan calme mon âme",
+						IT: "Il suono delle onde dell'oceano calma la mia anima",
+						PL: "Dźwięk fal oceanu uspokaja moją duszę",
+						RU: "Шум океанских волн успокаивает мою душу",
+						ZH: "海浪声让我的心灵平静",
+					},
+					Published: time.Now(),
+					Type:      0,
+				},
+				wantErr: false,
+			},
+			{
+				name: "valid struct incomplete",
+				doc: structs.WarNews{
+					ID:        1,
+					Published: time.Now(),
+					Type:      0,
+				},
+				wantErr: true,
+			},
+			{
+				name: "valid struct missing embedded",
+				doc: structs.WarNews{
+					ID:        1,
+					Message:   structs.WarNewsMessage{},
+					Published: time.Now(),
+					Type:      0,
+				},
+				wantErr: true,
+			},
+			{
+				name: "wrong struct",
+				doc: structs.WarNewsMessage{
+					DE: "Das Rauschen der Meereswellen beruhigt meine Seele",
+					EN: "The sound of ocean waves calms my soul",
+					ES: "El sonido de las olas del mar calma mi alma",
+					FR: "Le bruit des vagues de l'océan calme mon âme",
+					IT: "Il suono delle onde dell'oceano calma la mia anima",
+					PL: "Dźwięk fal oceanu uspokaja moją duszę",
+					RU: "Шум океанских волн успокаивает мою душу",
+					ZH: "海浪声让我的心灵平静",
+				},
+				wantErr: true,
+			},
+			{
+				name: "invalid struct",
+				doc: struct {
+					Foo string
+				}{
+					Foo: "bar",
+				},
+				wantErr: true,
+			},
+			{
+				name:    "nil struct",
+				doc:     nil,
+				wantErr: true,
+			},
+		}
 		if err := migration.Up(); err != nil {
 			t.Fatalf("failed to migrate up: %v", err)
 		}
-		coll := client.database().Collection("war_seasons")
-		indexes, err := coll.Indexes().List(context.Background())
-		if err != nil {
-			t.Fatalf("failed to retrieve indexes: %v", err)
-		}
-		var results []any
-		if err = indexes.All(context.Background(), &results); err != nil {
-			t.Fatalf("failed to decode indexes response: %v", err)
-		}
-		if len(results) == 0 {
-			t.Error("expected len(indexes) > 0, got 0")
+		for _, tt := range tests {
+			t.Run(tt.name, func(t *testing.T) {
+				coll := client.database().Collection("war_news")
+				_, err := coll.InsertOne(context.Background(), tt.doc)
+				if (err != nil) != tt.wantErr {
+					t.Errorf("InsertOne() error = %v, wantErr %v", err, tt.wantErr)
+					return
+				}
+			})
 		}
 	})
 }

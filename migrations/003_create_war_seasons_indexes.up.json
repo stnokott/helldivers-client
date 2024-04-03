@@ -18,7 +18,7 @@
 				"key": {
 					"planets.history.owner": 1
 				},
-				"name": "planet current owner index"
+				"name": "planet historic owner index"
 			}
 		]
 	}

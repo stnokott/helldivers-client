@@ -62,3 +62,35 @@ type PlanetHistory struct {
 	// At which rate this planet will regenerate it's health
 	RegenPerSecond float64 `bson:"regen_per_second"`
 }
+
+// WarNews represents a message in the Helldivers 2 newsfeed
+type WarNews struct {
+	// The identifier of this campaign
+	ID int `bson:"_id"`
+	// Localized versions of a newsfeed message
+	Message WarNewsMessage
+	// When this message was published
+	Published time.Time
+	// A type identifier, haven't figured out what they mean (seems to be 0 mostly)
+	Type int
+}
+
+// WarNewsMessage contains localized versions of a newsfeed message
+type WarNewsMessage struct {
+	// The message from Super Earth about the news in de-DE
+	DE string
+	// The message from Super Earth about the news in en-US
+	EN string
+	// The message from Super Earth about the news in es-ES
+	ES string
+	// The message from Super Earth about the news in fr-FR
+	FR string
+	// The message from Super Earth about the news in it-IT
+	IT string
+	// The message from Super Earth about the news in pl-PL
+	PL string
+	// The message from Super Earth about the news in ru-RU
+	RU string
+	// The message from Super Earth about the news in zh-Hans
+	ZH string
+}
