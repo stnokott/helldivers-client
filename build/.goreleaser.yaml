@@ -63,7 +63,7 @@ changelog:
 archives:
   - rlcp: true
     format: zip
-    strip_parent_binary_folder: true
+    strip_binary_directory: true
 
 release:
   target_commitish: "{{ .Commit }}"
