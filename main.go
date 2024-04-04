@@ -1,8 +1,30 @@
 // Package main provides the very simplest main function
 package main
 
-import "log"
+import (
+	"log"
+	"os"
+
+	"github.com/stnokott/helldivers-client/internal/config"
+	"github.com/stnokott/helldivers-client/internal/db"
+)
+
+const databaseName = "helldivers2"
 
 func main() {
-	log.Println("I beg of thee, please replace mee")
+	cfg := config.Get()
+	logger := loggerFor("main")
+
+	dbClient, err := db.New(cfg.MongoURI, databaseName, loggerFor("mongo"))
+	if err != nil {
+		logger.Fatalf("MongoDB client could not be initialized: %v", err)
+	}
+	defer logger.Println(dbClient.Disconnect())
+	if err = dbClient.MigrateUp("./migrations"); err != nil {
+		logger.Fatalf("db migration failed: %v", err)
+	}
+}
+
+func loggerFor(name string) *log.Logger {
+	return log.New(os.Stdout, name+" | ", log.Ldate|log.Ltime|log.Lmsgprefix)
 }

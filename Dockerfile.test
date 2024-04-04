@@ -1,0 +1,12 @@
+FROM golang:1.22.0-alpine
+
+RUN set -ex; \
+	apk update; \
+	apk add --no-cache git
+
+# setting workdir to same directory as mounted in docker-compose.test.yaml
+WORKDIR /code
+
+ENV CGO_ENABLED=0
+
+CMD ["go", "test", "-v", "./..."]

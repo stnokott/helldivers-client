@@ -4,7 +4,7 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"label": "Run tests",
+			"label": "Run integration tests",
 			"type": "shell",
 			"command": "docker",
 			"args": [
@@ -12,11 +12,25 @@
 				"-f",
 				"docker-compose.test.yaml",
 				"up",
+				"--build",
 				"--exit-code-from=app",
-				"--attach=app"
+				"--attach=app",
+				"--force-recreate"
 			],
 			"group": "test",
 			"problemMatcher": []
+		},
+		{
+			"type": "go",
+			"label": "Run DB unit tests locally",
+			"command": "test",
+			"args": [
+				"${workspaceFolder}/internal/db"
+			],
+			"problemMatcher": [
+				"$go"
+			],
+			"group": "test",
 		},
 		{
 			"label": "build snapshot",
