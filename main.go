@@ -19,7 +19,7 @@ func main() {
 	if err != nil {
 		logger.Fatalf("MongoDB client could not be initialized: %v", err)
 	}
-	defer dbClient.Disconnect()
+	defer logger.Println(dbClient.Disconnect())
 	if err = dbClient.MigrateUp("./migrations"); err != nil {
 		logger.Fatalf("db migration failed: %v", err)
 	}
