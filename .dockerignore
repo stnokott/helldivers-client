@@ -1,0 +1,8 @@
+# GitHub config files (e.g. workflows)
+.github/
+# VSCode config files (e.g. tasks, launch configs)
+.vscode/
+# build configurations (e.g. Goreleaser config)
+build/
+# Go vendor files (also included in .gitignore, just here for local development)
+vendor/
