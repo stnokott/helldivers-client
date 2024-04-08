@@ -8,10 +8,10 @@ import (
 )
 
 const (
-	host string = "http://api:4000"
+	host string = "http://api:8080"
 )
 
-func TestClientSeasons(t *testing.T) {
+func TestClientCurrentWar(t *testing.T) {
 	client, err := New(host)
 	if err != nil {
 		t.Fatal(err)
@@ -20,15 +20,15 @@ func TestClientSeasons(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	resp, err := client.Seasons(ctx)
+	resp, err := client.CurrentWar(ctx)
 	if err != nil {
-		t.Fatalf("client.Seasons() = %v", err)
+		t.Fatalf("client.CurrentWar() = %v", err)
 	}
-	if resp.Current == nil {
-		t.Errorf(".Current is nil")
+	if resp.Started == nil {
+		t.Errorf(".Started is nil")
 	}
-	if resp.Seasons == nil {
-		t.Errorf(".Seasons is nil")
+	if resp.Statistics == nil {
+		t.Errorf(".Statistics is nil")
 	}
 }
 
@@ -64,9 +64,9 @@ func TestClientHosts(t *testing.T) {
 			client, _ := New(tt.host)
 			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 			defer cancel()
-			_, err := client.Seasons(ctx)
+			_, err := client.CurrentWar(ctx)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("Client.Seasons() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("Client.CurrentWar() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 		})

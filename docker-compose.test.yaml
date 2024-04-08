@@ -1,3 +1,5 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json
+
 version: '3.8'
 
 networks:
@@ -18,21 +20,9 @@ services:
       - default
 
   api:
-    build: https://github.com/helldivers-2/helldivers2-api.git
-    environment:
-      SECRET_KEY_BASE: D1gbVjUDtxprcNF6B8rQryhIfHXyWqC6QCoILsXEkRDXarkuVxh9Z6azHzQKvSS1X7rHWLYb8SQAnXuVqvDaXQ==
-      FLY_APP_NAME: helldivers-2
-      FLY_IMAGE_REF: 0
-      FLY_PRIVATE_IP: 127.0.0.1
-      RATE_LIMIT_MAX_REQUESTS: 0 # disabled
-      RATE_LIMIT_INTERVAL: 0 # disabled
-      ENABLE_IPV6: false
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4000/api"]
-      interval: 1m
-      timeout: 5s
-      retries: 3
-      start_period: 10s
+    build:
+      context: https://github.com/helldivers-2/helldivers2-api.git
+      dockerfile: ./src/Helldivers-2-API/Dockerfile
     networks:
       - default
 
