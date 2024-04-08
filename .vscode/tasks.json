@@ -7,10 +7,13 @@
 			"label": "Run integration tests",
 			"type": "shell",
 			"command": "docker",
+			"options": {
+				"env": {
+					"COMPOSE_FILE": "${workspaceFolder}/docker-compose.test.yaml"
+				}
+			},
 			"args": [
 				"compose",
-				"-f",
-				"docker-compose.test.yaml",
 				"up",
 				"--build",
 				"--exit-code-from=app",

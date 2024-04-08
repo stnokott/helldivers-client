@@ -1,0 +1,35 @@
+name: Run tests
+
+on:
+  pull_request: {}
+  pull_request_review_comment:
+    types: [created, edited]
+  workflow_dispatch:
+
+jobs:
+  build_snapshot:
+    name: Build test snapshot
+    uses: ./.github/workflows/release_generic.yml
+    with:
+      snapshot: true
+
+  integration_tests:
+    name: Run Integration Tests
+    runs-on: ubuntu-latest
+    env:
+      COMPOSE_FILE: ./docker-compose.test.yaml
+      DOCKER_USER: ${{ secrets.DOCKER_USER }}
+      DOCKER_PASS: ${{ secrets.DOCKER_PASS }}
+  
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4.1.2
+
+      - name: Login to Dockerhub
+        run: docker login -u $DOCKER_USER -p $DOCKER_PASS
+
+      - name: Build docker images
+        run: docker compose build
+      
+      - name: Run tests in container
+        run: docker compose up --exit-code-from=app --attach=app
