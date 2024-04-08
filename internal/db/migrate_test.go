@@ -165,8 +165,8 @@ func TestPlanetsSchema(t *testing.T) {
 			name: "wrong struct",
 			doc: structs.War{
 				ID:               1,
-				StartTime:        primitive.Timestamp{T: uint32(time.Now().Unix())},
-				EndTime:          primitive.Timestamp{T: uint32(time.Now().Unix())},
+				StartTime:        toPrimitiveTs(time.Now()),
+				EndTime:          toPrimitiveTs(time.Now()),
 				ImpactMultiplier: 2.0,
 				Factions:         []string{"Humans", "Automatons"},
 			},
@@ -244,8 +244,8 @@ func TestCampaignsSchema(t *testing.T) {
 			name: "wrong struct",
 			doc: structs.War{
 				ID:               1,
-				StartTime:        primitive.Timestamp{T: uint32(time.Now().Unix())},
-				EndTime:          primitive.Timestamp{T: uint32(time.Now().Unix())},
+				StartTime:        toPrimitiveTs(time.Now()),
+				EndTime:          toPrimitiveTs(time.Now()),
 				ImpactMultiplier: 2.0,
 				Factions:         []string{"Humans", "Automatons"},
 			},
@@ -313,7 +313,7 @@ func TestDispatchesSchema(t *testing.T) {
 			name: "valid struct complete",
 			doc: structs.Dispatch{
 				ID:         1,
-				CreateTime: primitive.Timestamp{T: uint32(time.Now().Unix())},
+				CreateTime: toPrimitiveTs(time.Now()),
 				Type:       3,
 				Message:    "Foobar",
 			},
@@ -333,8 +333,8 @@ func TestDispatchesSchema(t *testing.T) {
 			name: "wrong struct",
 			doc: structs.War{
 				ID:               1,
-				StartTime:        primitive.Timestamp{T: uint32(time.Now().Unix())},
-				EndTime:          primitive.Timestamp{T: uint32(time.Now().Unix())},
+				StartTime:        toPrimitiveTs(time.Now()),
+				EndTime:          toPrimitiveTs(time.Now()),
 				ImpactMultiplier: 2.0,
 				Factions:         []string{"Humans", "Automatons"},
 			},
@@ -405,8 +405,8 @@ func TestEventsSchema(t *testing.T) {
 				Type:      3,
 				Faction:   "Foobar",
 				MaxHealth: 100,
-				StartTime: primitive.Timestamp{T: uint32(time.Now().Unix())},
-				EndTime:   primitive.Timestamp{T: uint32(time.Now().Add(10 * 24 * time.Hour).Unix())},
+				StartTime: toPrimitiveTs(time.Now()),
+				EndTime:   toPrimitiveTs(time.Now().Add(10 * 24 * time.Hour)),
 			},
 			wantErr: false,
 		},
@@ -417,8 +417,8 @@ func TestEventsSchema(t *testing.T) {
 				Type:      3,
 				Faction:   "Foobar",
 				MaxHealth: 100,
-				StartTime: primitive.Timestamp{T: uint32(time.Now().Unix())},
-				// EndTime: primitive.Timestamp{T: uint32(time.Now().Add(10 * 24 * time.Hour).Unix())},
+				StartTime: toPrimitiveTs(time.Now()),
+				// EndTime: toPrimitiveTs(time.Now().Add(10 * 24 * time.Hour)),
 			},
 			wantErr: true,
 		},
@@ -426,8 +426,8 @@ func TestEventsSchema(t *testing.T) {
 			name: "wrong struct",
 			doc: structs.War{
 				ID:               1,
-				StartTime:        primitive.Timestamp{T: uint32(time.Now().Unix())},
-				EndTime:          primitive.Timestamp{T: uint32(time.Now().Unix())},
+				StartTime:        toPrimitiveTs(time.Now()),
+				EndTime:          toPrimitiveTs(time.Now()),
 				ImpactMultiplier: 2.0,
 				Factions:         []string{"Humans", "Automatons"},
 			},
@@ -530,8 +530,8 @@ func TestAssignmentsSchema(t *testing.T) {
 			name: "wrong struct",
 			doc: structs.War{
 				ID:               1,
-				StartTime:        primitive.Timestamp{T: uint32(time.Now().Unix())},
-				EndTime:          primitive.Timestamp{T: uint32(time.Now().Unix())},
+				StartTime:        toPrimitiveTs(time.Now()),
+				EndTime:          toPrimitiveTs(time.Now()),
 				ImpactMultiplier: 2.0,
 				Factions:         []string{"Humans", "Automatons"},
 			},
@@ -599,8 +599,8 @@ func TestWarsSchema(t *testing.T) {
 			name: "valid struct complete",
 			doc: structs.War{
 				ID:               1,
-				StartTime:        primitive.Timestamp{T: uint32(time.Now().Unix())},
-				EndTime:          primitive.Timestamp{T: uint32(time.Now().Add(5 * 24 * time.Hour).Unix())},
+				StartTime:        toPrimitiveTs(time.Now()),
+				EndTime:          toPrimitiveTs(time.Now().Add(5 * 24 * time.Hour)),
 				ImpactMultiplier: 50.0,
 				Factions: []string{
 					"Humans", "Automatons",
@@ -612,8 +612,8 @@ func TestWarsSchema(t *testing.T) {
 			name: "valid struct incomplete",
 			doc: structs.War{
 				ID:        1,
-				StartTime: primitive.Timestamp{T: uint32(time.Now().Unix())},
-				// Ended:            primitive.Timestamp{T: uint32(time.Now().Add(5 * 24 * time.Hour).Unix())},
+				StartTime: toPrimitiveTs(time.Now()),
+				// Ended:            toPrimitiveTs(time.Now().Add(5 * 24 * time.Hour)),
 				ImpactMultiplier: 50.0,
 				Factions: []string{
 					"Humans", "Automatons",
@@ -628,8 +628,8 @@ func TestWarsSchema(t *testing.T) {
 				Type:      3,
 				Faction:   "Foobar",
 				MaxHealth: 100,
-				StartTime: primitive.Timestamp{T: uint32(time.Now().Unix())},
-				EndTime:   primitive.Timestamp{T: uint32(time.Now().Add(5 * 24 * time.Hour).Unix())},
+				StartTime: toPrimitiveTs(time.Now()),
+				EndTime:   toPrimitiveTs(time.Now().Add(5 * 24 * time.Hour)),
 			},
 			wantErr: true,
 		},
@@ -694,7 +694,7 @@ func TestSnapshotsSchema(t *testing.T) {
 		{
 			name: "valid struct complete",
 			doc: structs.Snapshot{
-				ID:            primitive.Timestamp{T: uint32(time.Now().Unix())},
+				ID:            toPrimitiveTs(time.Now()),
 				WarID:         6,
 				AssignmentIDs: []int{2, 3, 4},
 				CampaignIDs:   []int{6, 7, 8},
@@ -733,7 +733,7 @@ func TestSnapshotsSchema(t *testing.T) {
 		{
 			name: "valid struct high number",
 			doc: structs.Snapshot{
-				ID:            primitive.Timestamp{T: uint32(time.Now().Unix())},
+				ID:            toPrimitiveTs(time.Now()),
 				WarID:         6,
 				AssignmentIDs: []int{2, 3, 4},
 				CampaignIDs:   []int{6, 7, 8},
@@ -772,7 +772,7 @@ func TestSnapshotsSchema(t *testing.T) {
 		{
 			name: "valid struct incomplete",
 			doc: structs.Snapshot{
-				ID:            primitive.Timestamp{T: uint32(time.Now().Unix())},
+				ID:            toPrimitiveTs(time.Now()),
 				WarID:         6,
 				AssignmentIDs: []int{2, 3, 4},
 				CampaignIDs:   []int{6, 7, 8},
@@ -787,8 +787,8 @@ func TestSnapshotsSchema(t *testing.T) {
 				Type:      3,
 				Faction:   "Foobar",
 				MaxHealth: 100,
-				StartTime: primitive.Timestamp{T: uint32(time.Now().Unix())},
-				EndTime:   primitive.Timestamp{T: uint32(time.Now().Add(5 * 24 * time.Hour).Unix())},
+				StartTime: toPrimitiveTs(time.Now()),
+				EndTime:   toPrimitiveTs(time.Now().Add(5 * 24 * time.Hour)),
 			},
 			wantErr: true,
 		},
