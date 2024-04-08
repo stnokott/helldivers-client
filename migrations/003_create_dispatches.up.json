@@ -1,0 +1,38 @@
+[
+	{
+		"create": "dispatches",
+		"validator": {
+			"$jsonSchema": {
+				"bsonType": "object",
+				"title": "dispatches",
+				"description": "A message from high command to the players, usually updates on the status of the war effort.",
+				"required": [
+					"_id",
+					"create_time",
+					"type",
+					"message"
+				],
+				"properties": {
+					"_id": {
+						"bsonType": "int",
+						"description": "The unique identifier of this dispatch."
+					},
+					"create_time": {
+						"bsonType": "timestamp",
+						"description": "When the dispatch was published."
+					},
+					"type": {
+						"bsonType": "int",
+						"description": "The type of dispatch, purpose unknown."
+					},
+					"message": {
+						"bsonType": "string",
+						"description": "The message this dispatch represents."
+					}
+				}
+			}
+		},
+		"validationLevel": "strict",
+		"validationAction": "error"
+	}
+]
