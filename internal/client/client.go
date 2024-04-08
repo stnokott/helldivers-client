@@ -30,17 +30,14 @@ func respBodyErr(body []byte) error {
 	return errors.New("unknown error occured: " + string(body))
 }
 
-// Seasons returns the overview of current and past seasons
-func (c *Client) Seasons(ctx context.Context) (*api.WarSeasonOverview, error) {
-	resp, err := c.c.Helldivers2WebApiWarSeasonControllerIndexWithResponse(ctx)
+// CurrentWar returns the current war season
+func (c *Client) CurrentWar(ctx context.Context) (*api.War, error) {
+	resp, err := c.c.GetApiV1WarWithResponse(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("request initialization failed: %w", err)
 	}
 	if resp.JSON200 != nil {
 		return resp.JSON200, nil
-	}
-	if resp.JSON429 != nil && resp.JSON429.Error != nil {
-		return nil, fmt.Errorf("rate limit exceeded: %s", *resp.JSON429.Error)
 	}
 	return nil, respBodyErr(resp.Body)
 }
