@@ -1,4 +1,4 @@
-name: Test Release (Snapshot)
+name: Run tests
 
 on:
   pull_request: {}
@@ -8,8 +8,8 @@ on:
 
 jobs:
   build_snapshot:
+    name: Build test snapshot
     uses: ./.github/workflows/release_generic.yml
-    name: Build Snapshot
     with:
       snapshot: true
 
