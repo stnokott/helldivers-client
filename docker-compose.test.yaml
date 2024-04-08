@@ -15,7 +15,8 @@ services:
       - api
     volumes:
       - ./:/code
-    env_file: .env.test
+    environment:
+      MONGO_URI: mongodb://root:test@db:27017
     networks:
       - default
 
