@@ -790,7 +790,7 @@ func TestSnapshotsSchema(t *testing.T) {
 		{
 			name: "valid struct complete",
 			doc: structs.Snapshot{
-				ID:            toPrimitiveTs(time.Now()),
+				Timestamp:     toPrimitiveTs(time.Now()),
 				WarID:         6,
 				AssignmentIDs: []int{2, 3, 4},
 				CampaignIDs:   []int{6, 7, 8},
@@ -829,7 +829,7 @@ func TestSnapshotsSchema(t *testing.T) {
 		{
 			name: "valid struct high number",
 			doc: structs.Snapshot{
-				ID:            toPrimitiveTs(time.Now()),
+				Timestamp:     toPrimitiveTs(time.Now()),
 				WarID:         6,
 				AssignmentIDs: []int{2, 3, 4},
 				CampaignIDs:   []int{6, 7, 8},
@@ -868,7 +868,7 @@ func TestSnapshotsSchema(t *testing.T) {
 		{
 			name: "valid struct incomplete",
 			doc: structs.Snapshot{
-				ID:            toPrimitiveTs(time.Now()),
+				Timestamp:     toPrimitiveTs(time.Now()),
 				WarID:         6,
 				AssignmentIDs: []int{2, 3, 4},
 				CampaignIDs:   []int{6, 7, 8},
@@ -879,7 +879,7 @@ func TestSnapshotsSchema(t *testing.T) {
 		{
 			name: "negative statistics",
 			doc: structs.Snapshot{
-				ID:            toPrimitiveTs(time.Now()),
+				Timestamp:     toPrimitiveTs(time.Now()),
 				WarID:         6,
 				AssignmentIDs: []int{2, 3, 4},
 				CampaignIDs:   []int{6, 7, 8},
