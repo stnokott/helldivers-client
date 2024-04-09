@@ -423,6 +423,18 @@ func TestEventsSchema(t *testing.T) {
 			wantErr: true,
 		},
 		{
+			name: "endtime gt starttime",
+			doc: structs.Event{
+				ID:        1,
+				Type:      3,
+				Faction:   "Foobar",
+				MaxHealth: 100,
+				StartTime: toPrimitiveTs(time.Now()),
+				EndTime:   toPrimitiveTs(time.Now().Add(-1 * 10 * 24 * time.Hour)),
+			},
+			wantErr: true,
+		},
+		{
 			name: "wrong struct",
 			doc: structs.War{
 				ID:               1,
@@ -614,6 +626,19 @@ func TestWarsSchema(t *testing.T) {
 				ID:        1,
 				StartTime: toPrimitiveTs(time.Now()),
 				// Ended:            toPrimitiveTs(time.Now().Add(5 * 24 * time.Hour)),
+				ImpactMultiplier: 50.0,
+				Factions: []string{
+					"Humans", "Automatons",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "endtime gt starttime",
+			doc: structs.War{
+				ID:               1,
+				StartTime:        toPrimitiveTs(time.Now()),
+				EndTime:          toPrimitiveTs(time.Now().Add(-1 * 5 * 24 * time.Hour)),
 				ImpactMultiplier: 50.0,
 				Factions: []string{
 					"Humans", "Automatons",
