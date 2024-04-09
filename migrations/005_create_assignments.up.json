@@ -52,6 +52,7 @@
 								"values": {
 									"bsonType": "array",
 									"description": "A list of numbers, purpose unknown.",
+									"uniqueItems": true,
 									"items": {
 										"bsonType": "int"
 									}
@@ -59,6 +60,7 @@
 								"value_types": {
 									"bsonType": "array",
 									"description": "A list of numbers, purpose unknown",
+									"uniqueItems": true,
 									"items": {
 										"bsonType": "int"
 									}
@@ -82,7 +84,8 @@
 							},
 							"amount": {
 								"bsonType": "int",
-								"description": "The amount of Type that will be awarded."
+								"description": "The amount of Type that will be awarded.",
+								"minimum": 0
 							}
 						}
 					}

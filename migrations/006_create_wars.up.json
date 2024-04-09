@@ -30,11 +30,13 @@
 							},
 							"impact_multiplier": {
 								"bsonType": "double",
-								"description": "A fraction used to calculate the impact of a mission on the war effort."
+								"description": "A fraction used to calculate the impact of a mission on the war effort.",
+								"minimum": 0
 							},
 							"factions": {
 								"bsonType": "array",
 								"description": "A list of factions currently involved in the war.",
+								"uniqueItems": true,
 								"items": {
 									"bsonType": "string"
 								}

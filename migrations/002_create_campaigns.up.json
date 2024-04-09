@@ -28,7 +28,8 @@
 					},
 					"count": {
 						"bsonType": "int",
-						"description": "Indicates how many campaigns have already been fought on this Planet."
+						"description": "Indicates how many campaigns have already been fought on this Planet.",
+						"minimum": 0
 					}
 				}
 			}

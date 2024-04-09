@@ -162,6 +162,21 @@ func TestPlanetsSchema(t *testing.T) {
 			wantErr: true,
 		},
 		{
+			name: "negative health",
+			doc: structs.Planet{
+				ID:             1,
+				Name:           "Foo",
+				Sector:         "Bar",
+				Position:       structs.PlanetPosition{X: 1, Y: 2},
+				Waypoints:      []int{1, 2, 3},
+				Disabled:       false,
+				MaxHealth:      -1,
+				InitialOwner:   "Super Humans",
+				RegenPerSecond: 50.0,
+			},
+			wantErr: true,
+		},
+		{
 			name: "wrong struct",
 			doc: structs.War{
 				ID:               1,
@@ -239,6 +254,16 @@ func TestCampaignsSchema(t *testing.T) {
 				Count:    10,
 			},
 			wantErr: false,
+		},
+		{
+			name: "negative count",
+			doc: structs.Campaign{
+				ID:       1,
+				PlanetID: 3,
+				Type:     5,
+				Count:    -5,
+			},
+			wantErr: true,
 		},
 		{
 			name: "wrong struct",
@@ -435,6 +460,18 @@ func TestEventsSchema(t *testing.T) {
 			wantErr: true,
 		},
 		{
+			name: "negative health",
+			doc: structs.Event{
+				ID:        1,
+				Type:      3,
+				Faction:   "Foobar",
+				MaxHealth: -1,
+				StartTime: toPrimitiveTs(time.Now()),
+				EndTime:   toPrimitiveTs(time.Now().Add(10 * 24 * time.Hour)),
+			},
+			wantErr: true,
+		},
+		{
 			name: "wrong struct",
 			doc: structs.War{
 				ID:               1,
@@ -534,6 +571,27 @@ func TestAssignmentsSchema(t *testing.T) {
 				Reward: structs.AssignmentReward{
 					Type:   4,
 					Amount: 8,
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "negative reward amount",
+			doc: structs.Assignment{
+				ID:          1,
+				Title:       "Foobar",
+				Briefing:    "Briefing text",
+				Description: "Description text, but a bit longer",
+				Tasks: []structs.AssignmentTask{
+					{
+						Type:       2,
+						Values:     []int{1, 2, 3},
+						ValueTypes: []int{5, 6, 7},
+					},
+				},
+				Reward: structs.AssignmentReward{
+					Type:   4,
+					Amount: -1,
 				},
 			},
 			wantErr: true,
@@ -640,6 +698,19 @@ func TestWarsSchema(t *testing.T) {
 				StartTime:        toPrimitiveTs(time.Now()),
 				EndTime:          toPrimitiveTs(time.Now().Add(-1 * 5 * 24 * time.Hour)),
 				ImpactMultiplier: 50.0,
+				Factions: []string{
+					"Humans", "Automatons",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "negative impact multiplier",
+			doc: structs.War{
+				ID:               1,
+				StartTime:        toPrimitiveTs(time.Now()),
+				EndTime:          toPrimitiveTs(time.Now().Add(5 * 24 * time.Hour)),
+				ImpactMultiplier: -0.5,
 				Factions: []string{
 					"Humans", "Automatons",
 				},
@@ -802,6 +873,45 @@ func TestSnapshotsSchema(t *testing.T) {
 				AssignmentIDs: []int{2, 3, 4},
 				CampaignIDs:   []int{6, 7, 8},
 				DispatchIDs:   []int{10, 11, 12},
+			},
+			wantErr: true,
+		},
+		{
+			name: "negative statistics",
+			doc: structs.Snapshot{
+				ID:            toPrimitiveTs(time.Now()),
+				WarID:         6,
+				AssignmentIDs: []int{2, 3, 4},
+				CampaignIDs:   []int{6, 7, 8},
+				DispatchIDs:   []int{10, 11, 12},
+				Planets: []structs.PlanetSnapshot{
+					{
+						ID:           3,
+						Health:       100,
+						CurrentOwner: "Humans",
+						Event: &structs.EventSnapshot{
+							EventID: 5,
+							Health:  700,
+						},
+						Statistics: &structs.PlanetStatistics{
+							MissionsWon:  44323,
+							MissionsLost: 53555,
+							MissionTime:  445566,
+							Kills: structs.StatisticsKills{
+								Terminid:   -6,
+								Automaton:  34333312212222,
+								Illuminate: 2333333333,
+							},
+							BulletsFired: 888999399393222,
+							BulletsHit:   49324924499449222,
+							TimePlayed:   int64(365 * 24 * time.Hour),
+							Deaths:       55223535,
+							Revives:      44442,
+							Friendlies:   2221111,
+							PlayerCount:  12345678,
+						},
+					},
+				},
 			},
 			wantErr: true,
 		},

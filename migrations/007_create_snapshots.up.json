@@ -26,6 +26,7 @@
 					"assignment_ids": {
 						"bsonType": "array",
 						"description": "Currently active assignments",
+						"uniqueItems": true,
 						"items": {
 							"bsonType": "int"
 						}
@@ -33,6 +34,7 @@
 					"campaign_ids": {
 						"bsonType": "array",
 						"description": "Currently active campaigns",
+						"uniqueItems": true,
 						"items": {
 							"bsonType": "int"
 						}
@@ -40,6 +42,7 @@
 					"dispatch_ids": {
 						"bsonType": "array",
 						"description": "Currently active dispatches",
+						"uniqueItems": true,
 						"items": {
 							"bsonType": "int"
 						}
@@ -61,7 +64,8 @@
 								},
 								"health": {
 									"bsonType": "int",
-									"description": "The current health this planet has."
+									"description": "The current health this planet has.",
+									"minimum": 0
 								},
 								"current_owner": {
 									"bsonType": "string",
@@ -82,7 +86,8 @@
 										},
 										"health": {
 											"bsonType": "int",
-											"description": "The health of the Event at the time of snapshot."
+											"description": "The health of the Event at the time of snapshot.",
+											"minimum": 0
 										}
 									}
 								},
@@ -105,15 +110,18 @@
 									"properties": {
 										"missions_won": {
 											"bsonType": "long",
-											"description": "The amount of missions won."
+											"description": "The amount of missions won.",
+											"minimum": 0
 										},
 										"missions_lost": {
 											"bsonType": "long",
-											"description": "The amount of missions lost."
+											"description": "The amount of missions lost.",
+											"minimum": 0
 										},
 										"mission_time": {
 											"bsonType": "long",
-											"description": "The total amount of time spent planetside (in seconds)."
+											"description": "The total amount of time spent planetside (in seconds).",
+											"minimum": 0
 										},
 										"kills": {
 											"bsonType": "object",
@@ -127,45 +135,55 @@
 											"properties": {
 												"terminid": {
 													"bsonType": "long",
-													"description": "The total amount of bugs killed since start of the season."
+													"description": "The total amount of bugs killed since start of the season.",
+													"minimum": 0
 												},
 												"automaton": {
 													"bsonType": "long",
-													"description": "The total amount of automatons killed since start of the season."
+													"description": "The total amount of automatons killed since start of the season.",
+													"minimum": 0
 												},
 												"illuminate": {
 													"bsonType": "long",
-													"description": "The total amount of Illuminate killed since start of the season."
+													"description": "The total amount of Illuminate killed since start of the season.",
+													"minimum": 0
 												}
 											}
 										},
 										"bullets_fired": {
 											"bsonType": "long",
-											"description": "The total amount of bullets fired"
+											"description": "The total amount of bullets fired",
+											"minimum": 0
 										},
 										"bullets_hit": {
 											"bsonType": "long",
-											"description": "The total amount of bullets hit"
+											"description": "The total amount of bullets hit",
+											"minimum": 0
 										},
 										"time_played": {
 											"bsonType": "long",
-											"description": "The total amount of time played (including off-planet) in seconds."
+											"description": "The total amount of time played (including off-planet) in seconds.",
+											"minimum": 0
 										},
 										"deaths": {
 											"bsonType": "long",
-											"description": "The amount of casualties on the side of humanity."
+											"description": "The amount of casualties on the side of humanity.",
+											"minimum": 0
 										},
 										"revives": {
 											"bsonType": "long",
-											"description": "The amount of revives(?)."
+											"description": "The amount of revives(?).",
+											"minimum": 0
 										},
 										"friendlies": {
 											"bsonType": "long",
-											"description": "The amount of friendly fire casualties."
+											"description": "The amount of friendly fire casualties.",
+											"minimum": 0
 										},
 										"player_count": {
 											"bsonType": "long",
-											"description": "The total amount of players present (at the time of the snapshot)."
+											"description": "The total amount of players present (at the time of the snapshot).",
+											"minimum": 0
 										}
 									}
 								}

@@ -32,7 +32,8 @@
 							},
 							"max_health": {
 								"bsonType": "int",
-								"description": "The maximum health of the Event at the time of snapshot."
+								"description": "The maximum health of the Event at the time of snapshot.",
+								"minimum": 0
 							},
 							"start_time": {
 								"bsonType": "timestamp",
