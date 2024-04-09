@@ -2,7 +2,11 @@ package db
 
 import (
 	"context"
+	"io"
 	"log"
+	"math"
+	"reflect"
+	"strings"
 	"testing"
 	"time"
 
@@ -10,16 +14,19 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/stnokott/helldivers-client/internal/db/structs"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func withClient(t *testing.T, do func(client *Client, migration *migrate.Migrate)) {
 	mongoURI := getMongoURI()
-	client, err := New(mongoURI, t.Name(), log.Default())
+	dbName := strings.ReplaceAll(t.Name(), "/", "_")
+
+	client, err := New(mongoURI, dbName, log.New(io.Discard, "", 0))
 	if err != nil {
 		t.Fatalf("could not initialize DB connection: %v", err)
 	}
 	defer func() {
-		if err = client.mongo.Database(client.dbName).Drop(context.Background()); err != nil {
+		if err = client.mongo.Database(dbName).Drop(context.Background()); err != nil {
 			t.Logf("could not drop database: %v", err)
 		}
 		if err = client.Disconnect(); err != nil {
@@ -41,11 +48,17 @@ func TestMigrateUp(t *testing.T) {
 	})
 }
 
+var collections = []string{
+	"planets",
+	"campaigns",
+	"dispatches",
+	"events",
+	"assignments",
+	"wars",
+	"snapshots",
+}
+
 func TestCollectionsExist(t *testing.T) {
-	collections := []string{
-		"war_seasons",
-		"war_news",
-	}
 	withClient(t, func(client *Client, migration *migrate.Migrate) {
 		if err := migration.Up(); err != nil {
 			t.Fatalf("failed to migrate up: %v", err)
@@ -75,10 +88,6 @@ func TestCollectionsExist(t *testing.T) {
 }
 
 func TestIndexesExist(t *testing.T) {
-	collections := []string{
-		"war_seasons",
-		"war_news",
-	}
 	withClient(t, func(client *Client, migration *migrate.Migrate) {
 		if err := migration.Up(); err != nil {
 			t.Fatalf("failed to migrate up: %v", err)
@@ -101,256 +110,870 @@ func TestIndexesExist(t *testing.T) {
 	})
 }
 
-func TestWarSeasonsSchema(t *testing.T) {
-	withClient(t, func(client *Client, migration *migrate.Migrate) {
-		type document any
-		tests := []struct {
-			name    string
-			doc     document
-			wantErr bool
-		}{
-			{
-				name: "valid struct complete",
-				doc: structs.WarSeason{
-					ID:                     1,
-					Capitals:               []any{},
-					PlanetPermanentEffects: []any{},
-					StartDate:              time.Now(),
-					EndDate:                time.Now().Add(24 * time.Hour),
-					History: []structs.WarSeasonHistory{
-						{
-							Timestamp:                   time.Now(),
-							ActiveElectionPolicyEffects: []int{2},
-							CommunityTargets:            []int{1},
-							ImpactMultiplier:            1.5,
-							GlobalEvents: []structs.WarSeasonHistoryGlobalEvent{
-								{
-									Title:     "my event",
-									Effects:   []string{"active effect"},
-									PlanetIDs: []int{2},
-									Race:      "Humans",
-									Message: structs.WarNewsMessage{
-										DE: "de",
-										EN: "en",
-										ES: "es",
-										FR: "fr",
-										IT: "it",
-										PL: "pl",
-										RU: "ru",
-										ZH: "zh",
-									},
-								},
-							},
-						},
-					},
-					Planets: []structs.Planet{
-						{
-							ID:           1,
-							Name:         "foo",
-							Disabled:     false,
-							InitialOwner: "bar",
-							MaxHealth:    100.0,
-							Position:     structs.Position{X: 1, Y: 2},
-							Sector:       "Alpha Centauri",
-							Waypoints:    []int{42},
-							History: []structs.PlanetHistory{
-								{
-									Timestamp:      time.Now(),
-									Health:         95.2,
-									Liberation:     4.8,
-									Owner:          "Humans",
-									PlayerCount:    1234567,
-									RegenPerSecond: 1.3,
-									AttackTargets:  []int{234},
-									Campaign: &structs.PlanetCampaign{
-										Count: 3,
-										Type:  2,
-									},
-								},
-							},
-						},
-					},
-				},
-				wantErr: false,
+func TestPlanetsSchema(t *testing.T) {
+	type document any
+	tests := []struct {
+		name    string
+		doc     document
+		wantErr bool
+	}{
+		{
+			name: "valid struct complete",
+			doc: structs.Planet{
+				ID:             1,
+				Name:           "Foo",
+				Sector:         "Bar",
+				Position:       structs.PlanetPosition{X: 1, Y: 2},
+				Waypoints:      []int{1, 2, 3},
+				Disabled:       false,
+				MaxHealth:      1000,
+				InitialOwner:   "Super Humans",
+				RegenPerSecond: 50.0,
 			},
-			{
-				name: "valid struct incomplete",
-				doc: structs.WarSeason{
-					ID:                     1,
-					Capitals:               []any{},
-					PlanetPermanentEffects: []any{},
-					StartDate:              time.Now(),
-					EndDate:                time.Now().Add(24 * time.Hour),
-					History: []structs.WarSeasonHistory{
-						{
-							Timestamp:                   time.Now(),
-							ActiveElectionPolicyEffects: []int{2},
-							CommunityTargets:            []int{1},
-							ImpactMultiplier:            1.5,
-							GlobalEvents: []structs.WarSeasonHistoryGlobalEvent{
-								{
-									Title:   "my event",
-									Effects: []string{"active effect"},
-									Message: structs.WarNewsMessage{
-										DE: "de",
-										EN: "en",
-										ES: "es",
-										FR: "fr",
-										IT: "it",
-										PL: "pl",
-										RU: "ru",
-										ZH: "zh",
-									},
-								},
-							},
-						},
-					},
-				},
-				wantErr: true,
+			wantErr: false,
+		},
+		{
+			name: "valid struct incomplete",
+			doc: structs.Planet{
+				ID:             1,
+				Name:           "Foo",
+				Sector:         "Bar",
+				Position:       structs.PlanetPosition{X: 1, Y: 2},
+				Waypoints:      []int{1, 2, 3},
+				Disabled:       false,
+				MaxHealth:      1000,
+				RegenPerSecond: 50.0,
 			},
-			{
-				name: "valid struct missing embedded",
-				doc: structs.WarSeason{
-					ID:                     1,
-					Capitals:               []any{},
-					PlanetPermanentEffects: []any{},
-					StartDate:              time.Now(),
-					EndDate:                time.Now().Add(24 * time.Hour),
-				},
-				wantErr: true,
+			wantErr: true,
+		},
+		{
+			name: "valid struct missing slice",
+			doc: structs.Planet{
+				ID:             1,
+				Name:           "Foo",
+				Sector:         "Bar",
+				Position:       structs.PlanetPosition{X: 1, Y: 2},
+				Waypoints:      nil,
+				Disabled:       false,
+				MaxHealth:      1000,
+				InitialOwner:   "Humans",
+				RegenPerSecond: 50.0,
 			},
-			{
-				name: "wrong struct",
-				doc: structs.Planet{
-					ID:           1,
-					Name:         "foobar",
-					Disabled:     false,
-					InitialOwner: "gopher",
-					MaxHealth:    100.0,
-					Position:     structs.Position{X: 1, Y: 3},
-					Sector:       "Alpha Centauri",
-					Waypoints:    []int{1, 2, 3},
-				},
-				wantErr: true,
+			wantErr: true,
+		},
+		{
+			name: "negative health",
+			doc: structs.Planet{
+				ID:             1,
+				Name:           "Foo",
+				Sector:         "Bar",
+				Position:       structs.PlanetPosition{X: 1, Y: 2},
+				Waypoints:      []int{1, 2, 3},
+				Disabled:       false,
+				MaxHealth:      -1,
+				InitialOwner:   "Super Humans",
+				RegenPerSecond: 50.0,
 			},
-			{
-				name: "invalid struct",
-				doc: struct {
-					Foo string
-				}{
-					Foo: "bar",
-				},
-				wantErr: true,
+			wantErr: true,
+		},
+		{
+			name: "wrong struct",
+			doc: structs.War{
+				ID:               1,
+				StartTime:        toPrimitiveTs(time.Now()),
+				EndTime:          toPrimitiveTs(time.Now()),
+				ImpactMultiplier: 2.0,
+				Factions:         []string{"Humans", "Automatons"},
 			},
-			{
-				name:    "nil struct",
-				doc:     nil,
-				wantErr: true,
+			wantErr: true,
+		},
+		{
+			name: "invalid struct",
+			doc: struct {
+				Foo string
+			}{
+				Foo: "bar",
 			},
-		}
-		if err := migration.Up(); err != nil {
-			t.Fatalf("failed to migrate up: %v", err)
-		}
-		for _, tt := range tests {
-			t.Run(tt.name, func(t *testing.T) {
-				coll := client.database().Collection("war_seasons")
-				_, err := coll.InsertOne(context.Background(), tt.doc)
+			wantErr: true,
+		},
+		{
+			name:    "nil struct",
+			doc:     nil,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			withClient(t, func(client *Client, migration *migrate.Migrate) {
+				if err := migration.Up(); err != nil {
+					t.Fatalf("failed to migrate up: %v", err)
+				}
+
+				coll := client.database().Collection("planets")
+				insertResult, err := coll.InsertOne(context.Background(), tt.doc)
 				if (err != nil) != tt.wantErr {
-					t.Errorf("InsertOne() error = %v, wantErr %v", err, tt.wantErr)
+					t.Fatalf("InsertOne() error = %v, wantErr = %v", err, tt.wantErr)
 					return
 				}
+				if tt.wantErr {
+					return
+				}
+				fetchedResult := coll.FindOne(context.Background(), bson.D{{
+					Key: "_id", Value: insertResult.InsertedID,
+				}})
+				if fetchedResult == nil {
+					t.Fatal("fetched result is nil, expected non-nil")
+					return
+				}
+				var decoded structs.Planet
+				if err = fetchedResult.Decode(&decoded); err != nil {
+					t.Fatalf("failed to decode result: %v", err)
+					return
+				}
+				if !reflect.DeepEqual(tt.doc, decoded) {
+					t.Fatalf("fetched result = %v, want %v", decoded, tt.doc)
+				}
 			})
-		}
-	})
+		})
+	}
 }
 
-func TestWarNewsSchema(t *testing.T) {
-	withClient(t, func(client *Client, migration *migrate.Migrate) {
-		type document any
-		tests := []struct {
-			name    string
-			doc     document
-			wantErr bool
-		}{
-			{
-				name: "valid struct complete",
-				doc: structs.WarNews{
-					ID: 1,
-					Message: structs.WarNewsMessage{
-						DE: "Das Rauschen der Meereswellen beruhigt meine Seele",
-						EN: "The sound of ocean waves calms my soul",
-						ES: "El sonido de las olas del mar calma mi alma",
-						FR: "Le bruit des vagues de l'océan calme mon âme",
-						IT: "Il suono delle onde dell'oceano calma la mia anima",
-						PL: "Dźwięk fal oceanu uspokaja moją duszę",
-						RU: "Шум океанских волн успокаивает мою душу",
-						ZH: "海浪声让我的心灵平静",
-					},
-					Published: time.Now(),
-					Type:      0,
-				},
-				wantErr: false,
+func TestCampaignsSchema(t *testing.T) {
+	type document any
+	tests := []struct {
+		name    string
+		doc     document
+		wantErr bool
+	}{
+		{
+			name: "valid struct complete",
+			doc: structs.Campaign{
+				ID:       1,
+				PlanetID: 3,
+				Type:     5,
+				Count:    10,
 			},
-			{
-				name: "valid struct incomplete",
-				doc: structs.WarNews{
-					ID:        1,
-					Published: time.Now(),
-					Type:      0,
-				},
-				wantErr: true,
+			wantErr: false,
+		},
+		{
+			name: "negative count",
+			doc: structs.Campaign{
+				ID:       1,
+				PlanetID: 3,
+				Type:     5,
+				Count:    -5,
 			},
-			{
-				name: "valid struct missing embedded",
-				doc: structs.WarNews{
-					ID:        1,
-					Message:   structs.WarNewsMessage{},
-					Published: time.Now(),
-					Type:      0,
-				},
-				wantErr: true,
+			wantErr: true,
+		},
+		{
+			name: "wrong struct",
+			doc: structs.War{
+				ID:               1,
+				StartTime:        toPrimitiveTs(time.Now()),
+				EndTime:          toPrimitiveTs(time.Now()),
+				ImpactMultiplier: 2.0,
+				Factions:         []string{"Humans", "Automatons"},
 			},
-			{
-				name: "wrong struct",
-				doc: structs.WarNewsMessage{
-					DE: "Das Rauschen der Meereswellen beruhigt meine Seele",
-					EN: "The sound of ocean waves calms my soul",
-					ES: "El sonido de las olas del mar calma mi alma",
-					FR: "Le bruit des vagues de l'océan calme mon âme",
-					IT: "Il suono delle onde dell'oceano calma la mia anima",
-					PL: "Dźwięk fal oceanu uspokaja moją duszę",
-					RU: "Шум океанских волн успокаивает мою душу",
-					ZH: "海浪声让我的心灵平静",
-				},
-				wantErr: true,
+			wantErr: true,
+		},
+		{
+			name: "invalid struct",
+			doc: struct {
+				Foo string
+			}{
+				Foo: "bar",
 			},
-			{
-				name: "invalid struct",
-				doc: struct {
-					Foo string
-				}{
-					Foo: "bar",
-				},
-				wantErr: true,
-			},
-			{
-				name:    "nil struct",
-				doc:     nil,
-				wantErr: true,
-			},
-		}
-		if err := migration.Up(); err != nil {
-			t.Fatalf("failed to migrate up: %v", err)
-		}
-		for _, tt := range tests {
-			t.Run(tt.name, func(t *testing.T) {
-				coll := client.database().Collection("war_news")
-				_, err := coll.InsertOne(context.Background(), tt.doc)
+			wantErr: true,
+		},
+		{
+			name:    "nil struct",
+			doc:     nil,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			withClient(t, func(client *Client, migration *migrate.Migrate) {
+				if err := migration.Up(); err != nil {
+					t.Fatalf("failed to migrate up: %v", err)
+				}
+
+				coll := client.database().Collection("campaigns")
+				insertResult, err := coll.InsertOne(context.Background(), tt.doc)
 				if (err != nil) != tt.wantErr {
-					t.Errorf("InsertOne() error = %v, wantErr %v", err, tt.wantErr)
+					t.Fatalf("InsertOne() error = %v, wantErr = %v", err, tt.wantErr)
 					return
 				}
+				if tt.wantErr {
+					return
+				}
+				fetchedResult := coll.FindOne(context.Background(), bson.D{{
+					Key: "_id", Value: insertResult.InsertedID,
+				}})
+				if fetchedResult == nil {
+					t.Fatal("fetched result is nil, expected non-nil")
+					return
+				}
+				var decoded structs.Campaign
+				if err = fetchedResult.Decode(&decoded); err != nil {
+					t.Fatalf("failed to decode result: %v", err)
+					return
+				}
+				if !reflect.DeepEqual(tt.doc, decoded) {
+					t.Fatalf("fetched result = %v, want %v", decoded, tt.doc)
+				}
 			})
-		}
-	})
+		})
+	}
+}
+
+func TestDispatchesSchema(t *testing.T) {
+	type document any
+	tests := []struct {
+		name    string
+		doc     document
+		wantErr bool
+	}{
+		{
+			name: "valid struct complete",
+			doc: structs.Dispatch{
+				ID:         1,
+				CreateTime: toPrimitiveTs(time.Now()),
+				Type:       3,
+				Message:    "Foobar",
+			},
+			wantErr: false,
+		},
+		{
+			name: "valid struct incomplete",
+			doc: structs.Dispatch{
+				ID:         1,
+				CreateTime: primitive.Timestamp{},
+				Type:       3,
+				Message:    "Foobar",
+			},
+			wantErr: true,
+		},
+		{
+			name: "wrong struct",
+			doc: structs.War{
+				ID:               1,
+				StartTime:        toPrimitiveTs(time.Now()),
+				EndTime:          toPrimitiveTs(time.Now()),
+				ImpactMultiplier: 2.0,
+				Factions:         []string{"Humans", "Automatons"},
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid struct",
+			doc: struct {
+				Foo string
+			}{
+				Foo: "bar",
+			},
+			wantErr: true,
+		},
+		{
+			name:    "nil struct",
+			doc:     nil,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			withClient(t, func(client *Client, migration *migrate.Migrate) {
+				if err := migration.Up(); err != nil {
+					t.Fatalf("failed to migrate up: %v", err)
+				}
+
+				coll := client.database().Collection("dispatches")
+				insertResult, err := coll.InsertOne(context.Background(), tt.doc)
+				if (err != nil) != tt.wantErr {
+					t.Fatalf("InsertOne() error = %v, wantErr = %v", err, tt.wantErr)
+					return
+				}
+				if tt.wantErr {
+					return
+				}
+				fetchedResult := coll.FindOne(context.Background(), bson.D{{
+					Key: "_id", Value: insertResult.InsertedID,
+				}})
+				if fetchedResult == nil {
+					t.Fatal("fetched result is nil, expected non-nil")
+					return
+				}
+				var decoded structs.Dispatch
+				if err = fetchedResult.Decode(&decoded); err != nil {
+					t.Fatalf("failed to decode result: %v", err)
+					return
+				}
+				if !reflect.DeepEqual(tt.doc, decoded) {
+					t.Fatalf("fetched result = %v, want %v", decoded, tt.doc)
+				}
+			})
+		})
+	}
+}
+
+func TestEventsSchema(t *testing.T) {
+	type document any
+	tests := []struct {
+		name    string
+		doc     document
+		wantErr bool
+	}{
+		{
+			name: "valid struct complete",
+			doc: structs.Event{
+				ID:        1,
+				Type:      3,
+				Faction:   "Foobar",
+				MaxHealth: 100,
+				StartTime: toPrimitiveTs(time.Now()),
+				EndTime:   toPrimitiveTs(time.Now().Add(10 * 24 * time.Hour)),
+			},
+			wantErr: false,
+		},
+		{
+			name: "valid struct incomplete",
+			doc: structs.Event{
+				ID:        1,
+				Type:      3,
+				Faction:   "Foobar",
+				MaxHealth: 100,
+				StartTime: toPrimitiveTs(time.Now()),
+				// EndTime: toPrimitiveTs(time.Now().Add(10 * 24 * time.Hour)),
+			},
+			wantErr: true,
+		},
+		{
+			name: "endtime gt starttime",
+			doc: structs.Event{
+				ID:        1,
+				Type:      3,
+				Faction:   "Foobar",
+				MaxHealth: 100,
+				StartTime: toPrimitiveTs(time.Now()),
+				EndTime:   toPrimitiveTs(time.Now().Add(-1 * 10 * 24 * time.Hour)),
+			},
+			wantErr: true,
+		},
+		{
+			name: "negative health",
+			doc: structs.Event{
+				ID:        1,
+				Type:      3,
+				Faction:   "Foobar",
+				MaxHealth: -1,
+				StartTime: toPrimitiveTs(time.Now()),
+				EndTime:   toPrimitiveTs(time.Now().Add(10 * 24 * time.Hour)),
+			},
+			wantErr: true,
+		},
+		{
+			name: "wrong struct",
+			doc: structs.War{
+				ID:               1,
+				StartTime:        toPrimitiveTs(time.Now()),
+				EndTime:          toPrimitiveTs(time.Now()),
+				ImpactMultiplier: 2.0,
+				Factions:         []string{"Humans", "Automatons"},
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid struct",
+			doc: struct {
+				Foo string
+			}{
+				Foo: "bar",
+			},
+			wantErr: true,
+		},
+		{
+			name:    "nil struct",
+			doc:     nil,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			withClient(t, func(client *Client, migration *migrate.Migrate) {
+				if err := migration.Up(); err != nil {
+					t.Fatalf("failed to migrate up: %v", err)
+				}
+
+				coll := client.database().Collection("events")
+				insertResult, err := coll.InsertOne(context.Background(), tt.doc)
+				if (err != nil) != tt.wantErr {
+					t.Fatalf("InsertOne() error = %v, wantErr = %v", err, tt.wantErr)
+					return
+				}
+				if tt.wantErr {
+					return
+				}
+				fetchedResult := coll.FindOne(context.Background(), bson.D{{
+					Key: "_id", Value: insertResult.InsertedID,
+				}})
+				if fetchedResult == nil {
+					t.Fatal("fetched result is nil, expected non-nil")
+					return
+				}
+				var decoded structs.Event
+				if err = fetchedResult.Decode(&decoded); err != nil {
+					t.Fatalf("failed to decode result: %v", err)
+					return
+				}
+				if !reflect.DeepEqual(tt.doc, decoded) {
+					t.Fatalf("fetched result = %v, want %v", decoded, tt.doc)
+				}
+			})
+		})
+	}
+}
+
+func TestAssignmentsSchema(t *testing.T) {
+	type document any
+	tests := []struct {
+		name    string
+		doc     document
+		wantErr bool
+	}{
+		{
+			name: "valid struct complete",
+			doc: structs.Assignment{
+				ID:          1,
+				Title:       "Foobar",
+				Briefing:    "Briefing text",
+				Description: "Description text, but a bit longer",
+				Tasks: []structs.AssignmentTask{
+					{
+						Type:       2,
+						Values:     []int{1, 2, 3},
+						ValueTypes: []int{5, 6, 7},
+					},
+				},
+				Reward: structs.AssignmentReward{
+					Type:   4,
+					Amount: 8,
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "valid struct incomplete",
+			doc: structs.Assignment{
+				ID:          1,
+				Title:       "Foobar",
+				Briefing:    "Briefing text",
+				Description: "Description text, but a bit longer",
+				Reward: structs.AssignmentReward{
+					Type:   4,
+					Amount: 8,
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "negative reward amount",
+			doc: structs.Assignment{
+				ID:          1,
+				Title:       "Foobar",
+				Briefing:    "Briefing text",
+				Description: "Description text, but a bit longer",
+				Tasks: []structs.AssignmentTask{
+					{
+						Type:       2,
+						Values:     []int{1, 2, 3},
+						ValueTypes: []int{5, 6, 7},
+					},
+				},
+				Reward: structs.AssignmentReward{
+					Type:   4,
+					Amount: -1,
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "wrong struct",
+			doc: structs.War{
+				ID:               1,
+				StartTime:        toPrimitiveTs(time.Now()),
+				EndTime:          toPrimitiveTs(time.Now()),
+				ImpactMultiplier: 2.0,
+				Factions:         []string{"Humans", "Automatons"},
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid struct",
+			doc: struct {
+				Foo string
+			}{
+				Foo: "bar",
+			},
+			wantErr: true,
+		},
+		{
+			name:    "nil struct",
+			doc:     nil,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			withClient(t, func(client *Client, migration *migrate.Migrate) {
+				if err := migration.Up(); err != nil {
+					t.Fatalf("failed to migrate up: %v", err)
+				}
+
+				coll := client.database().Collection("assignments")
+				insertResult, err := coll.InsertOne(context.Background(), tt.doc)
+				if (err != nil) != tt.wantErr {
+					t.Fatalf("InsertOne() error = %v, wantErr = %v", err, tt.wantErr)
+					return
+				}
+				if tt.wantErr {
+					return
+				}
+				fetchedResult := coll.FindOne(context.Background(), bson.D{{
+					Key: "_id", Value: insertResult.InsertedID,
+				}})
+				if fetchedResult == nil {
+					t.Fatal("fetched result is nil, expected non-nil")
+					return
+				}
+				var decoded structs.Assignment
+				if err = fetchedResult.Decode(&decoded); err != nil {
+					t.Fatalf("failed to decode result: %v", err)
+					return
+				}
+				if !reflect.DeepEqual(tt.doc, decoded) {
+					t.Fatalf("fetched result = %v, want %v", decoded, tt.doc)
+				}
+			})
+		})
+	}
+}
+
+func TestWarsSchema(t *testing.T) {
+	type document any
+	tests := []struct {
+		name    string
+		doc     document
+		wantErr bool
+	}{
+		{
+			name: "valid struct complete",
+			doc: structs.War{
+				ID:               1,
+				StartTime:        toPrimitiveTs(time.Now()),
+				EndTime:          toPrimitiveTs(time.Now().Add(5 * 24 * time.Hour)),
+				ImpactMultiplier: 50.0,
+				Factions: []string{
+					"Humans", "Automatons",
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "valid struct incomplete",
+			doc: structs.War{
+				ID:        1,
+				StartTime: toPrimitiveTs(time.Now()),
+				// Ended:            toPrimitiveTs(time.Now().Add(5 * 24 * time.Hour)),
+				ImpactMultiplier: 50.0,
+				Factions: []string{
+					"Humans", "Automatons",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "endtime gt starttime",
+			doc: structs.War{
+				ID:               1,
+				StartTime:        toPrimitiveTs(time.Now()),
+				EndTime:          toPrimitiveTs(time.Now().Add(-1 * 5 * 24 * time.Hour)),
+				ImpactMultiplier: 50.0,
+				Factions: []string{
+					"Humans", "Automatons",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "negative impact multiplier",
+			doc: structs.War{
+				ID:               1,
+				StartTime:        toPrimitiveTs(time.Now()),
+				EndTime:          toPrimitiveTs(time.Now().Add(5 * 24 * time.Hour)),
+				ImpactMultiplier: -0.5,
+				Factions: []string{
+					"Humans", "Automatons",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "wrong struct",
+			doc: structs.Event{
+				ID:        1,
+				Type:      3,
+				Faction:   "Foobar",
+				MaxHealth: 100,
+				StartTime: toPrimitiveTs(time.Now()),
+				EndTime:   toPrimitiveTs(time.Now().Add(5 * 24 * time.Hour)),
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid struct",
+			doc: struct {
+				Foo string
+			}{
+				Foo: "bar",
+			},
+			wantErr: true,
+		},
+		{
+			name:    "nil struct",
+			doc:     nil,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			withClient(t, func(client *Client, migration *migrate.Migrate) {
+				if err := migration.Up(); err != nil {
+					t.Fatalf("failed to migrate up: %v", err)
+				}
+
+				coll := client.database().Collection("wars")
+				insertResult, err := coll.InsertOne(context.Background(), tt.doc)
+				if (err != nil) != tt.wantErr {
+					t.Fatalf("InsertOne() error = %v, wantErr = %v", err, tt.wantErr)
+					return
+				}
+				if tt.wantErr {
+					return
+				}
+				fetchedResult := coll.FindOne(context.Background(), bson.D{{
+					Key: "_id", Value: insertResult.InsertedID,
+				}})
+				if fetchedResult == nil {
+					t.Fatal("fetched result is nil, expected non-nil")
+					return
+				}
+				var decoded structs.War
+				if err = fetchedResult.Decode(&decoded); err != nil {
+					t.Fatalf("failed to decode result: %v", err)
+					return
+				}
+				if !reflect.DeepEqual(tt.doc, decoded) {
+					t.Fatalf("fetched result = %v, want %v", decoded, tt.doc)
+				}
+			})
+		})
+	}
+}
+
+func TestSnapshotsSchema(t *testing.T) {
+	type document any
+	tests := []struct {
+		name    string
+		doc     document
+		wantErr bool
+	}{
+		{
+			name: "valid struct complete",
+			doc: structs.Snapshot{
+				ID:            toPrimitiveTs(time.Now()),
+				WarID:         6,
+				AssignmentIDs: []int{2, 3, 4},
+				CampaignIDs:   []int{6, 7, 8},
+				DispatchIDs:   []int{10, 11, 12},
+				Planets: []structs.PlanetSnapshot{
+					{
+						ID:           3,
+						Health:       100,
+						CurrentOwner: "Humans",
+						Event: &structs.EventSnapshot{
+							EventID: 5,
+							Health:  700,
+						},
+						Statistics: &structs.PlanetStatistics{
+							MissionsWon:  44323,
+							MissionsLost: 53555,
+							MissionTime:  445566,
+							Kills: structs.StatisticsKills{
+								Terminid:   432432443244,
+								Automaton:  34333312212222,
+								Illuminate: 2333333333,
+							},
+							BulletsFired: 888999399393222,
+							BulletsHit:   49324924499449222,
+							TimePlayed:   int64(365 * 24 * time.Hour),
+							Deaths:       55223535,
+							Revives:      44442,
+							Friendlies:   2221111,
+							PlayerCount:  12345678,
+						},
+					},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "valid struct high number",
+			doc: structs.Snapshot{
+				ID:            toPrimitiveTs(time.Now()),
+				WarID:         6,
+				AssignmentIDs: []int{2, 3, 4},
+				CampaignIDs:   []int{6, 7, 8},
+				DispatchIDs:   []int{10, 11, 12},
+				Planets: []structs.PlanetSnapshot{
+					{
+						ID:           3,
+						Health:       100,
+						CurrentOwner: "Humans",
+						Event: &structs.EventSnapshot{
+							EventID: 5,
+							Health:  700,
+						},
+						Statistics: &structs.PlanetStatistics{
+							MissionsWon:  math.MaxInt64,
+							MissionsLost: math.MaxInt64,
+							MissionTime:  math.MaxInt64,
+							Kills: structs.StatisticsKills{
+								Terminid:   math.MaxInt64,
+								Automaton:  math.MaxInt64,
+								Illuminate: math.MaxInt64,
+							},
+							BulletsFired: math.MaxInt64,
+							BulletsHit:   math.MaxInt64,
+							TimePlayed:   math.MaxInt64,
+							Deaths:       math.MaxInt64,
+							Revives:      math.MaxInt64,
+							Friendlies:   math.MaxInt64,
+							PlayerCount:  math.MaxInt64,
+						},
+					},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "valid struct incomplete",
+			doc: structs.Snapshot{
+				ID:            toPrimitiveTs(time.Now()),
+				WarID:         6,
+				AssignmentIDs: []int{2, 3, 4},
+				CampaignIDs:   []int{6, 7, 8},
+				DispatchIDs:   []int{10, 11, 12},
+			},
+			wantErr: true,
+		},
+		{
+			name: "negative statistics",
+			doc: structs.Snapshot{
+				ID:            toPrimitiveTs(time.Now()),
+				WarID:         6,
+				AssignmentIDs: []int{2, 3, 4},
+				CampaignIDs:   []int{6, 7, 8},
+				DispatchIDs:   []int{10, 11, 12},
+				Planets: []structs.PlanetSnapshot{
+					{
+						ID:           3,
+						Health:       100,
+						CurrentOwner: "Humans",
+						Event: &structs.EventSnapshot{
+							EventID: 5,
+							Health:  700,
+						},
+						Statistics: &structs.PlanetStatistics{
+							MissionsWon:  44323,
+							MissionsLost: 53555,
+							MissionTime:  445566,
+							Kills: structs.StatisticsKills{
+								Terminid:   -6,
+								Automaton:  34333312212222,
+								Illuminate: 2333333333,
+							},
+							BulletsFired: 888999399393222,
+							BulletsHit:   49324924499449222,
+							TimePlayed:   int64(365 * 24 * time.Hour),
+							Deaths:       55223535,
+							Revives:      44442,
+							Friendlies:   2221111,
+							PlayerCount:  12345678,
+						},
+					},
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "wrong struct",
+			doc: structs.Event{
+				ID:        1,
+				Type:      3,
+				Faction:   "Foobar",
+				MaxHealth: 100,
+				StartTime: toPrimitiveTs(time.Now()),
+				EndTime:   toPrimitiveTs(time.Now().Add(5 * 24 * time.Hour)),
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid struct",
+			doc: struct {
+				Foo string
+			}{
+				Foo: "bar",
+			},
+			wantErr: true,
+		},
+		{
+			name:    "nil struct",
+			doc:     nil,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			withClient(t, func(client *Client, migration *migrate.Migrate) {
+				if err := migration.Up(); err != nil {
+					t.Fatalf("failed to migrate up: %v", err)
+				}
+
+				coll := client.database().Collection("snapshots")
+				insertResult, err := coll.InsertOne(context.Background(), tt.doc)
+				if (err != nil) != tt.wantErr {
+					t.Fatalf("InsertOne() error = %v, wantErr = %v", err, tt.wantErr)
+					return
+				}
+				if tt.wantErr {
+					return
+				}
+				fetchedResult := coll.FindOne(context.Background(), bson.D{{
+					Key: "_id", Value: insertResult.InsertedID,
+				}})
+				if fetchedResult == nil {
+					t.Fatal("fetched result is nil, expected non-nil")
+					return
+				}
+				var decoded structs.Snapshot
+				if err = fetchedResult.Decode(&decoded); err != nil {
+					t.Fatalf("failed to decode result: %v", err)
+					return
+				}
+				if !reflect.DeepEqual(tt.doc, decoded) {
+					t.Fatalf("fetched result = %v, want %v", decoded, tt.doc)
+				}
+			})
+		})
+	}
 }

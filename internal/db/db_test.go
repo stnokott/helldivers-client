@@ -4,10 +4,12 @@ package db
 import (
 	"log"
 	"os"
+	"reflect"
 	"testing"
 
 	"github.com/joho/godotenv"
 	"github.com/stnokott/helldivers-client/internal/config"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func TestMain(m *testing.M) {
@@ -71,5 +73,22 @@ func TestClientDisconnect(t *testing.T) {
 	}
 	if err := client.Disconnect(); err == nil {
 		t.Fatalf("Disconnect() (while not connected) error = nil, want err")
+	}
+}
+
+func TestClient_database(t *testing.T) {
+	tests := []struct {
+		name string
+		c    *Client
+		want *mongo.Database
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.c.database(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Client.database() = %v, want %v", got, tt.want)
+			}
+		})
 	}
 }

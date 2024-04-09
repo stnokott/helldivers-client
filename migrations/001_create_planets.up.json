@@ -1,0 +1,84 @@
+[
+	{
+		"create": "planets",
+		"validator": {
+			"$jsonSchema": {
+				"bsonType": "object",
+				"title": "planets",
+				"description": "Contains all aggregated information AH has about a planet.",
+				"required": [
+					"_id",
+					"name",
+					"sector",
+					"position",
+					"waypoints",
+					"disabled",
+					"max_health",
+					"initial_owner",
+					"regen_per_second"
+				],
+				"additionalProperties": false,
+				"properties": {
+					"_id": {
+						"bsonType": "int",
+						"description": "The unique identifier ArrowHead assigned to this planet."
+					},
+					"name": {
+						"bsonType": "string",
+						"description": "The name of the planet, as shown in game."
+					},
+					"sector": {
+						"bsonType": "string",
+						"description": "The name of the sector the planet is in, as shown in game."
+					},
+					"position": {
+						"bsonType": "object",
+						"title": "position",
+						"description": "The coordinates of this planet on the galactic war map.",
+						"required": [
+							"x",
+							"y"
+						],
+						"additionalProperties": false,
+						"properties": {
+							"x": {
+								"bsonType": "int"
+							},
+							"y": {
+								"bsonType": "int"
+							}
+						}
+					},
+					"waypoints": {
+						"bsonType": "array",
+						"description": "A list of Index of all the planets to which this planet is connected.",
+						"items": {
+							"bsonType": "int"
+						},
+						"uniqueItems": true
+					},
+					"disabled": {
+						"bsonType": "bool",
+						"description": "Whether or not this planet is disabled, as assigned by ArrowHead."
+					},
+					"max_health": {
+						"bsonType": "int",
+						"description": "The maximum health pool of this planet.",
+						"minimum": 0
+					},
+					"initial_owner": {
+						"bsonType": "string",
+						"description": "The faction that originally owned the planet."
+					},
+					"regen_per_second": {
+						"bsonType": "double",
+						"description": "How much the planet regenerates per second if left alone.",
+						"minimum": 0
+					}
+				}
+			}
+		},
+		"validationLevel": "strict",
+		"validationAction": "error"
+	}
+]
