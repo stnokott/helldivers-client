@@ -7,6 +7,7 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/oapi-codegen/runtime v1.1.1
 	go.mongodb.org/mongo-driver v1.14.0
+	golang.org/x/time v0.5.0
 )
 
 require (

@@ -17,11 +17,13 @@ func main() {
 
 	dbClient, err := db.New(cfg.MongoURI, databaseName, loggerFor("mongo"))
 	if err != nil {
-		logger.Fatalf("MongoDB client could not be initialized: %v", err)
+		logger.Fatal(err)
 	}
-	defer logger.Println(dbClient.Disconnect())
+	defer func() {
+		logger.Println(dbClient.Disconnect())
+	}()
 	if err = dbClient.MigrateUp("./migrations"); err != nil {
-		logger.Fatalf("db migration failed: %v", err)
+		logger.Fatal(err)
 	}
 }
 
