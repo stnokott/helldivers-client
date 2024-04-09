@@ -12,6 +12,7 @@
 					"type",
 					"message"
 				],
+				"additionalProperties": false,
 				"properties": {
 					"_id": {
 						"bsonType": "int",

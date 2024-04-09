@@ -13,6 +13,7 @@
 					"dispatch_ids",
 					"planets"
 				],
+				"additionalProperties": false,
 				"properties": {
 					"_id": {
 						"bsonType": "timestamp",
@@ -53,6 +54,7 @@
 								"health",
 								"current_owner"
 							],
+							"additionalProperties": false,
 							"properties": {
 								"planet_id": {
 									"bsonType": "int"
@@ -72,6 +74,7 @@
 										"event_id",
 										"health"
 									],
+									"additionalProperties": false,
 									"properties": {
 										"event_id": {
 											"bsonType": "int",
@@ -98,6 +101,7 @@
 										"friendlies",
 										"player_count"
 									],
+									"additionalProperties": false,
 									"properties": {
 										"missions_won": {
 											"bsonType": "long",
@@ -119,6 +123,7 @@
 												"automaton",
 												"illuminate"
 											],
+											"additionalProperties": false,
 											"properties": {
 												"terminid": {
 													"bsonType": "long",

@@ -12,6 +12,7 @@
 					"type",
 					"count"
 				],
+				"additionalProperties": false,
 				"properties": {
 					"_id": {
 						"bsonType": "int",

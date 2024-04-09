@@ -17,6 +17,7 @@
 					"initial_owner",
 					"regen_per_second"
 				],
+				"additionalProperties": false,
 				"properties": {
 					"_id": {
 						"bsonType": "int",
@@ -38,6 +39,7 @@
 							"x",
 							"y"
 						],
+						"additionalProperties": false,
 						"properties": {
 							"x": {
 								"bsonType": "int"

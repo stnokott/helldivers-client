@@ -14,6 +14,7 @@
 					"tasks",
 					"reward"
 				],
+				"additionalProperties": false,
 				"properties": {
 					"_id": {
 						"bsonType": "int",
@@ -42,6 +43,7 @@
 								"values",
 								"value_types"
 							],
+							"additionalProperties": false,
 							"properties": {
 								"type": {
 									"bsonType": "int",
@@ -72,6 +74,7 @@
 							"type",
 							"amount"
 						],
+						"additionalProperties": false,
 						"properties": {
 							"type": {
 								"bsonType": "int",
