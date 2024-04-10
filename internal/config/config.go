@@ -3,31 +3,25 @@ package config
 
 import (
 	"log"
-	"os"
+
+	"github.com/kelseyhightower/envconfig"
 )
+
+const envPrefix = "HELL"
 
 // Config contains configuration values
 type Config struct {
-	MongoURI   string
-	APIRootURL string
+	MongoURI   string `envconfig:"MONGODB_URI" required:"true"`
+	APIRootURL string `envconfig:"API_URL" required:"true"`
 }
 
 // Get reads environment variables and parses them into a Config struct.
 //
 // Any required environment variables which are not provided will cause the application to exit.
 func Get() Config {
-	mongo := mustGetEnv("MONGODB_URI")
-	api := mustGetEnv("API_URL")
-	return Config{
-		MongoURI:   mongo,
-		APIRootURL: api,
+	var c Config
+	if err := envconfig.Process(envPrefix, &c); err != nil {
+		log.Fatalf("failed to read config from ENV: %v", err)
 	}
-}
-
-func mustGetEnv(env string) string {
-	v := os.Getenv(env)
-	if v == "" {
-		log.Fatalf("environment variable %s is required, but not available", env)
-	}
-	return v
+	return c
 }
