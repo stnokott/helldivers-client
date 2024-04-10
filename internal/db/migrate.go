@@ -12,14 +12,14 @@ import (
 func (c *Client) newMigration(scriptFolder string) (*migrate.Migrate, error) {
 	// create new migration instance from existing connection
 	driver, err := mongodb.WithInstance(c.mongo, &mongodb.Config{
-		DatabaseName: c.dbName,
+		DatabaseName: c.db.Name(),
 	})
 	if err != nil {
 		return nil, err
 	}
 	migration, err := migrate.NewWithDatabaseInstance(
 		"file://"+scriptFolder,
-		c.dbName,
+		c.db.Name(),
 		driver,
 	)
 	if err != nil {

@@ -26,7 +26,7 @@ func withClient(t *testing.T, do func(client *Client, migration *migrate.Migrate
 		t.Fatalf("could not initialize DB connection: %v", err)
 	}
 	defer func() {
-		if err = client.mongo.Database(dbName).Drop(context.Background()); err != nil {
+		if err = client.db.Drop(context.Background()); err != nil {
 			t.Logf("could not drop database: %v", err)
 		}
 		if err = client.Disconnect(); err != nil {
@@ -48,7 +48,7 @@ func TestMigrateUp(t *testing.T) {
 	})
 }
 
-var collections = []string{
+var collNames = []string{
 	"planets",
 	"campaigns",
 	"dispatches",
@@ -61,13 +61,14 @@ var collections = []string{
 func TestCollectionsExist(t *testing.T) {
 	withClient(t, func(client *Client, migration *migrate.Migrate) {
 		if err := migration.Up(); err != nil {
-			t.Fatalf("failed to migrate up: %v", err)
+			t.Errorf("failed to migrate up: %v", err)
+			return
 		}
 
 		fnPlanetCollections := func() []string {
 			colls, errList := client.mongo.Database(t.Name()).ListCollectionNames(
 				context.Background(),
-				bson.D{{Key: "name", Value: bson.D{{Key: "$in", Value: collections}}}},
+				bson.D{{Key: "name", Value: bson.D{{Key: "$in", Value: collNames}}}},
 			)
 			if errList != nil {
 				t.Errorf("could not list collections: %v", errList)
@@ -75,14 +76,17 @@ func TestCollectionsExist(t *testing.T) {
 			}
 			return colls
 		}
-		if colls := fnPlanetCollections(); len(colls) != len(collections) {
-			t.Fatalf("expected %d collections, got %d (%v)", len(collections), len(colls), colls)
+		if colls := fnPlanetCollections(); len(colls) != len(collNames) {
+			t.Errorf("expected %d collections, got %d (%v)", len(collNames), len(colls), colls)
+			return
 		}
 		if err := migration.Down(); err != nil {
-			t.Fatalf("failed to migrate down: %v", err)
+			t.Errorf("failed to migrate down: %v", err)
+			return
 		}
 		if colls := fnPlanetCollections(); len(colls) > 0 {
-			t.Fatalf("expected no collections, got %d (%v)", len(colls), colls)
+			t.Errorf("expected no collections, got %d (%v)", len(colls), colls)
+			return
 		}
 	})
 }
@@ -90,21 +94,25 @@ func TestCollectionsExist(t *testing.T) {
 func TestIndexesExist(t *testing.T) {
 	withClient(t, func(client *Client, migration *migrate.Migrate) {
 		if err := migration.Up(); err != nil {
-			t.Fatalf("failed to migrate up: %v", err)
+			t.Errorf("failed to migrate up: %v", err)
+			return
 		}
 
-		for _, collection := range collections {
+		for _, collection := range collNames {
 			coll := client.mongo.Database(t.Name()).Collection(collection)
 			indexes, err := coll.Indexes().List(context.Background())
 			if err != nil {
-				t.Fatalf("failed to retrieve indexes: %v", err)
+				t.Errorf("failed to retrieve indexes: %v", err)
+				return
 			}
 			var results []any
 			if err = indexes.All(context.Background(), &results); err != nil {
-				t.Fatalf("failed to decode indexes response: %v", err)
+				t.Errorf("failed to decode indexes response: %v", err)
+				return
 			}
 			if len(results) == 0 {
 				t.Error("expected len(indexes) > 0, got 0")
+				return
 			}
 		}
 	})
@@ -180,8 +188,8 @@ func TestPlanetsSchema(t *testing.T) {
 			name: "wrong struct",
 			doc: structs.War{
 				ID:               1,
-				StartTime:        toPrimitiveTs(time.Now()),
-				EndTime:          toPrimitiveTs(time.Now()),
+				StartTime:        PrimitiveTime(time.Now()),
+				EndTime:          PrimitiveTime(time.Now()),
 				ImpactMultiplier: 2.0,
 				Factions:         []string{"Humans", "Automatons"},
 			},
@@ -206,13 +214,14 @@ func TestPlanetsSchema(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			withClient(t, func(client *Client, migration *migrate.Migrate) {
 				if err := migration.Up(); err != nil {
-					t.Fatalf("failed to migrate up: %v", err)
+					t.Errorf("failed to migrate up: %v", err)
+					return
 				}
 
-				coll := client.database().Collection("planets")
+				coll := client.db.Collection("planets")
 				insertResult, err := coll.InsertOne(context.Background(), tt.doc)
 				if (err != nil) != tt.wantErr {
-					t.Fatalf("InsertOne() error = %v, wantErr = %v", err, tt.wantErr)
+					t.Errorf("InsertOne() error = %v, wantErr = %v", err, tt.wantErr)
 					return
 				}
 				if tt.wantErr {
@@ -222,16 +231,17 @@ func TestPlanetsSchema(t *testing.T) {
 					Key: "_id", Value: insertResult.InsertedID,
 				}})
 				if fetchedResult == nil {
-					t.Fatal("fetched result is nil, expected non-nil")
+					t.Error("fetched result is nil, expected non-nil")
 					return
 				}
 				var decoded structs.Planet
 				if err = fetchedResult.Decode(&decoded); err != nil {
-					t.Fatalf("failed to decode result: %v", err)
+					t.Errorf("failed to decode result: %v", err)
 					return
 				}
 				if !reflect.DeepEqual(tt.doc, decoded) {
-					t.Fatalf("fetched result = %v, want %v", decoded, tt.doc)
+					t.Errorf("fetched result = %v, want %v", decoded, tt.doc)
+					return
 				}
 			})
 		})
@@ -269,8 +279,8 @@ func TestCampaignsSchema(t *testing.T) {
 			name: "wrong struct",
 			doc: structs.War{
 				ID:               1,
-				StartTime:        toPrimitiveTs(time.Now()),
-				EndTime:          toPrimitiveTs(time.Now()),
+				StartTime:        PrimitiveTime(time.Now()),
+				EndTime:          PrimitiveTime(time.Now()),
 				ImpactMultiplier: 2.0,
 				Factions:         []string{"Humans", "Automatons"},
 			},
@@ -295,13 +305,14 @@ func TestCampaignsSchema(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			withClient(t, func(client *Client, migration *migrate.Migrate) {
 				if err := migration.Up(); err != nil {
-					t.Fatalf("failed to migrate up: %v", err)
+					t.Errorf("failed to migrate up: %v", err)
+					return
 				}
 
-				coll := client.database().Collection("campaigns")
+				coll := client.db.Collection("campaigns")
 				insertResult, err := coll.InsertOne(context.Background(), tt.doc)
 				if (err != nil) != tt.wantErr {
-					t.Fatalf("InsertOne() error = %v, wantErr = %v", err, tt.wantErr)
+					t.Errorf("InsertOne() error = %v, wantErr = %v", err, tt.wantErr)
 					return
 				}
 				if tt.wantErr {
@@ -311,16 +322,17 @@ func TestCampaignsSchema(t *testing.T) {
 					Key: "_id", Value: insertResult.InsertedID,
 				}})
 				if fetchedResult == nil {
-					t.Fatal("fetched result is nil, expected non-nil")
+					t.Error("fetched result is nil, expected non-nil")
 					return
 				}
 				var decoded structs.Campaign
 				if err = fetchedResult.Decode(&decoded); err != nil {
-					t.Fatalf("failed to decode result: %v", err)
+					t.Errorf("failed to decode result: %v", err)
 					return
 				}
 				if !reflect.DeepEqual(tt.doc, decoded) {
-					t.Fatalf("fetched result = %v, want %v", decoded, tt.doc)
+					t.Errorf("fetched result = %v, want %v", decoded, tt.doc)
+					return
 				}
 			})
 		})
@@ -338,7 +350,7 @@ func TestDispatchesSchema(t *testing.T) {
 			name: "valid struct complete",
 			doc: structs.Dispatch{
 				ID:         1,
-				CreateTime: toPrimitiveTs(time.Now()),
+				CreateTime: PrimitiveTime(time.Now()),
 				Type:       3,
 				Message:    "Foobar",
 			},
@@ -358,8 +370,8 @@ func TestDispatchesSchema(t *testing.T) {
 			name: "wrong struct",
 			doc: structs.War{
 				ID:               1,
-				StartTime:        toPrimitiveTs(time.Now()),
-				EndTime:          toPrimitiveTs(time.Now()),
+				StartTime:        PrimitiveTime(time.Now()),
+				EndTime:          PrimitiveTime(time.Now()),
 				ImpactMultiplier: 2.0,
 				Factions:         []string{"Humans", "Automatons"},
 			},
@@ -384,13 +396,14 @@ func TestDispatchesSchema(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			withClient(t, func(client *Client, migration *migrate.Migrate) {
 				if err := migration.Up(); err != nil {
-					t.Fatalf("failed to migrate up: %v", err)
+					t.Errorf("failed to migrate up: %v", err)
+					return
 				}
 
-				coll := client.database().Collection("dispatches")
+				coll := client.db.Collection("dispatches")
 				insertResult, err := coll.InsertOne(context.Background(), tt.doc)
 				if (err != nil) != tt.wantErr {
-					t.Fatalf("InsertOne() error = %v, wantErr = %v", err, tt.wantErr)
+					t.Errorf("InsertOne() error = %v, wantErr = %v", err, tt.wantErr)
 					return
 				}
 				if tt.wantErr {
@@ -400,16 +413,17 @@ func TestDispatchesSchema(t *testing.T) {
 					Key: "_id", Value: insertResult.InsertedID,
 				}})
 				if fetchedResult == nil {
-					t.Fatal("fetched result is nil, expected non-nil")
+					t.Error("fetched result is nil, expected non-nil")
 					return
 				}
 				var decoded structs.Dispatch
 				if err = fetchedResult.Decode(&decoded); err != nil {
-					t.Fatalf("failed to decode result: %v", err)
+					t.Errorf("failed to decode result: %v", err)
 					return
 				}
 				if !reflect.DeepEqual(tt.doc, decoded) {
-					t.Fatalf("fetched result = %v, want %v", decoded, tt.doc)
+					t.Errorf("fetched result = %v, want %v", decoded, tt.doc)
+					return
 				}
 			})
 		})
@@ -430,8 +444,8 @@ func TestEventsSchema(t *testing.T) {
 				Type:      3,
 				Faction:   "Foobar",
 				MaxHealth: 100,
-				StartTime: toPrimitiveTs(time.Now()),
-				EndTime:   toPrimitiveTs(time.Now().Add(10 * 24 * time.Hour)),
+				StartTime: PrimitiveTime(time.Now()),
+				EndTime:   PrimitiveTime(time.Now().Add(10 * 24 * time.Hour)),
 			},
 			wantErr: false,
 		},
@@ -442,7 +456,7 @@ func TestEventsSchema(t *testing.T) {
 				Type:      3,
 				Faction:   "Foobar",
 				MaxHealth: 100,
-				StartTime: toPrimitiveTs(time.Now()),
+				StartTime: PrimitiveTime(time.Now()),
 				// EndTime: toPrimitiveTs(time.Now().Add(10 * 24 * time.Hour)),
 			},
 			wantErr: true,
@@ -454,8 +468,8 @@ func TestEventsSchema(t *testing.T) {
 				Type:      3,
 				Faction:   "Foobar",
 				MaxHealth: 100,
-				StartTime: toPrimitiveTs(time.Now()),
-				EndTime:   toPrimitiveTs(time.Now().Add(-1 * 10 * 24 * time.Hour)),
+				StartTime: PrimitiveTime(time.Now()),
+				EndTime:   PrimitiveTime(time.Now().Add(-1 * 10 * 24 * time.Hour)),
 			},
 			wantErr: true,
 		},
@@ -466,8 +480,8 @@ func TestEventsSchema(t *testing.T) {
 				Type:      3,
 				Faction:   "Foobar",
 				MaxHealth: -1,
-				StartTime: toPrimitiveTs(time.Now()),
-				EndTime:   toPrimitiveTs(time.Now().Add(10 * 24 * time.Hour)),
+				StartTime: PrimitiveTime(time.Now()),
+				EndTime:   PrimitiveTime(time.Now().Add(10 * 24 * time.Hour)),
 			},
 			wantErr: true,
 		},
@@ -475,8 +489,8 @@ func TestEventsSchema(t *testing.T) {
 			name: "wrong struct",
 			doc: structs.War{
 				ID:               1,
-				StartTime:        toPrimitiveTs(time.Now()),
-				EndTime:          toPrimitiveTs(time.Now()),
+				StartTime:        PrimitiveTime(time.Now()),
+				EndTime:          PrimitiveTime(time.Now()),
 				ImpactMultiplier: 2.0,
 				Factions:         []string{"Humans", "Automatons"},
 			},
@@ -501,13 +515,14 @@ func TestEventsSchema(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			withClient(t, func(client *Client, migration *migrate.Migrate) {
 				if err := migration.Up(); err != nil {
-					t.Fatalf("failed to migrate up: %v", err)
+					t.Errorf("failed to migrate up: %v", err)
+					return
 				}
 
-				coll := client.database().Collection("events")
+				coll := client.db.Collection("events")
 				insertResult, err := coll.InsertOne(context.Background(), tt.doc)
 				if (err != nil) != tt.wantErr {
-					t.Fatalf("InsertOne() error = %v, wantErr = %v", err, tt.wantErr)
+					t.Errorf("InsertOne() error = %v, wantErr = %v", err, tt.wantErr)
 					return
 				}
 				if tt.wantErr {
@@ -517,16 +532,17 @@ func TestEventsSchema(t *testing.T) {
 					Key: "_id", Value: insertResult.InsertedID,
 				}})
 				if fetchedResult == nil {
-					t.Fatal("fetched result is nil, expected non-nil")
+					t.Error("fetched result is nil, expected non-nil")
 					return
 				}
 				var decoded structs.Event
 				if err = fetchedResult.Decode(&decoded); err != nil {
-					t.Fatalf("failed to decode result: %v", err)
+					t.Errorf("failed to decode result: %v", err)
 					return
 				}
 				if !reflect.DeepEqual(tt.doc, decoded) {
-					t.Fatalf("fetched result = %v, want %v", decoded, tt.doc)
+					t.Errorf("fetched result = %v, want %v", decoded, tt.doc)
+					return
 				}
 			})
 		})
@@ -600,8 +616,8 @@ func TestAssignmentsSchema(t *testing.T) {
 			name: "wrong struct",
 			doc: structs.War{
 				ID:               1,
-				StartTime:        toPrimitiveTs(time.Now()),
-				EndTime:          toPrimitiveTs(time.Now()),
+				StartTime:        PrimitiveTime(time.Now()),
+				EndTime:          PrimitiveTime(time.Now()),
 				ImpactMultiplier: 2.0,
 				Factions:         []string{"Humans", "Automatons"},
 			},
@@ -626,13 +642,14 @@ func TestAssignmentsSchema(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			withClient(t, func(client *Client, migration *migrate.Migrate) {
 				if err := migration.Up(); err != nil {
-					t.Fatalf("failed to migrate up: %v", err)
+					t.Errorf("failed to migrate up: %v", err)
+					return
 				}
 
-				coll := client.database().Collection("assignments")
+				coll := client.db.Collection("assignments")
 				insertResult, err := coll.InsertOne(context.Background(), tt.doc)
 				if (err != nil) != tt.wantErr {
-					t.Fatalf("InsertOne() error = %v, wantErr = %v", err, tt.wantErr)
+					t.Errorf("InsertOne() error = %v, wantErr = %v", err, tt.wantErr)
 					return
 				}
 				if tt.wantErr {
@@ -642,16 +659,17 @@ func TestAssignmentsSchema(t *testing.T) {
 					Key: "_id", Value: insertResult.InsertedID,
 				}})
 				if fetchedResult == nil {
-					t.Fatal("fetched result is nil, expected non-nil")
+					t.Error("fetched result is nil, expected non-nil")
 					return
 				}
 				var decoded structs.Assignment
 				if err = fetchedResult.Decode(&decoded); err != nil {
-					t.Fatalf("failed to decode result: %v", err)
+					t.Errorf("failed to decode result: %v", err)
 					return
 				}
 				if !reflect.DeepEqual(tt.doc, decoded) {
-					t.Fatalf("fetched result = %v, want %v", decoded, tt.doc)
+					t.Errorf("fetched result = %v, want %v", decoded, tt.doc)
+					return
 				}
 			})
 		})
@@ -669,8 +687,8 @@ func TestWarsSchema(t *testing.T) {
 			name: "valid struct complete",
 			doc: structs.War{
 				ID:               1,
-				StartTime:        toPrimitiveTs(time.Now()),
-				EndTime:          toPrimitiveTs(time.Now().Add(5 * 24 * time.Hour)),
+				StartTime:        PrimitiveTime(time.Now()),
+				EndTime:          PrimitiveTime(time.Now().Add(5 * 24 * time.Hour)),
 				ImpactMultiplier: 50.0,
 				Factions: []string{
 					"Humans", "Automatons",
@@ -682,7 +700,7 @@ func TestWarsSchema(t *testing.T) {
 			name: "valid struct incomplete",
 			doc: structs.War{
 				ID:        1,
-				StartTime: toPrimitiveTs(time.Now()),
+				StartTime: PrimitiveTime(time.Now()),
 				// Ended:            toPrimitiveTs(time.Now().Add(5 * 24 * time.Hour)),
 				ImpactMultiplier: 50.0,
 				Factions: []string{
@@ -695,8 +713,8 @@ func TestWarsSchema(t *testing.T) {
 			name: "endtime gt starttime",
 			doc: structs.War{
 				ID:               1,
-				StartTime:        toPrimitiveTs(time.Now()),
-				EndTime:          toPrimitiveTs(time.Now().Add(-1 * 5 * 24 * time.Hour)),
+				StartTime:        PrimitiveTime(time.Now()),
+				EndTime:          PrimitiveTime(time.Now().Add(-1 * 5 * 24 * time.Hour)),
 				ImpactMultiplier: 50.0,
 				Factions: []string{
 					"Humans", "Automatons",
@@ -708,8 +726,8 @@ func TestWarsSchema(t *testing.T) {
 			name: "negative impact multiplier",
 			doc: structs.War{
 				ID:               1,
-				StartTime:        toPrimitiveTs(time.Now()),
-				EndTime:          toPrimitiveTs(time.Now().Add(5 * 24 * time.Hour)),
+				StartTime:        PrimitiveTime(time.Now()),
+				EndTime:          PrimitiveTime(time.Now().Add(5 * 24 * time.Hour)),
 				ImpactMultiplier: -0.5,
 				Factions: []string{
 					"Humans", "Automatons",
@@ -724,8 +742,8 @@ func TestWarsSchema(t *testing.T) {
 				Type:      3,
 				Faction:   "Foobar",
 				MaxHealth: 100,
-				StartTime: toPrimitiveTs(time.Now()),
-				EndTime:   toPrimitiveTs(time.Now().Add(5 * 24 * time.Hour)),
+				StartTime: PrimitiveTime(time.Now()),
+				EndTime:   PrimitiveTime(time.Now().Add(5 * 24 * time.Hour)),
 			},
 			wantErr: true,
 		},
@@ -748,13 +766,14 @@ func TestWarsSchema(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			withClient(t, func(client *Client, migration *migrate.Migrate) {
 				if err := migration.Up(); err != nil {
-					t.Fatalf("failed to migrate up: %v", err)
+					t.Errorf("failed to migrate up: %v", err)
+					return
 				}
 
-				coll := client.database().Collection("wars")
+				coll := client.db.Collection("wars")
 				insertResult, err := coll.InsertOne(context.Background(), tt.doc)
 				if (err != nil) != tt.wantErr {
-					t.Fatalf("InsertOne() error = %v, wantErr = %v", err, tt.wantErr)
+					t.Errorf("InsertOne() error = %v, wantErr = %v", err, tt.wantErr)
 					return
 				}
 				if tt.wantErr {
@@ -764,16 +783,17 @@ func TestWarsSchema(t *testing.T) {
 					Key: "_id", Value: insertResult.InsertedID,
 				}})
 				if fetchedResult == nil {
-					t.Fatal("fetched result is nil, expected non-nil")
+					t.Error("fetched result is nil, expected non-nil")
 					return
 				}
 				var decoded structs.War
 				if err = fetchedResult.Decode(&decoded); err != nil {
-					t.Fatalf("failed to decode result: %v", err)
+					t.Errorf("failed to decode result: %v", err)
 					return
 				}
 				if !reflect.DeepEqual(tt.doc, decoded) {
-					t.Fatalf("fetched result = %v, want %v", decoded, tt.doc)
+					t.Errorf("fetched result = %v, want %v", decoded, tt.doc)
+					return
 				}
 			})
 		})
@@ -790,7 +810,7 @@ func TestSnapshotsSchema(t *testing.T) {
 		{
 			name: "valid struct complete",
 			doc: structs.Snapshot{
-				Timestamp:     toPrimitiveTs(time.Now()),
+				Timestamp:     PrimitiveTime(time.Now()),
 				WarID:         6,
 				AssignmentIDs: []int{2, 3, 4},
 				CampaignIDs:   []int{6, 7, 8},
@@ -829,7 +849,7 @@ func TestSnapshotsSchema(t *testing.T) {
 		{
 			name: "valid struct high number",
 			doc: structs.Snapshot{
-				Timestamp:     toPrimitiveTs(time.Now()),
+				Timestamp:     PrimitiveTime(time.Now()),
 				WarID:         6,
 				AssignmentIDs: []int{2, 3, 4},
 				CampaignIDs:   []int{6, 7, 8},
@@ -868,7 +888,7 @@ func TestSnapshotsSchema(t *testing.T) {
 		{
 			name: "valid struct incomplete",
 			doc: structs.Snapshot{
-				Timestamp:     toPrimitiveTs(time.Now()),
+				Timestamp:     PrimitiveTime(time.Now()),
 				WarID:         6,
 				AssignmentIDs: []int{2, 3, 4},
 				CampaignIDs:   []int{6, 7, 8},
@@ -879,7 +899,7 @@ func TestSnapshotsSchema(t *testing.T) {
 		{
 			name: "negative statistics",
 			doc: structs.Snapshot{
-				Timestamp:     toPrimitiveTs(time.Now()),
+				Timestamp:     PrimitiveTime(time.Now()),
 				WarID:         6,
 				AssignmentIDs: []int{2, 3, 4},
 				CampaignIDs:   []int{6, 7, 8},
@@ -922,8 +942,8 @@ func TestSnapshotsSchema(t *testing.T) {
 				Type:      3,
 				Faction:   "Foobar",
 				MaxHealth: 100,
-				StartTime: toPrimitiveTs(time.Now()),
-				EndTime:   toPrimitiveTs(time.Now().Add(5 * 24 * time.Hour)),
+				StartTime: PrimitiveTime(time.Now()),
+				EndTime:   PrimitiveTime(time.Now().Add(5 * 24 * time.Hour)),
 			},
 			wantErr: true,
 		},
@@ -946,32 +966,34 @@ func TestSnapshotsSchema(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			withClient(t, func(client *Client, migration *migrate.Migrate) {
 				if err := migration.Up(); err != nil {
-					t.Fatalf("failed to migrate up: %v", err)
+					t.Errorf("failed to migrate up: %v", err)
+					return
 				}
 
-				coll := client.database().Collection("snapshots")
+				coll := client.db.Collection("snapshots")
 				insertResult, err := coll.InsertOne(context.Background(), tt.doc)
 				if (err != nil) != tt.wantErr {
-					t.Fatalf("InsertOne() error = %v, wantErr = %v", err, tt.wantErr)
+					t.Errorf("InsertOne() error = %v, wantErr = %v", err, tt.wantErr)
 					return
 				}
 				if tt.wantErr {
+					// exit prematurely, since all following assertions depend on the transaction result
 					return
 				}
 				fetchedResult := coll.FindOne(context.Background(), bson.D{{
 					Key: "_id", Value: insertResult.InsertedID,
 				}})
 				if fetchedResult == nil {
-					t.Fatal("fetched result is nil, expected non-nil")
+					t.Error("fetched result is nil, expected non-nil")
 					return
 				}
 				var decoded structs.Snapshot
 				if err = fetchedResult.Decode(&decoded); err != nil {
-					t.Fatalf("failed to decode result: %v", err)
+					t.Errorf("failed to decode result: %v", err)
 					return
 				}
 				if !reflect.DeepEqual(tt.doc, decoded) {
-					t.Fatalf("fetched result = %v, want %v", decoded, tt.doc)
+					t.Errorf("fetched result = %v, want %v", decoded, tt.doc)
 				}
 			})
 		})

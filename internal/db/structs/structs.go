@@ -101,7 +101,7 @@ type AssignmentReward struct {
 }
 
 type War struct {
-	ID int `bson:"_id"`
+	ID int32 `bson:"_id"`
 	// When this war was started
 	StartTime primitive.Timestamp `bson:"start_time,omitempty"`
 	// When this war will end (or has ended)

@@ -55,6 +55,11 @@ func processResp[
 	return data, nil
 }
 
+// WarID returns the ID of the current war
+func (c *Client) WarID(ctx context.Context) (*api.WarId, error) {
+	return processResp(ctx, c.api.GetRawApiWarSeasonCurrentWarIDWithResponse)
+}
+
 // War returns the current war
 func (c *Client) War(ctx context.Context) (*api.War, error) {
 	return processResp(ctx, c.api.GetApiV1WarWithResponse)

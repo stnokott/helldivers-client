@@ -7,17 +7,30 @@ import (
 	"log"
 	"time"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 const appName = "HELLDIVERS_2_CLIENT"
 
+type CollectionName string
+
+const (
+	CollPlanets     CollectionName = "planets"
+	CollCampaigns   CollectionName = "campaigns"
+	CollDispatches  CollectionName = "dispatches"
+	CollEvents      CollectionName = "events"
+	CollAssignments CollectionName = "assignments"
+	CollWars        CollectionName = "wars"
+	CollSnapshots   CollectionName = "snapshots"
+)
+
 // Client is the abstraction layer for the MongoDB connector
 type Client struct {
-	mongo  *mongo.Client
-	dbName string
-	log    *log.Logger
+	mongo *mongo.Client
+	db    *mongo.Database
+	log   *log.Logger
 }
 
 // New creates a new client and connects it to the DB
@@ -39,10 +52,11 @@ func New(uri string, database string, logger *log.Logger) (*Client, error) {
 		return nil, fmt.Errorf("could not connect to MongoDB instance: %w", err)
 	}
 	logger.Println("connected")
+	db := client.Database(database)
 	return &Client{
-		mongo:  client,
-		dbName: database,
-		log:    logger,
+		mongo: client,
+		db:    db,
+		log:   logger,
 	}, nil
 }
 
@@ -57,6 +71,23 @@ func (c *Client) Disconnect() error {
 	return nil
 }
 
-func (c *Client) database() *mongo.Database {
-	return c.mongo.Database(c.dbName)
+type DocProvider interface {
+	DocID() any
+	Document() any
+	CollectionName() CollectionName
+}
+
+func (c *Client) UpsertDoc(provider DocProvider, ctx context.Context) (inserted bool, err error) {
+	coll := c.db.Collection(string(provider.CollectionName()))
+	result, err := coll.UpdateByID(
+		ctx,
+		provider.DocID(),
+		bson.D{{Key: "$set", Value: provider.Document()}},
+		options.Update().SetUpsert(true),
+	)
+	if err != nil {
+		return
+	}
+	inserted = result.MatchedCount == 0
+	return
 }

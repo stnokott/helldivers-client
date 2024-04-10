@@ -19,6 +19,7 @@ services:
     environment:
       HELL_MONGODB_URI: mongodb://root:test@db:27017
       HELL_API_URL: http://api:8080
+      WORKER_INTERVAL: 30s
     networks:
       - default
 

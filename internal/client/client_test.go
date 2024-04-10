@@ -68,6 +68,22 @@ func TestClientHosts(t *testing.T) {
 	}
 }
 
+func TestClientWarId(t *testing.T) {
+	got, err := globalClient.WarID(context.Background())
+	if err != nil {
+		t.Errorf("Client.WarID() error = %v, want nil", err)
+		return
+	}
+	if got == nil {
+		t.Error("Client.WarID() returned nil, want non-nil")
+		return
+	}
+	if got.Id == nil || *got.Id == 0 {
+		t.Error("got.ClientVersion is empty, expected non-empty")
+		return
+	}
+}
+
 func TestClientWar(t *testing.T) {
 	got, err := globalClient.War(context.Background())
 	if err != nil {

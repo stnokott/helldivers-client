@@ -18,6 +18,13 @@ func respErr(resp *http.Response) error {
 	return fmt.Errorf("HTTP status %s: %s", resp.Status, string(body))
 }
 
+func (resp *GetRawApiWarSeasonCurrentWarIDResponse) Data() (*WarId, error) {
+	if resp.StatusCode() == 200 {
+		return resp.JSON200, nil
+	}
+	return nil, respErr(resp.HTTPResponse)
+}
+
 func (resp *GetApiV1WarResponse) Data() (*War, error) {
 	if resp.StatusCode() == 200 {
 		return resp.JSON200, nil
