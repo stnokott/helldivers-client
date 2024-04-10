@@ -8,16 +8,19 @@ import (
 
 // Config contains configuration values
 type Config struct {
-	MongoURI string
+	MongoURI   string
+	APIRootURL string
 }
 
 // Get reads environment variables and parses them into a Config struct.
 //
 // Any required environment variables which are not provided will cause the application to exit.
 func Get() Config {
-	uri := mustGetEnv("MONGODB_URI")
+	mongo := mustGetEnv("MONGODB_URI")
+	api := mustGetEnv("API_URL")
 	return Config{
-		MongoURI: uri,
+		MongoURI:   mongo,
+		APIRootURL: api,
 	}
 }
 

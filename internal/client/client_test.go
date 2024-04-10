@@ -5,16 +5,16 @@ import (
 	"context"
 	"log"
 	"testing"
-)
 
-const (
-	host string = "http://api:8080" // TODO: read from config
+	"github.com/stnokott/helldivers-client/internal/config"
 )
 
 var logger = log.Default()
 
 func mustClient() *Client {
-	client, err := New(host, logger)
+	config := config.Get()
+
+	client, err := New(config.APIRootURL, logger)
 	if err != nil {
 		panic(err)
 	}
@@ -28,6 +28,8 @@ var globalClient = mustClient()
 
 func TestClientHosts(t *testing.T) {
 	t.Skip("currently skipped until we can disable rate-limiting in API") // TODO
+
+	host := config.Get().APIRootURL
 	tests := []struct {
 		name    string
 		host    string

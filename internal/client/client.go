@@ -13,7 +13,6 @@ import (
 // Client wraps the generated OpenAPI client
 type Client struct {
 	api *api.ClientWithResponses
-	log *log.Logger
 }
 
 const (
@@ -33,7 +32,6 @@ func New(rootURI string, logger *log.Logger) (*Client, error) {
 
 	return &Client{
 		api: c,
-		log: logger,
 	}, nil
 }
 

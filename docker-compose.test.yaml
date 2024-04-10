@@ -13,10 +13,12 @@ services:
       dockerfile: Dockerfile.test
     depends_on:
       - api
+      - db
     volumes:
       - ./:/code
     environment:
       MONGODB_URI: mongodb://root:test@db:27017
+      API_URL: http://api:8080
     networks:
       - default
 
