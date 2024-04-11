@@ -55,9 +55,8 @@ func (w *Worker) do() {
 	defer func() {
 		if err != nil {
 			w.log.Printf("error: %v", err)
-		} else {
-			w.log.Println("synchronized")
 		}
+		w.log.Println("synchronized")
 	}()
 
 	var data transform.APIData
