@@ -81,7 +81,8 @@ type DocWrapper struct {
 	Document any
 }
 
-func (c *Client) UpsertDocs(provider *DocsProvider, ctx context.Context) (inserted int, updated int) {
+func (c *Client) UpsertDocs(provider *DocsProvider, ctx context.Context) {
+	var inserted, updated int
 	coll := c.db.Collection(string(provider.CollectionName))
 	for _, doc := range provider.Docs {
 		result, err := coll.UpdateByID(
@@ -97,5 +98,5 @@ func (c *Client) UpsertDocs(provider *DocsProvider, ctx context.Context) (insert
 		inserted += int(result.UpsertedCount - result.MatchedCount)
 		updated += int(result.MatchedCount)
 	}
-	return
+	c.log.Printf("upsert into '%s' finished, %d inserted, %d updated", provider.CollectionName, inserted, updated)
 }
