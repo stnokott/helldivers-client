@@ -40,7 +40,7 @@ func (_ Planets) Transform(data planetsRequestData) (*db.DocsProvider, error) {
 			planet.MaxHealth == nil ||
 			planet.InitialOwner == nil ||
 			planet.RegenPerSecond == nil {
-			return nil, errFromNils(planet)
+			return nil, errFromNils(&planet)
 		}
 
 		pos, err := planet.Position.AsPosition()
@@ -48,7 +48,7 @@ func (_ Planets) Transform(data planetsRequestData) (*db.DocsProvider, error) {
 			return nil, fmt.Errorf("cannot parse planet position: %w", err)
 		}
 		if pos.X == nil || pos.Y == nil {
-			return nil, errFromNils(pos)
+			return nil, errFromNils(&pos)
 		}
 		planetDocs[i] = db.DocWrapper{
 			DocID: *planet.Index,

@@ -17,7 +17,7 @@ func apiWithTimeout[T any](apiFunc func(context.Context) (T, error), timeout tim
 }
 
 // errFromNils returns an error containing the list of nil fields in v.
-func errFromNils(v any) error {
+func errFromNils[T any](v *T) error {
 	names := []string{}
 	value := reflect.ValueOf(v).Elem()
 	valueType := value.Type()

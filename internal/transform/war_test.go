@@ -12,18 +12,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func int32Ptr(x int32) *int32 {
-	return &x
-}
-
-func float64Ptr(x float64) *float64 {
-	return &x
-}
-
-func timePtr(t time.Time) *time.Time {
-	return &t
-}
-
 func TestWarTransform(t *testing.T) {
 	type args struct {
 		data warRequestData
@@ -39,11 +27,11 @@ func TestWarTransform(t *testing.T) {
 			name: "complete",
 			args: args{
 				data: warRequestData{
-					WarID: &api.WarId{Id: int32Ptr(2)},
+					WarID: &api.WarId{Id: ptr(int32(2))},
 					War: &api.War{
-						Started:          timePtr(time.Date(2024, 01, 01, 23, 59, 0, 0, time.Local)),
-						Ended:            timePtr(time.Date(2030, 01, 01, 23, 59, 0, 0, time.Local)),
-						ImpactMultiplier: float64Ptr(2.5),
+						Started:          ptr(time.Date(2024, 01, 01, 23, 59, 0, 0, time.Local)),
+						Ended:            ptr(time.Date(2030, 01, 01, 23, 59, 0, 0, time.Local)),
+						ImpactMultiplier: ptr(float64(2.5)),
 						Factions:         &[]string{"Humans", "Automatons"},
 					},
 				},
@@ -80,11 +68,11 @@ func TestWarTransform(t *testing.T) {
 			name: "nil end time",
 			args: args{
 				data: warRequestData{
-					WarID: &api.WarId{Id: int32Ptr(2)},
+					WarID: &api.WarId{Id: ptr(int32(2))},
 					War: &api.War{
-						Started:          timePtr(time.Date(2024, 01, 01, 23, 59, 0, 0, time.Local)),
+						Started:          ptr(time.Date(2024, 01, 01, 23, 59, 0, 0, time.Local)),
 						Ended:            nil,
-						ImpactMultiplier: float64Ptr(2.5),
+						ImpactMultiplier: ptr(float64(2.5)),
 						Factions:         &[]string{"Humans", "Automatons"},
 					},
 				},
