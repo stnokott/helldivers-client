@@ -46,7 +46,7 @@ func (w *Worker) Run(interval config.WorkerInterval) {
 
 type docTransformer[T any] interface {
 	Request(api *client.Client, ctx context.Context) (T, error)
-	Transform(data T) (db.DocProvider, error)
+	Transform(data T) (*db.DocsProvider, error)
 }
 
 func processDoc[T any](w *Worker, t docTransformer[T]) error {
@@ -58,13 +58,12 @@ func processDoc[T any](w *Worker, t docTransformer[T]) error {
 	if err != nil {
 		return err
 	}
-	inserted, err := w.db.UpsertDoc(provider, context.TODO())
+	inserted, updated, err := w.db.UpsertDocs(provider, context.TODO())
 	if err != nil {
 		return err
 	}
-	if inserted {
-		w.log.Printf("new %s document added. ID=%d", provider.CollectionName(), provider.DocID())
-	}
+	w.log.Printf("%d documents added to '%s'", inserted, provider.CollectionName)
+	w.log.Printf("%d documents updated in '%s'.", updated, provider.CollectionName)
 	return nil
 }
 

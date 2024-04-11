@@ -42,10 +42,10 @@
 						"additionalProperties": false,
 						"properties": {
 							"x": {
-								"bsonType": "int"
+								"bsonType": "double"
 							},
 							"y": {
-								"bsonType": "int"
+								"bsonType": "double"
 							}
 						}
 					},
@@ -62,7 +62,7 @@
 						"description": "Whether or not this planet is disabled, as assigned by ArrowHead."
 					},
 					"max_health": {
-						"bsonType": "int",
+						"bsonType": "long",
 						"description": "The maximum health pool of this planet.",
 						"minimum": 0
 					},

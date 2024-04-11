@@ -71,23 +71,32 @@ func (c *Client) Disconnect() error {
 	return nil
 }
 
-type DocProvider interface {
-	DocID() any
-	Document() any
-	CollectionName() CollectionName
+type DocsProvider struct {
+	CollectionName CollectionName
+	Docs           []DocWrapper
 }
 
-func (c *Client) UpsertDoc(provider DocProvider, ctx context.Context) (inserted bool, err error) {
-	coll := c.db.Collection(string(provider.CollectionName()))
-	result, err := coll.UpdateByID(
-		ctx,
-		provider.DocID(),
-		bson.D{{Key: "$set", Value: provider.Document()}},
-		options.Update().SetUpsert(true),
-	)
-	if err != nil {
-		return
+type DocWrapper struct {
+	DocID    any
+	Document any
+}
+
+func (c *Client) UpsertDocs(provider *DocsProvider, ctx context.Context) (inserted int, updated int, err error) {
+	coll := c.db.Collection(string(provider.CollectionName))
+	for _, doc := range provider.Docs {
+		var result *mongo.UpdateResult
+		result, err = coll.UpdateByID(
+			ctx,
+			doc.DocID,
+			bson.D{{Key: "$set", Value: doc.Document}},
+			options.Update().SetUpsert(true),
+		)
+		if err != nil {
+			err = fmt.Errorf("failed to upsert into %s: %w", coll.Name(), err)
+			return
+		}
+		inserted += int(result.UpsertedCount - result.MatchedCount)
+		updated += int(result.MatchedCount)
 	}
-	inserted = result.MatchedCount == 0
 	return
 }

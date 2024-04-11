@@ -7,7 +7,7 @@ import (
 
 type Planet struct {
 	// The unique identifier ArrowHead assigned to this planet
-	ID int `bson:"_id"`
+	ID int32 `bson:"_id"`
 	// The name of the planet, as shown in game
 	Name string `bson:"name,omitempty"`
 	// The name of the sector the planet is in, as shown in game
@@ -15,11 +15,11 @@ type Planet struct {
 	// The coordinates of this planet on the galactic war map
 	Position PlanetPosition `bson:"position,omitempty"`
 	// A list of Index of all the planets to which this planet is connected
-	Waypoints []int `bson:"waypoints,omitempty"`
+	Waypoints []int32 `bson:"waypoints,omitempty"`
 	// Whether or not this planet is disabled, as assigned by ArrowHead
 	Disabled bool `bson:"disabled"`
 	// The maximum health pool of this planet
-	MaxHealth int `bson:"max_health"`
+	MaxHealth int64 `bson:"max_health"`
 	// The faction that originally owned the planet
 	InitialOwner string `bson:"initial_owner,omitempty"`
 	// How much the planet regenerates per second if left alone
@@ -27,8 +27,8 @@ type Planet struct {
 }
 
 type PlanetPosition struct {
-	X int
-	Y int
+	X float64
+	Y float64
 }
 
 type Campaign struct {

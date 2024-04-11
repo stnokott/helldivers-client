@@ -8,6 +8,7 @@ import (
 
 	"github.com/stnokott/helldivers-client/internal/api"
 	"github.com/stnokott/helldivers-client/internal/db"
+	"github.com/stnokott/helldivers-client/internal/db/structs"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -31,7 +32,7 @@ func TestWarTransform(t *testing.T) {
 		name    string
 		w       War
 		args    args
-		want    db.DocProvider
+		want    *db.DocsProvider
 		wantErr bool
 	}{
 		{
@@ -47,12 +48,20 @@ func TestWarTransform(t *testing.T) {
 					},
 				},
 			},
-			want: &warDocProvider{
-				ID:               2,
-				StartTime:        primitive.Timestamp{T: uint32(time.Date(2024, 01, 01, 23, 59, 0, 0, time.Local).Unix())},
-				EndTime:          primitive.Timestamp{T: uint32(time.Date(2030, 01, 01, 23, 59, 0, 0, time.Local).Unix())},
-				ImpactMultiplier: 2.5,
-				Factions:         []string{"Humans", "Automatons"},
+			want: &db.DocsProvider{
+				CollectionName: "wars",
+				Docs: []db.DocWrapper{
+					{
+						DocID: int32(2),
+						Document: structs.War{
+							ID:               2,
+							StartTime:        primitive.Timestamp{T: uint32(time.Date(2024, 01, 01, 23, 59, 0, 0, time.Local).Unix())},
+							EndTime:          primitive.Timestamp{T: uint32(time.Date(2030, 01, 01, 23, 59, 0, 0, time.Local).Unix())},
+							ImpactMultiplier: 2.5,
+							Factions:         []string{"Humans", "Automatons"},
+						},
+					},
+				},
 			},
 			wantErr: false,
 		},
