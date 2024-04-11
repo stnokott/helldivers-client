@@ -12,16 +12,17 @@ import (
 
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/stnokott/helldivers-client/internal/config"
 	"github.com/stnokott/helldivers-client/internal/db/structs"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func withClient(t *testing.T, do func(client *Client, migration *migrate.Migrate)) {
-	mongoURI := getMongoURI()
+	cfg := config.Get()
 	dbName := strings.ReplaceAll(t.Name(), "/", "_")
 
-	client, err := New(mongoURI, dbName, log.New(io.Discard, "", 0))
+	client, err := New(cfg, dbName, log.New(io.Discard, "", 0))
 	if err != nil {
 		t.Fatalf("could not initialize DB connection: %v", err)
 	}

@@ -17,7 +17,7 @@ func main() {
 	cfg := config.Get()
 	logger := loggerFor("main")
 
-	dbClient, err := db.New(cfg.MongoURI, databaseName, loggerFor("mongo"))
+	dbClient, err := db.New(cfg, databaseName, loggerFor("mongo"))
 	if err != nil {
 		logger.Fatal(err)
 	}
@@ -28,7 +28,7 @@ func main() {
 		logger.Fatal(err)
 	}
 
-	apiClient, err := client.New(cfg.APIRootURL, loggerFor("api"))
+	apiClient, err := client.New(cfg, loggerFor("api"))
 	if err != nil {
 		logger.Fatal(err)
 	}

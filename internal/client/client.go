@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"github.com/stnokott/helldivers-client/internal/api"
+	"github.com/stnokott/helldivers-client/internal/config"
+	"golang.org/x/time/rate"
 )
 
 // Client wraps the generated OpenAPI client
@@ -15,17 +17,14 @@ type Client struct {
 	api *api.ClientWithResponses
 }
 
-const (
-	rateLimitDuration = 10 * time.Second
-	rateLimitCount    = 5
-)
-
 // New creates a new client instance
-func New(rootURI string, logger *log.Logger) (*Client, error) {
+func New(cfg *config.Config, logger *log.Logger) (*Client, error) {
+	rl := rate.NewLimiter(rate.Every(time.Duration(cfg.APIRateLimitInterval)), cfg.APIRateLimitCount)
+	logger.Printf("rate limit configured as %d/%s", cfg.APIRateLimitCount, cfg.APIRateLimitInterval.String())
 	options := api.WithHTTPClient(
-		newRateLimitHTTPClient(rateLimitDuration, rateLimitCount, logger),
+		newRateLimitHTTPClient(rl, logger),
 	)
-	c, err := api.NewClientWithResponses(rootURI, options)
+	c, err := api.NewClientWithResponses(cfg.APIRootURL, options)
 	if err != nil {
 		return nil, fmt.Errorf("client initialization failed: %w", err)
 	}

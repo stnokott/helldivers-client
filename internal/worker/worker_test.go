@@ -15,11 +15,11 @@ import (
 
 func mustWorker(t *testing.T) *Worker {
 	cfg := config.Get()
-	api, err := client.New(cfg.APIRootURL, log.Default())
+	api, err := client.New(cfg, log.Default())
 	if err != nil {
 		panic(err)
 	}
-	db, err := db.New(cfg.MongoURI, t.Name(), log.Default())
+	db, err := db.New(cfg, t.Name(), log.Default())
 	if err != nil {
 		panic(err)
 	}

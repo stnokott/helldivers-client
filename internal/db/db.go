@@ -7,6 +7,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/stnokott/helldivers-client/internal/config"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -34,11 +35,11 @@ type Client struct {
 }
 
 // New creates a new client and connects it to the DB
-func New(uri string, database string, logger *log.Logger) (*Client, error) {
+func New(cfg *config.Config, database string, logger *log.Logger) (*Client, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	clientOptions := options.Client().
-		ApplyURI(uri).
+		ApplyURI(cfg.MongoURI).
 		SetAppName(appName).
 		SetDirect(true)
 

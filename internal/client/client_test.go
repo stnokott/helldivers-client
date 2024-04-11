@@ -14,7 +14,7 @@ var logger = log.Default()
 func mustClient() *Client {
 	config := config.Get()
 
-	client, err := New(config.APIRootURL, logger)
+	client, err := New(config, logger)
 	if err != nil {
 		panic(err)
 	}
@@ -32,33 +32,33 @@ func TestClientHosts(t *testing.T) {
 	host := config.Get().APIRootURL
 	tests := []struct {
 		name    string
-		host    string
+		cfg     *config.Config
 		wantErr bool
 	}{
 		{
 			name:    "trailing slash",
-			host:    host + "/",
+			cfg:     &config.Config{APIRootURL: host + "/"},
 			wantErr: false,
 		},
 		{
 			name:    "no trailing slash",
-			host:    host,
+			cfg:     &config.Config{APIRootURL: host},
 			wantErr: false,
 		},
 		{
 			name:    "wrong endpoint",
-			host:    host + "/api",
+			cfg:     &config.Config{APIRootURL: host + "/api"},
 			wantErr: true,
 		},
 		{
 			name:    "wrong host",
-			host:    "127.0.0.1",
+			cfg:     &config.Config{APIRootURL: "127.0.0.1"},
 			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			client, _ := New(tt.host, logger)
+			client, _ := New(tt.cfg, logger)
 			_, err := client.War(context.Background())
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Client.War() error = %v, wantErr %v", err, tt.wantErr)

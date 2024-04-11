@@ -4,7 +4,6 @@ import (
 	"context"
 	"log"
 	"net/http"
-	"time"
 
 	"golang.org/x/time/rate"
 )
@@ -15,10 +14,10 @@ type rateLimitHTTPClient struct {
 	log    *log.Logger
 }
 
-func newRateLimitHTTPClient(d time.Duration, n int, logger *log.Logger) *rateLimitHTTPClient {
+func newRateLimitHTTPClient(rl *rate.Limiter, logger *log.Logger) *rateLimitHTTPClient {
 	return &rateLimitHTTPClient{
 		client: http.DefaultClient,
-		rl:     rate.NewLimiter(rate.Every(d), n),
+		rl:     rl,
 		log:    logger,
 	}
 }

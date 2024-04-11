@@ -31,7 +31,7 @@ func New(api *client.Client, db *db.Client, logger *log.Logger) *Worker {
 }
 
 // Run schedules a new sync job at the specified interval. It is blocking.
-func (w *Worker) Run(interval config.WorkerInterval) {
+func (w *Worker) Run(interval config.Interval) {
 	ticker := time.NewTicker(time.Duration(interval))
 	defer ticker.Stop()
 
