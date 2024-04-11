@@ -1,12 +1,8 @@
 package transform
 
 import (
-	"context"
 	"errors"
-	"time"
 
-	"github.com/stnokott/helldivers-client/internal/api"
-	"github.com/stnokott/helldivers-client/internal/client"
 	"github.com/stnokott/helldivers-client/internal/db"
 	"github.com/stnokott/helldivers-client/internal/db/structs"
 )
@@ -14,21 +10,7 @@ import (
 // War implements worker.docTransformer[warRequestData]
 type War struct{}
 
-type warRequestData struct {
-	WarID *api.WarId
-	War   *api.War
-}
-
-func (_ War) Request(api *client.Client, ctx context.Context) (data warRequestData, err error) {
-	data.WarID, err = apiWithTimeout(api.WarID, 1*time.Second)
-	if err != nil {
-		return
-	}
-	data.War, err = apiWithTimeout(api.War, 5*time.Second)
-	return
-}
-
-func (_ War) Transform(data warRequestData) (*db.DocsProvider, error) {
+func (_ War) Transform(data APIData) (*db.DocsProvider, error) {
 	warID := data.WarID
 	if warID.Id == nil {
 		return nil, errors.New("got nil war ID")

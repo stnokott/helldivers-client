@@ -1,13 +1,9 @@
 package transform
 
 import (
-	"context"
 	"errors"
 	"fmt"
-	"time"
 
-	"github.com/stnokott/helldivers-client/internal/api"
-	"github.com/stnokott/helldivers-client/internal/client"
 	"github.com/stnokott/helldivers-client/internal/db"
 	"github.com/stnokott/helldivers-client/internal/db/structs"
 )
@@ -15,19 +11,12 @@ import (
 // Planets implements worker.docTransformer[warRequestData]
 type Planets struct{}
 
-type planetsRequestData *[]api.Planet
-
-func (_ Planets) Request(api *client.Client, ctx context.Context) (data planetsRequestData, err error) {
-	data, err = apiWithTimeout(api.Planets, 1*time.Second)
-	return
-}
-
-func (_ Planets) Transform(data planetsRequestData) (*db.DocsProvider, error) {
-	if data == nil {
+func (_ Planets) Transform(data APIData) (*db.DocsProvider, error) {
+	if data.Planets == nil {
 		return nil, errors.New("got nil planets slice")
 	}
 
-	planets := *data
+	planets := *data.Planets
 	planetDocs := make([]db.DocWrapper, len(planets))
 
 	for i, planet := range planets {

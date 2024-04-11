@@ -14,7 +14,7 @@ import (
 
 func TestWarTransform(t *testing.T) {
 	type args struct {
-		data warRequestData
+		data APIData
 	}
 	tests := []struct {
 		name    string
@@ -26,7 +26,7 @@ func TestWarTransform(t *testing.T) {
 		{
 			name: "complete",
 			args: args{
-				data: warRequestData{
+				data: APIData{
 					WarID: &api.WarId{Id: ptr(int32(2))},
 					War: &api.War{
 						Started:          ptr(time.Date(2024, 01, 01, 23, 59, 0, 0, time.Local)),
@@ -56,7 +56,7 @@ func TestWarTransform(t *testing.T) {
 		{
 			name: "nil war ID",
 			args: args{
-				data: warRequestData{
+				data: APIData{
 					WarID: &api.WarId{Id: nil},
 					War:   &api.War{},
 				},
@@ -67,7 +67,7 @@ func TestWarTransform(t *testing.T) {
 		{
 			name: "nil end time",
 			args: args{
-				data: warRequestData{
+				data: APIData{
 					WarID: &api.WarId{Id: ptr(int32(2))},
 					War: &api.War{
 						Started:          ptr(time.Date(2024, 01, 01, 23, 59, 0, 0, time.Local)),

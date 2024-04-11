@@ -44,27 +44,8 @@ func (w *Worker) Run(interval config.WorkerInterval) {
 	}
 }
 
-type docTransformer[T any] interface {
-	Request(api *client.Client, ctx context.Context) (T, error)
-	Transform(data T) (*db.DocsProvider, error)
-}
-
-func processDoc[T any](w *Worker, t docTransformer[T]) error {
-	data, err := t.Request(w.api, context.TODO())
-	if err != nil {
-		return err
-	}
-	provider, err := t.Transform(data)
-	if err != nil {
-		return err
-	}
-	inserted, updated, err := w.db.UpsertDocs(provider, context.TODO())
-	if err != nil {
-		return err
-	}
-	w.log.Printf("%d documents added to '%s'", inserted, provider.CollectionName)
-	w.log.Printf("%d documents updated in '%s'.", updated, provider.CollectionName)
-	return nil
+type docTransformer interface {
+	Transform(data transform.APIData) (*db.DocsProvider, error)
 }
 
 func (w *Worker) do() {
@@ -79,8 +60,55 @@ func (w *Worker) do() {
 		}
 	}()
 
-	warTransformer := transform.War{}
-	if err = processDoc(w, warTransformer); err != nil {
+	var data transform.APIData
+	data, err = w.queryData()
+	if err != nil {
 		return
 	}
+
+	warTransformer := transform.War{}
+	if err = w.upsertDoc(data, warTransformer); err != nil {
+		return
+	}
+	planetsTransformer := transform.Planets{}
+	if err = w.upsertDoc(data, planetsTransformer); err != nil {
+		return
+	}
+}
+
+func (w *Worker) queryData() (data transform.APIData, err error) {
+	data.Planets, err = apiWithTimeout(w.api.Planets, 5*time.Second)
+	if err != nil {
+		return
+	}
+	data.WarID, err = apiWithTimeout(w.api.WarID, 1*time.Second)
+	if err != nil {
+		return
+	}
+	data.War, err = apiWithTimeout(w.api.War, 5*time.Second)
+	if err != nil {
+		return
+	}
+	return
+}
+
+func (w *Worker) upsertDoc(data transform.APIData, t docTransformer) error {
+	provider, err := t.Transform(data)
+	if err != nil {
+		return err
+	}
+	inserted, updated, err := w.db.UpsertDocs(provider, context.TODO())
+	if err != nil {
+		return err
+	}
+	w.log.Printf("%d documents added to '%s'", inserted, provider.CollectionName)
+	w.log.Printf("%d documents updated in '%s'.", updated, provider.CollectionName)
+	return nil
+}
+
+func apiWithTimeout[T any](apiFunc func(context.Context) (T, error), timeout time.Duration) (T, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	return apiFunc(ctx)
 }

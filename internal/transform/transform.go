@@ -2,18 +2,17 @@
 package transform
 
 import (
-	"context"
 	"fmt"
 	"reflect"
 	"strings"
-	"time"
+
+	"github.com/stnokott/helldivers-client/internal/api"
 )
 
-func apiWithTimeout[T any](apiFunc func(context.Context) (T, error), timeout time.Duration) (T, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
-	defer cancel()
-
-	return apiFunc(ctx)
+type APIData struct {
+	Planets *[]api.Planet
+	WarID   *api.WarId
+	War     *api.War
 }
 
 // errFromNils returns an error containing the list of nil fields in v.

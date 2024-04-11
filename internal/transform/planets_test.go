@@ -19,7 +19,7 @@ func mustPlanetPosition(rawJSON []byte) *api.Planet_Position {
 
 func TestPlanetsTransform(t *testing.T) {
 	type args struct {
-		data planetsRequestData
+		data APIData
 	}
 	tests := []struct {
 		name    string
@@ -31,17 +31,19 @@ func TestPlanetsTransform(t *testing.T) {
 		{
 			name: "complete",
 			args: args{
-				data: &[]api.Planet{
-					{
-						Index:          ptr(int32(5)),
-						Name:           ptr("Foo"),
-						Sector:         ptr("Bar"),
-						Position:       mustPlanetPosition([]byte(`{"X": 3, "Y": 5}`)),
-						Waypoints:      &[]int32{4, 5, 6},
-						Disabled:       ptr(false),
-						MaxHealth:      ptr(int64(1000)),
-						InitialOwner:   ptr("Automatons"),
-						RegenPerSecond: ptr(float64(0.6)),
+				data: APIData{
+					Planets: &[]api.Planet{
+						{
+							Index:          ptr(int32(5)),
+							Name:           ptr("Foo"),
+							Sector:         ptr("Bar"),
+							Position:       mustPlanetPosition([]byte(`{"X": 3, "Y": 5}`)),
+							Waypoints:      &[]int32{4, 5, 6},
+							Disabled:       ptr(false),
+							MaxHealth:      ptr(int64(1000)),
+							InitialOwner:   ptr("Automatons"),
+							RegenPerSecond: ptr(float64(0.6)),
+						},
 					},
 				},
 			},
@@ -69,17 +71,19 @@ func TestPlanetsTransform(t *testing.T) {
 		{
 			name: "nil disabled",
 			args: args{
-				data: &[]api.Planet{
-					{
-						Index:          ptr(int32(5)),
-						Name:           ptr("Foo"),
-						Sector:         ptr("Bar"),
-						Position:       mustPlanetPosition([]byte(`{"X": 3, "Y": 5}`)),
-						Waypoints:      &[]int32{4, 5, 6},
-						Disabled:       nil,
-						MaxHealth:      ptr(int64(1000)),
-						InitialOwner:   ptr("Automatons"),
-						RegenPerSecond: ptr(float64(0.6)),
+				data: APIData{
+					Planets: &[]api.Planet{
+						{
+							Index:          ptr(int32(5)),
+							Name:           ptr("Foo"),
+							Sector:         ptr("Bar"),
+							Position:       mustPlanetPosition([]byte(`{"X": 3, "Y": 5}`)),
+							Waypoints:      &[]int32{4, 5, 6},
+							Disabled:       nil,
+							MaxHealth:      ptr(int64(1000)),
+							InitialOwner:   ptr("Automatons"),
+							RegenPerSecond: ptr(float64(0.6)),
+						},
 					},
 				},
 			},
@@ -89,17 +93,19 @@ func TestPlanetsTransform(t *testing.T) {
 		{
 			name: "invalid position",
 			args: args{
-				data: &[]api.Planet{
-					{
-						Index:          ptr(int32(5)),
-						Name:           ptr("Foo"),
-						Sector:         ptr("Bar"),
-						Position:       mustPlanetPosition([]byte(`{"X": "3.5", "Y": 5}`)),
-						Waypoints:      &[]int32{4, 5, 6},
-						Disabled:       ptr(false),
-						MaxHealth:      ptr(int64(1000)),
-						InitialOwner:   ptr("Automatons"),
-						RegenPerSecond: ptr(float64(0.6)),
+				data: APIData{
+					Planets: &[]api.Planet{
+						{
+							Index:          ptr(int32(5)),
+							Name:           ptr("Foo"),
+							Sector:         ptr("Bar"),
+							Position:       mustPlanetPosition([]byte(`{"X": "3.5", "Y": 5}`)),
+							Waypoints:      &[]int32{4, 5, 6},
+							Disabled:       ptr(false),
+							MaxHealth:      ptr(int64(1000)),
+							InitialOwner:   ptr("Automatons"),
+							RegenPerSecond: ptr(float64(0.6)),
+						},
 					},
 				},
 			},
