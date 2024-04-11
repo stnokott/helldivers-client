@@ -9,9 +9,9 @@ import (
 	"github.com/stnokott/helldivers-client/internal/db/structs"
 )
 
-func mustPlanetPosition(rawJSON []byte) *api.Planet_Position {
+func mustPlanetPosition(from api.Position) *api.Planet_Position {
 	planetPosition := new(api.Planet_Position)
-	if err := planetPosition.UnmarshalJSON(rawJSON); err != nil {
+	if err := planetPosition.FromPosition(from); err != nil {
 		panic(err)
 	}
 	return planetPosition
@@ -34,10 +34,13 @@ func TestPlanetsTransform(t *testing.T) {
 				data: APIData{
 					Planets: &[]api.Planet{
 						{
-							Index:          ptr(int32(5)),
-							Name:           ptr("Foo"),
-							Sector:         ptr("Bar"),
-							Position:       mustPlanetPosition([]byte(`{"X": 3, "Y": 5}`)),
+							Index:  ptr(int32(5)),
+							Name:   ptr("Foo"),
+							Sector: ptr("Bar"),
+							Position: mustPlanetPosition(api.Position{
+								X: ptr(float64(3)),
+								Y: ptr(float64(5)),
+							}),
 							Waypoints:      &[]int32{4, 5, 6},
 							Disabled:       ptr(false),
 							MaxHealth:      ptr(int64(1000)),
@@ -74,10 +77,13 @@ func TestPlanetsTransform(t *testing.T) {
 				data: APIData{
 					Planets: &[]api.Planet{
 						{
-							Index:          ptr(int32(5)),
-							Name:           ptr("Foo"),
-							Sector:         ptr("Bar"),
-							Position:       mustPlanetPosition([]byte(`{"X": 3, "Y": 5}`)),
+							Index:  ptr(int32(5)),
+							Name:   ptr("Foo"),
+							Sector: ptr("Bar"),
+							Position: mustPlanetPosition(api.Position{
+								X: ptr(float64(3)),
+								Y: ptr(float64(5)),
+							}),
 							Waypoints:      &[]int32{4, 5, 6},
 							Disabled:       nil,
 							MaxHealth:      ptr(int64(1000)),
@@ -91,15 +97,18 @@ func TestPlanetsTransform(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "invalid position",
+			name: "nil embedded",
 			args: args{
 				data: APIData{
 					Planets: &[]api.Planet{
 						{
-							Index:          ptr(int32(5)),
-							Name:           ptr("Foo"),
-							Sector:         ptr("Bar"),
-							Position:       mustPlanetPosition([]byte(`{"X": "3.5", "Y": 5}`)),
+							Index:  ptr(int32(5)),
+							Name:   ptr("Foo"),
+							Sector: ptr("Bar"),
+							Position: mustPlanetPosition(api.Position{
+								X: nil,
+								Y: ptr(float64(5)),
+							}),
 							Waypoints:      &[]int32{4, 5, 6},
 							Disabled:       ptr(false),
 							MaxHealth:      ptr(int64(1000)),

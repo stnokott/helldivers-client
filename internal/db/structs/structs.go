@@ -33,13 +33,13 @@ type PlanetPosition struct {
 
 type Campaign struct {
 	// The unique identifier of this Campaign
-	ID int `bson:"_id"`
+	ID int32 `bson:"_id"`
 	// The planet on which this campaign is being fought
-	PlanetID int `bson:"planet_id"`
+	PlanetID int32 `bson:"planet_id"`
 	// The type of campaign, this should be mapped onto an enum
-	Type int
+	Type int32
 	// Indicates how many campaigns have already been fought on this Planet
-	Count int
+	Count int32
 }
 
 type Dispatch struct {

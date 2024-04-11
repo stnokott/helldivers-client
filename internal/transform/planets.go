@@ -8,7 +8,7 @@ import (
 	"github.com/stnokott/helldivers-client/internal/db/structs"
 )
 
-// Planets implements worker.docTransformer[warRequestData]
+// Planets implements worker.docTransformer
 type Planets struct{}
 
 func (_ Planets) Transform(data APIData) (*db.DocsProvider, error) {

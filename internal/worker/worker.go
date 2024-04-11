@@ -64,13 +64,7 @@ func (w *Worker) do() {
 	if err != nil {
 		return
 	}
-
-	warTransformer := transform.War{}
-	if err = w.upsertDoc(data, warTransformer); err != nil {
-		return
-	}
-	planetsTransformer := transform.Planets{}
-	if err = w.upsertDoc(data, planetsTransformer); err != nil {
+	if err = w.upsertData(data); err != nil {
 		return
 	}
 }
@@ -86,6 +80,26 @@ func (w *Worker) queryData() (data transform.APIData, err error) {
 	}
 	data.War, err = apiWithTimeout(w.api.War, 5*time.Second)
 	if err != nil {
+		return
+	}
+	data.Campaigns, err = apiWithTimeout(w.api.Campaigns, 5*time.Second)
+	if err != nil {
+		return
+	}
+	return
+}
+
+func (w *Worker) upsertData(data transform.APIData) (err error) {
+	warTransformer := transform.War{}
+	if err = w.upsertDoc(data, warTransformer); err != nil {
+		return
+	}
+	planetsTransformer := transform.Planets{}
+	if err = w.upsertDoc(data, planetsTransformer); err != nil {
+		return
+	}
+	campaignsTransformer := transform.Campaigns{}
+	if err = w.upsertDoc(data, campaignsTransformer); err != nil {
 		return
 	}
 	return

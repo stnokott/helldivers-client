@@ -7,7 +7,7 @@ import (
 	"github.com/stnokott/helldivers-client/internal/db/structs"
 )
 
-// War implements worker.docTransformer[warRequestData]
+// War implements worker.docTransformer
 type War struct{}
 
 func (_ War) Transform(data APIData) (*db.DocsProvider, error) {

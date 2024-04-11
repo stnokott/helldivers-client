@@ -10,9 +10,10 @@ import (
 )
 
 type APIData struct {
-	Planets *[]api.Planet
-	WarID   *api.WarId
-	War     *api.War
+	Planets   *[]api.Planet
+	WarID     *api.WarId
+	War       *api.War
+	Campaigns *[]api.Campaign2
 }
 
 // errFromNils returns an error containing the list of nil fields in v.

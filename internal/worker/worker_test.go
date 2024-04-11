@@ -68,6 +68,10 @@ func TestWorkerUpsertPlanets(t *testing.T) {
 	testWorkerUpsertDoc(transform.Planets{}, t)
 }
 
+func TestWorkerUpsertCampaigns(t *testing.T) {
+	testWorkerUpsertDoc(transform.Campaigns{}, t)
+}
+
 func TestWorkerUpsertWar(t *testing.T) {
 	testWorkerUpsertDoc(transform.War{}, t)
 }
