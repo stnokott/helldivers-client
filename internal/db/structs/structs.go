@@ -15,7 +15,7 @@ type Planet struct {
 	// The coordinates of this planet on the galactic war map
 	Position PlanetPosition `bson:"position,omitempty"`
 	// A list of Index of all the planets to which this planet is connected
-	Waypoints []int32 `bson:"waypoints,omitempty"`
+	Waypoints []int32 `bson:"waypoints"`
 	// Whether or not this planet is disabled, as assigned by ArrowHead
 	Disabled bool `bson:"disabled"`
 	// The maximum health pool of this planet
@@ -118,13 +118,13 @@ type Snapshot struct {
 	// FK ID of war
 	WarID int `bson:"war_id"`
 	// Currently active assignments
-	AssignmentIDs []int `bson:"assignment_ids,omitempty"`
+	AssignmentIDs []int `bson:"assignment_ids"`
 	// Currently active campaigns
-	CampaignIDs []int `bson:"campaign_ids,omitempty"`
+	CampaignIDs []int `bson:"campaign_ids"`
 	// Currently active dispatches
-	DispatchIDs []int `bson:"dispatch_ids,omitempty"`
+	DispatchIDs []int `bson:"dispatch_ids"`
 	// Dynamic data about planets
-	Planets []PlanetSnapshot `bson:"planets,omitempty"`
+	Planets []PlanetSnapshot `bson:"planets"`
 }
 
 // PlanetSnapshot contains information about planets currently part of this war
