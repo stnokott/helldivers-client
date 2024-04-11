@@ -1,9 +1,10 @@
 package client
 
 import (
-	"context"
+	"errors"
 	"log"
 	"net/http"
+	"time"
 
 	"golang.org/x/time/rate"
 )
@@ -23,15 +24,16 @@ func newRateLimitHTTPClient(rl *rate.Limiter, logger *log.Logger) *rateLimitHTTP
 }
 
 func (c *rateLimitHTTPClient) Do(req *http.Request) (*http.Response, error) {
-	ctx := context.Background()
-	if !c.rl.Allow() {
+	reserved := c.rl.Reserve()
+	if !reserved.OK() {
+		return nil, errors.New("rate limiter configured incorrectly")
+	}
+	delay := reserved.Delay()
+	if delay > 0 {
 		c.log.Print("WARN: rate limit exceeded, waiting")
+		time.Sleep(delay)
 	}
-	err := c.rl.Wait(ctx)
-	if err != nil {
-		return nil, err
-	}
-	c.log.Println(req.URL.Path)
+	c.log.Printf("requesting %s", req.URL.Path)
 	resp, err := c.client.Do(req)
 	if err != nil {
 		return nil, err
