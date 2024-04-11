@@ -36,38 +36,11 @@ func (w *Worker) Run(interval config.WorkerInterval) {
 	defer ticker.Stop()
 
 	w.log.Printf("worker running every %s", interval.String())
-	stop := make(chan struct{})
 
 	// this construct forces w.do() to run immediately after starting the ticker.
 	// (by default, NewTicker sends the first tick after interval has expired for the 1st time)
-loop:
-	for {
-		w.do(stop)
-
-		select {
-		case <-ticker.C:
-			continue
-		case <-stop:
-			break loop
-		}
-	}
-}
-
-func (w *Worker) do(stop chan<- struct{}) {
-	w.log.Println("synchronizing")
-
-	var err error
-	defer func() {
-		if err != nil {
-			w.log.Printf("error: %v", err)
-			stop <- struct{}{}
-		}
-		w.log.Println("synchronized")
-	}()
-
-	warTransformer := transform.War{}
-	if err = processDoc(w, warTransformer); err != nil {
-		return
+	for ; true; <-ticker.C {
+		w.do()
 	}
 }
 
@@ -93,4 +66,22 @@ func processDoc[T any](w *Worker, t docTransformer[T]) error {
 		w.log.Printf("new %s document added. ID=%d", provider.CollectionName(), provider.DocID())
 	}
 	return nil
+}
+
+func (w *Worker) do() {
+	w.log.Println("synchronizing")
+
+	var err error
+	defer func() {
+		if err != nil {
+			w.log.Printf("error: %v", err)
+		} else {
+			w.log.Println("synchronized")
+		}
+	}()
+
+	warTransformer := transform.War{}
+	if err = processDoc(w, warTransformer); err != nil {
+		return
+	}
 }
