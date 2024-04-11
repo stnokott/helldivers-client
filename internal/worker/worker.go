@@ -97,10 +97,7 @@ func (w *Worker) upsertDoc(data transform.APIData, t docTransformer) error {
 	if err != nil {
 		return err
 	}
-	inserted, updated, err := w.db.UpsertDocs(provider, context.TODO())
-	if err != nil {
-		return err
-	}
+	inserted, updated := w.db.UpsertDocs(provider, context.TODO())
 	w.log.Printf("%d documents added to '%s'", inserted, provider.CollectionName)
 	w.log.Printf("%d documents updated in '%s'.", updated, provider.CollectionName)
 	return nil

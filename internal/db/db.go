@@ -81,19 +81,18 @@ type DocWrapper struct {
 	Document any
 }
 
-func (c *Client) UpsertDocs(provider *DocsProvider, ctx context.Context) (inserted int, updated int, err error) {
+func (c *Client) UpsertDocs(provider *DocsProvider, ctx context.Context) (inserted int, updated int) {
 	coll := c.db.Collection(string(provider.CollectionName))
 	for _, doc := range provider.Docs {
-		var result *mongo.UpdateResult
-		result, err = coll.UpdateByID(
+		result, err := coll.UpdateByID(
 			ctx,
 			doc.DocID,
 			bson.D{{Key: "$set", Value: doc.Document}},
 			options.Update().SetUpsert(true),
 		)
 		if err != nil {
-			err = fmt.Errorf("failed to upsert into %s: %w", coll.Name(), err)
-			return
+			c.log.Printf("failed to upsert into %s: %v", coll.Name(), err)
+			continue
 		}
 		inserted += int(result.UpsertedCount - result.MatchedCount)
 		updated += int(result.MatchedCount)
