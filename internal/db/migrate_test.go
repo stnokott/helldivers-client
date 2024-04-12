@@ -565,12 +565,12 @@ func TestAssignmentsSchema(t *testing.T) {
 				Briefing:    "Briefing text",
 				Description: "Description text, but a bit longer",
 				Expiration:  PrimitiveTime(time.Now().Add(5 * 24 * time.Hour)),
-				Progress:    []int{2, 3, 4},
+				Progress:    []int32{2, 3, 4},
 				Tasks: []structs.AssignmentTask{
 					{
 						Type:       2,
-						Values:     []int{1, 2, 3},
-						ValueTypes: []int{5, 6, 7},
+						Values:     []int32{1, 2, 3},
+						ValueTypes: []int32{5, 6, 7},
 					},
 				},
 				Reward: structs.AssignmentReward{
@@ -604,8 +604,8 @@ func TestAssignmentsSchema(t *testing.T) {
 				Tasks: []structs.AssignmentTask{
 					{
 						Type:       2,
-						Values:     []int{1, 2, 3},
-						ValueTypes: []int{5, 6, 7},
+						Values:     []int32{1, 2, 3},
+						ValueTypes: []int32{5, 6, 7},
 					},
 				},
 				Reward: structs.AssignmentReward{

@@ -90,6 +90,10 @@ func (w *Worker) queryData() (data transform.APIData, err error) {
 	if err != nil {
 		return
 	}
+	data.Assignments, err = apiWithTimeout(w.api.Assignments, 5*time.Second)
+	if err != nil {
+		return
+	}
 	return
 }
 
@@ -108,6 +112,14 @@ func (w *Worker) upsertData(data transform.APIData) (err error) {
 	}
 	dispatchesTransformer := transform.Dispatches{}
 	if err = upsertDoc(w, data, dispatchesTransformer); err != nil {
+		return
+	}
+	eventsTransformer := transform.Events{}
+	if err = upsertDoc(w, data, eventsTransformer); err != nil {
+		return
+	}
+	assignmentsTransformer := transform.Assignments{}
+	if err = upsertDoc(w, data, assignmentsTransformer); err != nil {
 		return
 	}
 	return

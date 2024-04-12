@@ -70,7 +70,7 @@ type Event struct {
 
 type Assignment struct {
 	// The unique identifier of this assignment
-	ID int `bson:"_id"`
+	ID int64 `bson:"_id"`
 	// The title of the assignment
 	Title string `bson:"title,omitempty"`
 	// A long form description of the assignment, usually contains context
@@ -80,7 +80,7 @@ type Assignment struct {
 	// The date when the assignment will expire.
 	Expiration primitive.Timestamp `bson:"expiration,omitempty"`
 	// A list of numbers, how they represent progress is unknown.
-	Progress []int `bson:"progress"`
+	Progress []int32 `bson:"progress"`
 	// A list of tasks that need to be completed for this assignment
 	Tasks []AssignmentTask `bson:"tasks,omitempty"`
 	// The reward for completing the assignment
@@ -90,18 +90,18 @@ type Assignment struct {
 // AssignmentTask represents a task in an Assignment that needs to be completed to finish the assignment
 type AssignmentTask struct {
 	// The type of task this represents
-	Type int
+	Type int32
 	// A list of numbers, purpose unknown
-	Values []int `bson:"values,omitempty"`
+	Values []int32 `bson:"values,omitempty"`
 	// A list of numbers, purpose unknown
-	ValueTypes []int `bson:"value_types,omitempty"`
+	ValueTypes []int32 `bson:"value_types,omitempty"`
 }
 
 type AssignmentReward struct {
 	// The type of reward (medals, super credits, ...)
-	Type int
+	Type int32
 	// The amount of Type that will be awarded
-	Amount int
+	Amount int32
 }
 
 type War struct {

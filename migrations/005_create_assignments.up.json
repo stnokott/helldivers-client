@@ -19,7 +19,7 @@
 				"additionalProperties": false,
 				"properties": {
 					"_id": {
-						"bsonType": "int",
+						"bsonType": "long",
 						"description": "The unique identifier of this assignment."
 					},
 					"title": {
