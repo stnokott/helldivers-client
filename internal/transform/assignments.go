@@ -2,7 +2,9 @@ package transform
 
 import (
 	"errors"
+	"fmt"
 
+	"github.com/stnokott/helldivers-client/internal/api"
 	"github.com/stnokott/helldivers-client/internal/db"
 	"github.com/stnokott/helldivers-client/internal/db/structs"
 )
@@ -29,18 +31,13 @@ func (_ Assignments) Transform(data APIData) (*db.DocsProvider[structs.Assignmen
 			return nil, errFromNils(&assignment)
 		}
 
-		reward, err := assignment.Reward.AsReward2()
+		reward, err := parseAssignmentReward(assignment.Reward)
 		if err != nil {
 			return nil, err
 		}
-		tasksRaw := *assignment.Tasks
-		tasks := make([]structs.AssignmentTask, len(tasksRaw))
-		for i, task := range tasksRaw {
-			tasks[i] = structs.AssignmentTask{
-				Type:       *task.Type,
-				Values:     *task.Values,
-				ValueTypes: *task.ValueTypes,
-			}
+		tasks, err := convertAssignmentTasks(assignment.Tasks)
+		if err != nil {
+			return nil, err
 		}
 
 		assignmentDocs[i] = db.DocWrapper[structs.Assignment]{
@@ -65,4 +62,30 @@ func (_ Assignments) Transform(data APIData) (*db.DocsProvider[structs.Assignmen
 		CollectionName: db.CollAssignments,
 		Docs:           assignmentDocs,
 	}, nil
+}
+
+func parseAssignmentReward(in *api.Assignment2_Reward) (api.Reward2, error) {
+	reward, err := in.AsReward2()
+	if err != nil {
+		return api.Reward2{}, fmt.Errorf("cannot parse assignment reward: %w", err)
+	}
+	if reward.Amount == nil || reward.Type == nil {
+		return api.Reward2{}, errFromNils(&reward)
+	}
+	return reward, nil
+}
+
+func convertAssignmentTasks(in *[]api.Task2) ([]structs.AssignmentTask, error) {
+	tasks := make([]structs.AssignmentTask, len(*in))
+	for i, task := range *in {
+		if task.Type == nil || task.ValueTypes == nil || task.Values == nil {
+			return nil, errFromNils(&task)
+		}
+		tasks[i] = structs.AssignmentTask{
+			Type:       *task.Type,
+			Values:     *task.Values,
+			ValueTypes: *task.ValueTypes,
+		}
+	}
+	return tasks, nil
 }

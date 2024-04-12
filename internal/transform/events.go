@@ -2,7 +2,9 @@ package transform
 
 import (
 	"errors"
+	"fmt"
 
+	"github.com/stnokott/helldivers-client/internal/api"
 	"github.com/stnokott/helldivers-client/internal/db"
 	"github.com/stnokott/helldivers-client/internal/db/structs"
 )
@@ -22,17 +24,9 @@ func (_ Events) Transform(data APIData) (*db.DocsProvider[structs.Event], error)
 		if planet.Event == nil {
 			continue
 		}
-		event, err := planet.Event.AsEvent()
+		event, err := parsePlanetEvent(planet.Event)
 		if err != nil {
 			return nil, err
-		}
-		if event.Id == nil ||
-			event.EventType == nil ||
-			event.Faction == nil ||
-			event.MaxHealth == nil ||
-			event.StartTime == nil ||
-			event.EndTime == nil {
-			return nil, errFromNils(&event)
 		}
 
 		eventDocs = append(eventDocs, db.DocWrapper[structs.Event]{
@@ -51,4 +45,20 @@ func (_ Events) Transform(data APIData) (*db.DocsProvider[structs.Event], error)
 		CollectionName: db.CollEvents,
 		Docs:           eventDocs,
 	}, nil
+}
+
+func parsePlanetEvent(in *api.Planet_Event) (api.Event, error) {
+	event, err := in.AsEvent()
+	if err != nil {
+		return api.Event{}, fmt.Errorf("cannot parse planet event: %w", err)
+	}
+	if event.Id == nil ||
+		event.EventType == nil ||
+		event.Faction == nil ||
+		event.MaxHealth == nil ||
+		event.StartTime == nil ||
+		event.EndTime == nil {
+		return api.Event{}, errFromNils(&event)
+	}
+	return event, nil
 }

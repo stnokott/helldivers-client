@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/stnokott/helldivers-client/internal/api"
 	"github.com/stnokott/helldivers-client/internal/db"
 	"github.com/stnokott/helldivers-client/internal/db/structs"
 )
@@ -27,12 +28,9 @@ func (_ Campaigns) Transform(data APIData) (*db.DocsProvider[structs.Campaign], 
 			return nil, errFromNils(&campaign)
 		}
 
-		planetRef, err := campaign.Planet.AsPlanet()
+		planetRef, err := parseCampaignPlanet(campaign.Planet)
 		if err != nil {
-			return nil, fmt.Errorf("cannot parse campaign planet: %w", err)
-		}
-		if planetRef.Index == nil {
-			return nil, errors.New("campaign planet ID is nil")
+			return nil, err
 		}
 
 		campaignDocs[i] = db.DocWrapper[structs.Campaign]{
@@ -49,4 +47,15 @@ func (_ Campaigns) Transform(data APIData) (*db.DocsProvider[structs.Campaign], 
 		CollectionName: db.CollCampaigns,
 		Docs:           campaignDocs,
 	}, nil
+}
+
+func parseCampaignPlanet(in *api.Campaign2_Planet) (api.Planet, error) {
+	planet, err := in.AsPlanet()
+	if err != nil {
+		return api.Planet{}, fmt.Errorf("cannot parse campaign planet: %w", err)
+	}
+	if planet.Index == nil {
+		return api.Planet{}, errFromNils(&planet)
+	}
+	return planet, nil
 }
