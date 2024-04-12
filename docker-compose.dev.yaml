@@ -7,7 +7,7 @@ networks:
 services:
   api:
     build:
-      context: https://github.com/helldivers-2/helldivers2-api.git
+      context: https://github.com/helldivers-2/helldivers2-api.git#f2992c626725a3bef26831cd07bc624704febc2b
       dockerfile: ./src/Helldivers-2-API/Dockerfile
     ports:
       - 4000:8080
