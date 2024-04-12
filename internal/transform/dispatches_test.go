@@ -18,7 +18,7 @@ func TestDispatchesTransform(t *testing.T) {
 		name    string
 		d       Dispatches
 		args    args
-		want    *db.DocsProvider
+		want    *db.DocsProvider[structs.Dispatch]
 		wantErr bool
 	}{
 		{
@@ -41,9 +41,9 @@ func TestDispatchesTransform(t *testing.T) {
 					},
 				},
 			},
-			want: &db.DocsProvider{
+			want: &db.DocsProvider[structs.Dispatch]{
 				CollectionName: "dispatches",
-				Docs: []db.DocWrapper{
+				Docs: []db.DocWrapper[structs.Dispatch]{
 					{
 						DocID: int32(5),
 						Document: structs.Dispatch{

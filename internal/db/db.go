@@ -72,17 +72,17 @@ func (c *Client) Disconnect() error {
 	return nil
 }
 
-type DocsProvider struct {
+type DocsProvider[T any] struct {
 	CollectionName CollectionName
-	Docs           []DocWrapper
+	Docs           []DocWrapper[T]
 }
 
-type DocWrapper struct {
+type DocWrapper[T any] struct {
 	DocID    any
-	Document any
+	Document T
 }
 
-func (c *Client) UpsertDocs(provider *DocsProvider, ctx context.Context) {
+func UpsertDocs[T any](c *Client, provider *DocsProvider[T], ctx context.Context) {
 	var matched, inserted, updated int
 	coll := c.db.Collection(string(provider.CollectionName))
 	for _, doc := range provider.Docs {

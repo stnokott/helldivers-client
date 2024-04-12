@@ -10,13 +10,13 @@ import (
 // Dispatches implements worker.docTransformer
 type Dispatches struct{}
 
-func (_ Dispatches) Transform(data APIData) (*db.DocsProvider, error) {
+func (_ Dispatches) Transform(data APIData) (*db.DocsProvider[structs.Dispatch], error) {
 	if data.Dispatches == nil {
 		return nil, errors.New("got nil dispatches slice")
 	}
 
 	dispatches := *data.Dispatches
-	dispatchDocs := make([]db.DocWrapper, len(dispatches))
+	dispatchDocs := make([]db.DocWrapper[structs.Dispatch], len(dispatches))
 
 	for i, dispatch := range dispatches {
 		if dispatch.Id == nil ||
@@ -26,7 +26,7 @@ func (_ Dispatches) Transform(data APIData) (*db.DocsProvider, error) {
 			return nil, errFromNils(&dispatch)
 		}
 
-		dispatchDocs[i] = db.DocWrapper{
+		dispatchDocs[i] = db.DocWrapper[structs.Dispatch]{
 			DocID: *dispatch.Id,
 			Document: structs.Dispatch{
 				ID:         *dispatch.Id,
@@ -36,7 +36,7 @@ func (_ Dispatches) Transform(data APIData) (*db.DocsProvider, error) {
 			},
 		}
 	}
-	return &db.DocsProvider{
+	return &db.DocsProvider[structs.Dispatch]{
 		CollectionName: db.CollDispatches,
 		Docs:           dispatchDocs,
 	}, nil

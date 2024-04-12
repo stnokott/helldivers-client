@@ -44,8 +44,8 @@ func (w *Worker) Run(interval config.Interval) {
 	}
 }
 
-type docTransformer interface {
-	Transform(data transform.APIData) (*db.DocsProvider, error)
+type docTransformer[T any] interface {
+	Transform(data transform.APIData) (*db.DocsProvider[T], error)
 }
 
 func (w *Worker) do() {
@@ -95,30 +95,30 @@ func (w *Worker) queryData() (data transform.APIData, err error) {
 
 func (w *Worker) upsertData(data transform.APIData) (err error) {
 	warTransformer := transform.War{}
-	if err = w.upsertDoc(data, warTransformer); err != nil {
+	if err = upsertDoc(w, data, warTransformer); err != nil {
 		return
 	}
 	planetsTransformer := transform.Planets{}
-	if err = w.upsertDoc(data, planetsTransformer); err != nil {
+	if err = upsertDoc(w, data, planetsTransformer); err != nil {
 		return
 	}
 	campaignsTransformer := transform.Campaigns{}
-	if err = w.upsertDoc(data, campaignsTransformer); err != nil {
+	if err = upsertDoc(w, data, campaignsTransformer); err != nil {
 		return
 	}
 	dispatchesTransformer := transform.Dispatches{}
-	if err = w.upsertDoc(data, dispatchesTransformer); err != nil {
+	if err = upsertDoc(w, data, dispatchesTransformer); err != nil {
 		return
 	}
 	return
 }
 
-func (w *Worker) upsertDoc(data transform.APIData, t docTransformer) error {
+func upsertDoc[T any](w *Worker, data transform.APIData, t docTransformer[T]) error {
 	provider, err := t.Transform(data)
 	if err != nil {
 		return err
 	}
-	w.db.UpsertDocs(provider, context.TODO())
+	db.UpsertDocs(w.db, provider, context.TODO())
 	return nil
 }
 

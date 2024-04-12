@@ -10,7 +10,7 @@ import (
 // War implements worker.docTransformer
 type War struct{}
 
-func (_ War) Transform(data APIData) (*db.DocsProvider, error) {
+func (_ War) Transform(data APIData) (*db.DocsProvider[structs.War], error) {
 	warID := data.WarID
 	if warID.Id == nil {
 		return nil, errors.New("got nil war ID")
@@ -23,9 +23,9 @@ func (_ War) Transform(data APIData) (*db.DocsProvider, error) {
 		war.Factions == nil {
 		return nil, errFromNils(war)
 	}
-	return &db.DocsProvider{
+	return &db.DocsProvider[structs.War]{
 		CollectionName: db.CollWars,
-		Docs: []db.DocWrapper{
+		Docs: []db.DocWrapper[structs.War]{
 			{
 				DocID: *warID.Id,
 				Document: structs.War{

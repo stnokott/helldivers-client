@@ -25,7 +25,7 @@ func TestPlanetsTransform(t *testing.T) {
 		name    string
 		p       Planets
 		args    args
-		want    *db.DocsProvider
+		want    *db.DocsProvider[structs.Planet]
 		wantErr bool
 	}{
 		{
@@ -50,9 +50,9 @@ func TestPlanetsTransform(t *testing.T) {
 					},
 				},
 			},
-			want: &db.DocsProvider{
+			want: &db.DocsProvider[structs.Planet]{
 				CollectionName: "planets",
-				Docs: []db.DocWrapper{
+				Docs: []db.DocWrapper[structs.Planet]{
 					{
 						DocID: int32(5),
 						Document: structs.Planet{

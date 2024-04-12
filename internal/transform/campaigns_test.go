@@ -25,7 +25,7 @@ func TestCampaignsTransform(t *testing.T) {
 		name    string
 		c       Campaigns
 		args    args
-		want    *db.DocsProvider
+		want    *db.DocsProvider[structs.Campaign]
 		wantErr bool
 	}{
 		{
@@ -52,9 +52,9 @@ func TestCampaignsTransform(t *testing.T) {
 					},
 				},
 			},
-			want: &db.DocsProvider{
+			want: &db.DocsProvider[structs.Campaign]{
 				CollectionName: "campaigns",
-				Docs: []db.DocWrapper{
+				Docs: []db.DocWrapper[structs.Campaign]{
 					{
 						DocID: int32(5),
 						Document: structs.Campaign{

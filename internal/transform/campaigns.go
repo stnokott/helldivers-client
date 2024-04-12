@@ -11,13 +11,13 @@ import (
 // Campaigns implements worker.docTransformer
 type Campaigns struct{}
 
-func (_ Campaigns) Transform(data APIData) (*db.DocsProvider, error) {
+func (_ Campaigns) Transform(data APIData) (*db.DocsProvider[structs.Campaign], error) {
 	if data.Campaigns == nil {
 		return nil, errors.New("got nil campaigns slice")
 	}
 
 	campaigns := *data.Campaigns
-	campaignDocs := make([]db.DocWrapper, len(campaigns))
+	campaignDocs := make([]db.DocWrapper[structs.Campaign], len(campaigns))
 
 	for i, campaign := range campaigns {
 		if campaign.Id == nil ||
@@ -35,7 +35,7 @@ func (_ Campaigns) Transform(data APIData) (*db.DocsProvider, error) {
 			return nil, errors.New("campaign planet ID is nil")
 		}
 
-		campaignDocs[i] = db.DocWrapper{
+		campaignDocs[i] = db.DocWrapper[structs.Campaign]{
 			DocID: *campaign.Id,
 			Document: structs.Campaign{
 				ID:       *campaign.Id,
@@ -45,7 +45,7 @@ func (_ Campaigns) Transform(data APIData) (*db.DocsProvider, error) {
 			},
 		}
 	}
-	return &db.DocsProvider{
+	return &db.DocsProvider[structs.Campaign]{
 		CollectionName: db.CollCampaigns,
 		Docs:           campaignDocs,
 	}, nil

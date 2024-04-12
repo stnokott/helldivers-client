@@ -49,7 +49,7 @@ func TestWorkerQueryData(t *testing.T) {
 	}
 }
 
-func testWorkerUpsertDoc(transformer docTransformer, t *testing.T) {
+func testWorkerUpsertDoc[T any](transformer docTransformer[T], t *testing.T) {
 	t.Skip("currently skipped until we can disable rate-limiting in API") // TODO
 	worker := mustWorker(t)
 
@@ -58,7 +58,7 @@ func testWorkerUpsertDoc(transformer docTransformer, t *testing.T) {
 		t.Skipf("API data not available: %v", err)
 		return
 	}
-	if err := worker.upsertDoc(data, transformer); err != nil {
+	if err := upsertDoc(worker, data, transformer); err != nil {
 		t.Errorf("worker.upsertDoc() err = %v, want nil", err)
 		return
 	}
@@ -74,4 +74,8 @@ func TestWorkerUpsertCampaigns(t *testing.T) {
 
 func TestWorkerUpsertWar(t *testing.T) {
 	testWorkerUpsertDoc(transform.War{}, t)
+}
+
+func TestWorkerUpserDispatches(t *testing.T) {
+	testWorkerUpsertDoc(transform.Dispatches{}, t)
 }

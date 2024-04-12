@@ -20,7 +20,7 @@ func TestWarTransform(t *testing.T) {
 		name    string
 		w       War
 		args    args
-		want    *db.DocsProvider
+		want    *db.DocsProvider[structs.War]
 		wantErr bool
 	}{
 		{
@@ -36,9 +36,9 @@ func TestWarTransform(t *testing.T) {
 					},
 				},
 			},
-			want: &db.DocsProvider{
+			want: &db.DocsProvider[structs.War]{
 				CollectionName: "wars",
-				Docs: []db.DocWrapper{
+				Docs: []db.DocWrapper[structs.War]{
 					{
 						DocID: int32(2),
 						Document: structs.War{

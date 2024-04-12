@@ -11,13 +11,13 @@ import (
 // Planets implements worker.docTransformer
 type Planets struct{}
 
-func (_ Planets) Transform(data APIData) (*db.DocsProvider, error) {
+func (_ Planets) Transform(data APIData) (*db.DocsProvider[structs.Planet], error) {
 	if data.Planets == nil {
 		return nil, errors.New("got nil planets slice")
 	}
 
 	planets := *data.Planets
-	planetDocs := make([]db.DocWrapper, len(planets))
+	planetDocs := make([]db.DocWrapper[structs.Planet], len(planets))
 
 	for i, planet := range planets {
 		if planet.Index == nil ||
@@ -39,7 +39,7 @@ func (_ Planets) Transform(data APIData) (*db.DocsProvider, error) {
 		if pos.X == nil || pos.Y == nil {
 			return nil, errFromNils(&pos)
 		}
-		planetDocs[i] = db.DocWrapper{
+		planetDocs[i] = db.DocWrapper[structs.Planet]{
 			DocID: *planet.Index,
 			Document: structs.Planet{
 				ID:             *planet.Index,
@@ -54,7 +54,7 @@ func (_ Planets) Transform(data APIData) (*db.DocsProvider, error) {
 			},
 		}
 	}
-	return &db.DocsProvider{
+	return &db.DocsProvider[structs.Planet]{
 		CollectionName: db.CollPlanets,
 		Docs:           planetDocs,
 	}, nil
