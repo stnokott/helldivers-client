@@ -31,7 +31,7 @@
 								"description": "The faction that initiated the event."
 							},
 							"max_health": {
-								"bsonType": "int",
+								"bsonType": "long",
 								"description": "The maximum health of the Event at the time of snapshot.",
 								"minimum": 0
 							},

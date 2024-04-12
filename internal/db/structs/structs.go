@@ -55,13 +55,13 @@ type Dispatch struct {
 
 type Event struct {
 	// The unique identifier of this event
-	ID int `bson:"_id"`
+	ID int32 `bson:"_id"`
 	// The type of event
-	Type int
+	Type int32
 	// The faction that initiated the event
 	Faction string `bson:"faction,omitempty"`
 	// The maximum health of the Event at the time of snapshot
-	MaxHealth int `bson:"max_health"`
+	MaxHealth int64 `bson:"max_health"`
 	// When the event started
 	StartTime primitive.Timestamp `bson:"start_time,omitempty"`
 	// When the event will end

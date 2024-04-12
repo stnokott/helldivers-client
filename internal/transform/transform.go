@@ -15,6 +15,7 @@ type APIData struct {
 	War        *api.War
 	Campaigns  *[]api.Campaign2
 	Dispatches *[]api.Dispatch
+	Events     *[]api.Event
 }
 
 // errFromNils returns an error containing the list of nil fields in v.
