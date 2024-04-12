@@ -66,40 +66,38 @@ func (w *Worker) do(timeout time.Duration) {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
-	var data transform.APIData
-	data, err = w.queryData(ctx)
-	if err != nil {
-		return
-	}
+	data := w.queryData(ctx)
+
 	if err = w.upsertData(data, ctx); err != nil {
 		return
 	}
 }
 
-func (w *Worker) queryData(ctx context.Context) (data transform.APIData, err error) {
+func (w *Worker) queryData(ctx context.Context) (data transform.APIData) {
+	var err error
 	data.Planets, err = w.api.Planets(ctx)
 	if err != nil {
-		return
+		w.log.Printf("failed to query planets: %v", err)
 	}
 	data.WarID, err = w.api.WarID(ctx)
 	if err != nil {
-		return
+		w.log.Printf("failed to query current war ID: %v", err)
 	}
 	data.War, err = w.api.War(ctx)
 	if err != nil {
-		return
+		w.log.Printf("failed to query current war: %v", err)
 	}
 	data.Campaigns, err = w.api.Campaigns(ctx)
 	if err != nil {
-		return
+		w.log.Printf("failed to query campaigns: %v", err)
 	}
 	data.Dispatches, err = w.api.Dispatches(ctx)
 	if err != nil {
-		return
+		w.log.Printf("failed to query dispatches: %v", err)
 	}
 	data.Assignments, err = w.api.Assignments(ctx)
 	if err != nil {
-		return
+		w.log.Printf("failed to query assignments: %v", err)
 	}
 	return
 }

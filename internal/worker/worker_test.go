@@ -31,11 +31,7 @@ func TestWorkerQueryData(t *testing.T) {
 	t.Skip("currently skipped until we can disable rate-limiting in API") // TODO
 	worker := mustWorker(t)
 
-	got, err := worker.queryData(context.Background())
-	if err != nil {
-		t.Errorf("Worker.queryData() error = %v, want nil", err)
-		return
-	}
+	got := worker.queryData(context.Background())
 	if got.Planets == nil {
 		t.Error("Worker.queryData().Planets = nil, want non-nil")
 		return
@@ -54,11 +50,7 @@ func testWorkerUpsertDoc[T any](transformer docTransformer[T], t *testing.T) {
 	t.Skip("currently skipped until we can disable rate-limiting in API") // TODO
 	worker := mustWorker(t)
 
-	data, err := worker.queryData(context.Background())
-	if err != nil {
-		t.Skipf("API data not available: %v", err)
-		return
-	}
+	data := worker.queryData(context.Background())
 	upsertDoc(worker, data, transformer, context.Background())
 }
 
