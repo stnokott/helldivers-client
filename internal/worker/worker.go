@@ -86,6 +86,10 @@ func (w *Worker) queryData() (data transform.APIData, err error) {
 	if err != nil {
 		return
 	}
+	data.Dispatches, err = apiWithTimeout(w.api.Dispatches, 5*time.Second)
+	if err != nil {
+		return
+	}
 	return
 }
 
@@ -100,6 +104,10 @@ func (w *Worker) upsertData(data transform.APIData) (err error) {
 	}
 	campaignsTransformer := transform.Campaigns{}
 	if err = w.upsertDoc(data, campaignsTransformer); err != nil {
+		return
+	}
+	dispatchesTransformer := transform.Dispatches{}
+	if err = w.upsertDoc(data, dispatchesTransformer); err != nil {
 		return
 	}
 	return

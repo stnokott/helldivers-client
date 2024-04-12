@@ -44,11 +44,11 @@ type Campaign struct {
 
 type Dispatch struct {
 	// The unique identifier of this dispatch
-	ID int `bson:"_id"`
+	ID int32 `bson:"_id"`
 	// When the dispatch was published
 	CreateTime primitive.Timestamp `bson:"create_time,omitempty"`
 	// The type of dispatch, purpose unknown
-	Type int
+	Type int32
 	// The message this dispatch represents
 	Message string `bson:"message,omitempty"`
 }
