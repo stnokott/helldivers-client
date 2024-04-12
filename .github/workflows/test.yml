@@ -17,7 +17,7 @@ jobs:
     name: Run Integration Tests
     runs-on: ubuntu-latest
     env:
-      COMPOSE_FILE: ./docker-compose.test.yaml
+      COMPOSE_FILE: ./build/test/docker-compose.yaml
       DOCKER_USER: ${{ secrets.DOCKER_USER }}
       DOCKER_PASS: ${{ secrets.DOCKER_PASS }}
   
