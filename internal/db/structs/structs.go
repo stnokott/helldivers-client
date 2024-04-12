@@ -18,6 +18,10 @@ type Planet struct {
 	Waypoints []int32 `bson:"waypoints"`
 	// Whether or not this planet is disabled, as assigned by ArrowHead
 	Disabled bool `bson:"disabled"`
+	// The biome this planet has.
+	Biome Biome `bson:"biome,omitempty"`
+	// All Hazards that are applicable to this planet.
+	Hazards []Hazard `bson:"hazards"`
 	// The maximum health pool of this planet
 	MaxHealth int64 `bson:"max_health"`
 	// The faction that originally owned the planet
@@ -29,6 +33,16 @@ type Planet struct {
 type PlanetPosition struct {
 	X float64
 	Y float64
+}
+
+type Biome struct {
+	Description string `bson:"description,omitempty"`
+	Name        string `bson:"name,omitempty"`
+}
+
+type Hazard struct {
+	Description string `bson:"description,omitempty"`
+	Name        string `bson:"name,omitempty"`
 }
 
 type Campaign struct {

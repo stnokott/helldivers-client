@@ -13,6 +13,8 @@
 					"position",
 					"waypoints",
 					"disabled",
+					"biome",
+					"hazards",
 					"max_health",
 					"initial_owner",
 					"regen_per_second"
@@ -60,6 +62,45 @@
 					"disabled": {
 						"bsonType": "bool",
 						"description": "Whether or not this planet is disabled, as assigned by ArrowHead."
+					},
+					"biome": {
+						"bsonType": "object",
+						"description": "The biome this planet has.",
+						"required": [
+							"name",
+							"description"
+						],
+						"properties": {
+							"name": {
+								"bsonType": "string",
+								"description": "The name of this biome."
+							},
+							"description": {
+								"bsonType": "string",
+								"description": "A human-readable description of the biome."
+							}
+						}
+					},
+					"hazards": {
+						"bsonType": "array",
+						"description": "All Hazards that are applicable to this planet.",
+						"items": {
+							"bsonType": "object",
+							"required": [
+								"name",
+								"description"
+							],
+							"properties": {
+								"name": {
+									"bsonType": "string",
+									"description": "The name of this environmental hazard."
+								},
+								"description": {
+									"bsonType": "string",
+									"description": "The description of the environmental hazard."
+								}
+							}
+						}
 					},
 					"max_health": {
 						"bsonType": "long",

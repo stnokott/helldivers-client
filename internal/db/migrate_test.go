@@ -129,12 +129,22 @@ func TestPlanetsSchema(t *testing.T) {
 		{
 			name: "valid struct complete",
 			doc: structs.Planet{
-				ID:             1,
-				Name:           "Foo",
-				Sector:         "Bar",
-				Position:       structs.PlanetPosition{X: 1, Y: 2},
-				Waypoints:      []int32{1, 2, 3},
-				Disabled:       false,
+				ID:        1,
+				Name:      "Foo",
+				Sector:    "Bar",
+				Position:  structs.PlanetPosition{X: 1, Y: 2},
+				Waypoints: []int32{1, 2, 3},
+				Disabled:  false,
+				Biome: structs.Biome{
+					Name:        "Forest",
+					Description: "Lush forest",
+				},
+				Hazards: []structs.Hazard{
+					{
+						Name:        "Moist",
+						Description: "Very very moist",
+					},
+				},
 				MaxHealth:      1000,
 				InitialOwner:   "Super Humans",
 				RegenPerSecond: 50.0,
@@ -144,12 +154,22 @@ func TestPlanetsSchema(t *testing.T) {
 		{
 			name: "valid struct incomplete",
 			doc: structs.Planet{
-				ID:             1,
-				Name:           "Foo",
-				Sector:         "Bar",
-				Position:       structs.PlanetPosition{X: 1, Y: 2},
-				Waypoints:      []int32{1, 2, 3},
-				Disabled:       false,
+				ID:        1,
+				Name:      "Foo",
+				Sector:    "Bar",
+				Position:  structs.PlanetPosition{X: 1, Y: 2},
+				Waypoints: []int32{1, 2, 3},
+				Disabled:  false,
+				Biome: structs.Biome{
+					Name:        "Forest",
+					Description: "Lush forest",
+				},
+				Hazards: []structs.Hazard{
+					{
+						Name:        "Moist",
+						Description: "Very very moist",
+					},
+				},
 				MaxHealth:      1000,
 				RegenPerSecond: 50.0,
 			},
@@ -158,12 +178,22 @@ func TestPlanetsSchema(t *testing.T) {
 		{
 			name: "valid struct missing slice",
 			doc: structs.Planet{
-				ID:             1,
-				Name:           "Foo",
-				Sector:         "Bar",
-				Position:       structs.PlanetPosition{X: 1, Y: 2},
-				Waypoints:      nil,
-				Disabled:       false,
+				ID:        1,
+				Name:      "Foo",
+				Sector:    "Bar",
+				Position:  structs.PlanetPosition{X: 1, Y: 2},
+				Waypoints: nil,
+				Disabled:  false,
+				Biome: structs.Biome{
+					Name:        "Forest",
+					Description: "Lush forest",
+				},
+				Hazards: []structs.Hazard{
+					{
+						Name:        "Moist",
+						Description: "Very very moist",
+					},
+				},
 				MaxHealth:      1000,
 				InitialOwner:   "Humans",
 				RegenPerSecond: 50.0,
@@ -173,12 +203,22 @@ func TestPlanetsSchema(t *testing.T) {
 		{
 			name: "negative health",
 			doc: structs.Planet{
-				ID:             1,
-				Name:           "Foo",
-				Sector:         "Bar",
-				Position:       structs.PlanetPosition{X: 1, Y: 2},
-				Waypoints:      []int32{1, 2, 3},
-				Disabled:       false,
+				ID:        1,
+				Name:      "Foo",
+				Sector:    "Bar",
+				Position:  structs.PlanetPosition{X: 1, Y: 2},
+				Waypoints: []int32{1, 2, 3},
+				Disabled:  false,
+				Biome: structs.Biome{
+					Name:        "Forest",
+					Description: "Lush forest",
+				},
+				Hazards: []structs.Hazard{
+					{
+						Name:        "Moist",
+						Description: "Very very moist",
+					},
+				},
 				MaxHealth:      -1,
 				InitialOwner:   "Super Humans",
 				RegenPerSecond: 50.0,

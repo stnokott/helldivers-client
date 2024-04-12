@@ -69,6 +69,15 @@ type Assignment2_Reward struct {
 	union json.RawMessage
 }
 
+// Biome Represents information about a biome of a planet.
+type Biome struct {
+	// Description A human-readable description of the biome.
+	Description *string `json:"description,omitempty"`
+
+	// Name The name of this biome.
+	Name *string `json:"name,omitempty"`
+}
+
 // Campaign Contains information of ongoing campaigns.
 type Campaign struct {
 	// Count A numerical count, the amount of campaigns the planet has seen.
@@ -194,6 +203,15 @@ type GalaxyStats struct {
 	TimePlayed *uint64 `json:"timePlayed,omitempty"`
 }
 
+// Hazard Describes an environmental hazard that can be present on a Planet.
+type Hazard struct {
+	// Description The description of the environmental hazard.
+	Description *string `json:"description,omitempty"`
+
+	// Name The name of this environmental hazard.
+	Name *string `json:"name,omitempty"`
+}
+
 // HomeWorld Represents information about the homeworld(s) of a given race.
 type HomeWorld struct {
 	// PlanetIndices A list of Index identifiers.
@@ -230,6 +248,9 @@ type Planet struct {
 	// Attacking A list of Index integers that this planet is currently attacking.
 	Attacking *[]int32 `json:"attacking,omitempty"`
 
+	// Biome The biome this planet has.
+	Biome *Planet_Biome `json:"biome,omitempty"`
+
 	// CurrentOwner The faction that currently controls the planet.
 	CurrentOwner *string `json:"currentOwner,omitempty"`
 
@@ -241,6 +262,9 @@ type Planet struct {
 
 	// Hash A hash assigned to the planet by ArrowHead, purpose unknown.
 	Hash *int64 `json:"hash,omitempty"`
+
+	// Hazards All Hazards that are applicable to this planet.
+	Hazards *[]Hazard `json:"hazards,omitempty"`
 
 	// Health The current planet this planet has.
 	Health *int64 `json:"health,omitempty"`
@@ -271,6 +295,11 @@ type Planet struct {
 
 	// Waypoints A list of Index of all the planets to which this planet is connected.
 	Waypoints *[]int32 `json:"waypoints,omitempty"`
+}
+
+// Planet_Biome The biome this planet has.
+type Planet_Biome struct {
+	union json.RawMessage
 }
 
 // Planet_Event Information on the active event ongoing on this planet, if one is active.
@@ -794,6 +823,42 @@ func (t Campaign2_Planet) MarshalJSON() ([]byte, error) {
 }
 
 func (t *Campaign2_Planet) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsBiome returns the union data inside the Planet_Biome as a Biome
+func (t Planet_Biome) AsBiome() (Biome, error) {
+	var body Biome
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromBiome overwrites any union data inside the Planet_Biome as the provided Biome
+func (t *Planet_Biome) FromBiome(v Biome) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeBiome performs a merge with any union data inside the Planet_Biome, using the provided Biome
+func (t *Planet_Biome) MergeBiome(v Biome) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t Planet_Biome) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *Planet_Biome) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
