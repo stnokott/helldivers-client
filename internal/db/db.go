@@ -93,7 +93,7 @@ func UpsertDocs[T any](c *Client, provider *DocsProvider[T], ctx context.Context
 			options.Update().SetUpsert(true),
 		)
 		if err != nil {
-			c.log.Printf("failed to upsert into %s: %v", coll.Name(), err)
+			c.log.Printf("failed to upsert into '%s': %v", coll.Name(), err)
 			continue
 		}
 		matched += int(result.MatchedCount)

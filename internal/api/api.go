@@ -15,7 +15,7 @@ func respErr(resp *http.Response) error {
 		body = []byte("n/a")
 	}
 	_ = resp.Body.Close()
-	return fmt.Errorf("HTTP status %s: %s", resp.Status, string(body))
+	return fmt.Errorf("HTTP status %s: '%s'", resp.Status, string(body))
 }
 
 func (resp *GetRawApiWarSeasonCurrentWarIDResponse) Data() (*WarId, error) {
