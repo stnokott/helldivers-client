@@ -65,7 +65,6 @@
 								"values": {
 									"bsonType": "array",
 									"description": "A list of numbers, purpose unknown.",
-									"uniqueItems": true,
 									"items": {
 										"bsonType": "int"
 									}
