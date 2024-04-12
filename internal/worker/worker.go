@@ -49,7 +49,7 @@ func (w *Worker) Run(interval config.Interval) {
 }
 
 type docTransformer[T any] interface {
-	Transform(data transform.APIData) (*db.DocsProvider[T], error)
+	Transform(data transform.APIData, errFunc func(error)) *db.DocsProvider[T]
 }
 
 func (w *Worker) do(timeout time.Duration) {
@@ -106,37 +106,28 @@ func (w *Worker) queryData(ctx context.Context) (data transform.APIData, err err
 
 func (w *Worker) upsertData(data transform.APIData, ctx context.Context) (err error) {
 	warTransformer := transform.War{}
-	if err = upsertDoc(w, data, warTransformer, ctx); err != nil {
-		return
-	}
+	upsertDoc(w, data, warTransformer, ctx)
+
 	planetsTransformer := transform.Planets{}
-	if err = upsertDoc(w, data, planetsTransformer, ctx); err != nil {
-		return
-	}
+	upsertDoc(w, data, planetsTransformer, ctx)
+
 	campaignsTransformer := transform.Campaigns{}
-	if err = upsertDoc(w, data, campaignsTransformer, ctx); err != nil {
-		return
-	}
+	upsertDoc(w, data, campaignsTransformer, ctx)
+
 	dispatchesTransformer := transform.Dispatches{}
-	if err = upsertDoc(w, data, dispatchesTransformer, ctx); err != nil {
-		return
-	}
+	upsertDoc(w, data, dispatchesTransformer, ctx)
+
 	eventsTransformer := transform.Events{}
-	if err = upsertDoc(w, data, eventsTransformer, ctx); err != nil {
-		return
-	}
+	upsertDoc(w, data, eventsTransformer, ctx)
+
 	assignmentsTransformer := transform.Assignments{}
-	if err = upsertDoc(w, data, assignmentsTransformer, ctx); err != nil {
-		return
-	}
+	upsertDoc(w, data, assignmentsTransformer, ctx)
 	return
 }
 
-func upsertDoc[T any](w *Worker, data transform.APIData, t docTransformer[T], ctx context.Context) error {
-	provider, err := t.Transform(data)
-	if err != nil {
-		return err
-	}
+func upsertDoc[T any](w *Worker, data transform.APIData, t docTransformer[T], ctx context.Context) {
+	provider := t.Transform(data, func(err error) {
+		w.log.Printf("error during %T transformation: %v", t, err)
+	})
 	db.UpsertDocs(w.db, provider, ctx)
-	return nil
 }

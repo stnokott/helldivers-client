@@ -10,10 +10,16 @@ import (
 // War implements worker.docTransformer
 type War struct{}
 
-func (_ War) Transform(data APIData) (*db.DocsProvider[structs.War], error) {
+func (_ War) Transform(data APIData, errFunc func(error)) *db.DocsProvider[structs.War] {
+	provider := &db.DocsProvider[structs.War]{
+		CollectionName: db.CollWars,
+		Docs:           []db.DocWrapper[structs.War]{},
+	}
+
 	warID := data.WarID
 	if warID.Id == nil {
-		return nil, errors.New("got nil war ID")
+		errFunc(errors.New("got nil war ID"))
+		return provider
 	}
 
 	war := data.War
@@ -21,21 +27,18 @@ func (_ War) Transform(data APIData) (*db.DocsProvider[structs.War], error) {
 		war.Ended == nil ||
 		war.ImpactMultiplier == nil ||
 		war.Factions == nil {
-		return nil, errFromNils(war)
-	}
-	return &db.DocsProvider[structs.War]{
-		CollectionName: db.CollWars,
-		Docs: []db.DocWrapper[structs.War]{
-			{
-				DocID: *warID.Id,
-				Document: structs.War{
-					ID:               *warID.Id,
-					StartTime:        db.PrimitiveTime(*war.Started),
-					EndTime:          db.PrimitiveTime(*war.Ended),
-					ImpactMultiplier: *war.ImpactMultiplier,
-					Factions:         *war.Factions,
-				},
+		errFunc(errFromNils(war))
+	} else {
+		provider.Docs = append(provider.Docs, db.DocWrapper[structs.War]{
+			DocID: *warID.Id,
+			Document: structs.War{
+				ID:               *warID.Id,
+				StartTime:        db.PrimitiveTime(*war.Started),
+				EndTime:          db.PrimitiveTime(*war.Ended),
+				ImpactMultiplier: *war.ImpactMultiplier,
+				Factions:         *war.Factions,
 			},
-		},
-	}, nil
+		})
+	}
+	return provider
 }

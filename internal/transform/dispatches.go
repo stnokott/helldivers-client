@@ -10,23 +10,29 @@ import (
 // Dispatches implements worker.docTransformer
 type Dispatches struct{}
 
-func (_ Dispatches) Transform(data APIData) (*db.DocsProvider[structs.Dispatch], error) {
+func (_ Dispatches) Transform(data APIData, errFunc func(error)) *db.DocsProvider[structs.Dispatch] {
+	provider := &db.DocsProvider[structs.Dispatch]{
+		CollectionName: db.CollDispatches,
+		Docs:           []db.DocWrapper[structs.Dispatch]{},
+	}
+
 	if data.Dispatches == nil {
-		return nil, errors.New("got nil dispatches slice")
+		errFunc(errors.New("got nil dispatches slice"))
+		return provider
 	}
 
 	dispatches := *data.Dispatches
-	dispatchDocs := make([]db.DocWrapper[structs.Dispatch], len(dispatches))
 
-	for i, dispatch := range dispatches {
+	for _, dispatch := range dispatches {
 		if dispatch.Id == nil ||
 			dispatch.Published == nil ||
 			dispatch.Type == nil ||
 			dispatch.Message == nil {
-			return nil, errFromNils(&dispatch)
+			errFunc(errFromNils(&dispatch))
+			continue
 		}
 
-		dispatchDocs[i] = db.DocWrapper[structs.Dispatch]{
+		provider.Docs = append(provider.Docs, db.DocWrapper[structs.Dispatch]{
 			DocID: *dispatch.Id,
 			Document: structs.Dispatch{
 				ID:         *dispatch.Id,
@@ -34,10 +40,7 @@ func (_ Dispatches) Transform(data APIData) (*db.DocsProvider[structs.Dispatch],
 				Type:       *dispatch.Type,
 				Message:    *dispatch.Message,
 			},
-		}
+		}) 
 	}
-	return &db.DocsProvider[structs.Dispatch]{
-		CollectionName: db.CollDispatches,
-		Docs:           dispatchDocs,
-	}, nil
+	return provider
 }

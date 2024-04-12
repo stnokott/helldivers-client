@@ -17,7 +17,6 @@ func mustPlanetPosition(from api.Position) *api.Planet_Position {
 	return planetPosition
 }
 
-// TODO: generic
 func mustPlanetBiome(from api.Biome) *api.Planet_Biome {
 	planetBiome := new(api.Planet_Biome)
 	if err := planetBiome.FromBiome(from); err != nil {
@@ -132,7 +131,10 @@ func TestPlanetsTransform(t *testing.T) {
 					},
 				},
 			},
-			want:    nil,
+			want:    &db.DocsProvider[structs.Planet]{
+				CollectionName: db.CollPlanets,
+				Docs: []db.DocWrapper[structs.Planet]{},
+			},
 			wantErr: true,
 		},
 		{
@@ -167,15 +169,25 @@ func TestPlanetsTransform(t *testing.T) {
 					},
 				},
 			},
-			want:    nil,
+			want:    &db.DocsProvider[structs.Planet]{
+				CollectionName: db.CollPlanets,
+				Docs: []db.DocWrapper[structs.Planet]{},
+			},
 			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.p.Transform(tt.args.data)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Planets.Transform() error = %v, wantErr %v", err, tt.wantErr)
+			gotErr := false
+			errFunc := func(err error) {
+				if !tt.wantErr {
+					t.Logf("Planets.Transform() error: %v", err)
+				}
+				gotErr = true
+			}
+			got := tt.p.Transform(tt.args.data, errFunc)
+			if gotErr != tt.wantErr {
+				t.Errorf("Planets.Transform() returned error, wantErr %v", tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {

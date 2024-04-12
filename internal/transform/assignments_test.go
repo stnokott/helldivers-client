@@ -112,7 +112,10 @@ func TestAssignmentsTransform(t *testing.T) {
 					},
 				},
 			},
-			want:    nil,
+			want:    &db.DocsProvider[structs.Assignment]{
+				CollectionName: db.CollAssignments,
+				Docs: []db.DocWrapper[structs.Assignment]{},
+			},
 			wantErr: true,
 		},
 		{
@@ -136,19 +139,29 @@ func TestAssignmentsTransform(t *testing.T) {
 					},
 				},
 			},
-			want:    nil,
+			want:    &db.DocsProvider[structs.Assignment]{
+				CollectionName: db.CollAssignments,
+				Docs: []db.DocWrapper[structs.Assignment]{},
+			},
 			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.a.Transform(tt.args.data)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Events.Transform() error = %v, wantErr %v", err, tt.wantErr)
+			gotErr := false
+			errFunc := func(err error) {
+				if !tt.wantErr {
+					t.Logf("Assignments.Transform() error: %v", err)
+				}
+				gotErr = true
+			}
+			got := tt.a.Transform(tt.args.data, errFunc)
+			if gotErr != tt.wantErr {
+				t.Errorf("Assignments.Transform() returned errors, wantErr %v", tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Events.Transform() = %v, want %v", got, tt.want)
+				t.Errorf("Assignments.Transform() = %v, want %v", got, tt.want)
 			}
 		})
 	}

@@ -61,7 +61,10 @@ func TestWarTransform(t *testing.T) {
 					War:   &api.War{},
 				},
 			},
-			want:    nil,
+			want: &db.DocsProvider[structs.War]{
+				CollectionName: db.CollWars,
+				Docs: []db.DocWrapper[structs.War]{},
+			},
 			wantErr: true,
 		},
 		{
@@ -77,15 +80,25 @@ func TestWarTransform(t *testing.T) {
 					},
 				},
 			},
-			want:    nil,
+			want: &db.DocsProvider[structs.War]{
+				CollectionName: db.CollWars,
+				Docs:           []db.DocWrapper[structs.War]{},
+			},
 			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.w.Transform(tt.args.data)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("War.Transform() error = %v, wantErr %v", err, tt.wantErr)
+			gotErr := false
+			errFunc := func(err error) {
+				if !tt.wantErr {
+					t.Logf("War.Transform() error: %v", err)
+				}
+				gotErr = true
+			}
+			got := tt.w.Transform(tt.args.data, errFunc)
+			if gotErr != tt.wantErr {
+				t.Errorf("War.Transform() returned error, wantErr %v", tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {

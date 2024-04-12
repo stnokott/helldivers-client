@@ -110,15 +110,25 @@ func TestEventsTransform(t *testing.T) {
 					},
 				},
 			},
-			want:    nil,
+			want:    &db.DocsProvider[structs.Event]{
+				CollectionName: db.CollEvents,
+				Docs: []db.DocWrapper[structs.Event]{},
+			},
 			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.e.Transform(tt.args.data)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Events.Transform() error = %v, wantErr %v", err, tt.wantErr)
+			gotErr := false
+			errFunc := func(err error) {
+				if !tt.wantErr {
+					t.Logf("Events.Transform() error: %v", err)
+				}
+				gotErr = true
+			}
+			got := tt.e.Transform(tt.args.data, errFunc)
+			if gotErr != tt.wantErr {
+				t.Errorf("Events.Transform() returned error, wantErr %v", tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {

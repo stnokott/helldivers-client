@@ -12,13 +12,18 @@ import (
 // Events implements worker.docTransformer
 type Events struct{}
 
-func (_ Events) Transform(data APIData) (*db.DocsProvider[structs.Event], error) {
+func (_ Events) Transform(data APIData, errFunc func(error)) *db.DocsProvider[structs.Event] {
+	provider := &db.DocsProvider[structs.Event]{
+		CollectionName: db.CollEvents,
+		Docs:           []db.DocWrapper[structs.Event]{},
+	}
+
 	if data.Planets == nil {
-		return nil, errors.New("got nil planets slice (required for events)")
+		errFunc(errors.New("got nil planets slice (required for events)"))
+		return provider
 	}
 
 	planets := *data.Planets
-	eventDocs := make([]db.DocWrapper[structs.Event], 0, len(planets))
 
 	for _, planet := range planets {
 		if planet.Event == nil {
@@ -26,10 +31,11 @@ func (_ Events) Transform(data APIData) (*db.DocsProvider[structs.Event], error)
 		}
 		event, err := parsePlanetEvent(planet.Event)
 		if err != nil {
-			return nil, err
+			errFunc(err)
+			continue
 		}
 
-		eventDocs = append(eventDocs, db.DocWrapper[structs.Event]{
+		provider.Docs = append(provider.Docs, db.DocWrapper[structs.Event]{
 			DocID: *event.Id,
 			Document: structs.Event{
 				ID:        *event.Id,
@@ -41,10 +47,7 @@ func (_ Events) Transform(data APIData) (*db.DocsProvider[structs.Event], error)
 			},
 		})
 	}
-	return &db.DocsProvider[structs.Event]{
-		CollectionName: db.CollEvents,
-		Docs:           eventDocs,
-	}, nil
+	return provider
 }
 
 func parsePlanetEvent(in *api.Planet_Event) (api.Event, error) {

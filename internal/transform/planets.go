@@ -12,15 +12,20 @@ import (
 // Planets implements worker.docTransformer
 type Planets struct{}
 
-func (_ Planets) Transform(data APIData) (*db.DocsProvider[structs.Planet], error) {
+func (_ Planets) Transform(data APIData, errFunc func(error)) *db.DocsProvider[structs.Planet] {
+	provider := &db.DocsProvider[structs.Planet]{
+		CollectionName: db.CollPlanets,
+		Docs:           []db.DocWrapper[structs.Planet]{},
+	}
+
 	if data.Planets == nil {
-		return nil, errors.New("got nil planets slice")
+		errFunc(errors.New("got nil planets slice"))
+		return provider
 	}
 
 	planets := *data.Planets
-	planetDocs := make([]db.DocWrapper[structs.Planet], len(planets))
 
-	for i, planet := range planets {
+	for _, planet := range planets {
 		if planet.Index == nil ||
 			planet.Name == nil ||
 			planet.Sector == nil ||
@@ -32,25 +37,28 @@ func (_ Planets) Transform(data APIData) (*db.DocsProvider[structs.Planet], erro
 			planet.MaxHealth == nil ||
 			planet.InitialOwner == nil ||
 			planet.RegenPerSecond == nil {
-			return nil, errFromNils(&planet)
+			errFunc(errFromNils(&planet))
+			continue
 		}
 
-		// TODO: keep processing on error
 		pos, err := parsePlanetPosition(planet.Position)
 		if err != nil {
-			return nil, err
+			errFunc(err)
+			continue
 		}
 
 		biome, err := parsePlanetBiome(planet.Biome)
 		if err != nil {
-			return nil, err
+			errFunc(err)
+			continue
 		}
 
 		hazards, err := convertPlanetHazards(planet.Hazards)
 		if err != nil {
-			return nil, err
+			errFunc(err)
+			continue
 		}
-		planetDocs[i] = db.DocWrapper[structs.Planet]{
+		provider.Docs = append(provider.Docs, db.DocWrapper[structs.Planet]{
 			DocID: *planet.Index,
 			Document: structs.Planet{
 				ID:        *planet.Index,
@@ -68,12 +76,9 @@ func (_ Planets) Transform(data APIData) (*db.DocsProvider[structs.Planet], erro
 				InitialOwner:   *planet.InitialOwner,
 				RegenPerSecond: *planet.RegenPerSecond,
 			},
-		}
+		}) 
 	}
-	return &db.DocsProvider[structs.Planet]{
-		CollectionName: db.CollPlanets,
-		Docs:           planetDocs,
-	}, nil
+	return provider
 }
 
 func parsePlanetPosition(in *api.Planet_Position) (api.Position, error) {

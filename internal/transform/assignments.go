@@ -12,15 +12,20 @@ import (
 // Assignments implements worker.docTransformer
 type Assignments struct{}
 
-func (_ Assignments) Transform(data APIData) (*db.DocsProvider[structs.Assignment], error) {
+func (_ Assignments) Transform(data APIData, errFunc func(error)) *db.DocsProvider[structs.Assignment] {
+	provider := &db.DocsProvider[structs.Assignment]{
+		CollectionName: db.CollAssignments,
+		Docs:           []db.DocWrapper[structs.Assignment]{},
+	}
+
 	if data.Assignments == nil {
-		return nil, errors.New("got nil assignments slice")
+		errFunc(errors.New("got nil assignments slice"))
+		return provider
 	}
 
 	assignments := *data.Assignments
-	assignmentDocs := make([]db.DocWrapper[structs.Assignment], len(assignments))
 
-	for i, assignment := range assignments {
+	for _, assignment := range assignments {
 		if assignment.Id == nil ||
 			assignment.Title == nil ||
 			assignment.Briefing == nil ||
@@ -28,19 +33,21 @@ func (_ Assignments) Transform(data APIData) (*db.DocsProvider[structs.Assignmen
 			assignment.Expiration == nil ||
 			assignment.Tasks == nil ||
 			assignment.Reward == nil {
-			return nil, errFromNils(&assignment)
+			errFunc(errFromNils(&assignment))
+			continue
 		}
 
 		reward, err := parseAssignmentReward(assignment.Reward)
 		if err != nil {
-			return nil, err
+			errFunc(err)
+			continue
 		}
 		tasks, err := convertAssignmentTasks(assignment.Tasks)
 		if err != nil {
-			return nil, err
+			errFunc(err)
+			continue
 		}
-
-		assignmentDocs[i] = db.DocWrapper[structs.Assignment]{
+		provider.Docs = append(provider.Docs, db.DocWrapper[structs.Assignment]{
 			DocID: *assignment.Id,
 			Document: structs.Assignment{
 				ID:       *assignment.Id,
@@ -56,12 +63,9 @@ func (_ Assignments) Transform(data APIData) (*db.DocsProvider[structs.Assignmen
 				},
 				Tasks: tasks,
 			},
-		}
+		})
 	}
-	return &db.DocsProvider[structs.Assignment]{
-		CollectionName: db.CollAssignments,
-		Docs:           assignmentDocs,
-	}, nil
+	return provider
 }
 
 func parseAssignmentReward(in *api.Assignment2_Reward) (api.Reward2, error) {

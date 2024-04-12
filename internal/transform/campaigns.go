@@ -12,28 +12,35 @@ import (
 // Campaigns implements worker.docTransformer
 type Campaigns struct{}
 
-func (_ Campaigns) Transform(data APIData) (*db.DocsProvider[structs.Campaign], error) {
+func (_ Campaigns) Transform(data APIData, errFunc func(error)) *db.DocsProvider[structs.Campaign] {
+	provider := &db.DocsProvider[structs.Campaign]{
+		CollectionName: db.CollCampaigns,
+		Docs:           []db.DocWrapper[structs.Campaign]{},
+	}
+
 	if data.Campaigns == nil {
-		return nil, errors.New("got nil campaigns slice")
+		errFunc(errors.New("got nil campaigns slice"))
+		return provider
 	}
 
 	campaigns := *data.Campaigns
-	campaignDocs := make([]db.DocWrapper[structs.Campaign], len(campaigns))
 
-	for i, campaign := range campaigns {
+	for _, campaign := range campaigns {
 		if campaign.Id == nil ||
 			campaign.Planet == nil ||
 			campaign.Type == nil ||
 			campaign.Count == nil {
-			return nil, errFromNils(&campaign)
+			errFunc(errFromNils(&campaign))
+			continue
 		}
 
 		planetRef, err := parseCampaignPlanet(campaign.Planet)
 		if err != nil {
-			return nil, err
+			errFunc(err)
+			continue
 		}
 
-		campaignDocs[i] = db.DocWrapper[structs.Campaign]{
+		provider.Docs = append(provider.Docs, db.DocWrapper[structs.Campaign]{
 			DocID: *campaign.Id,
 			Document: structs.Campaign{
 				ID:       *campaign.Id,
@@ -41,12 +48,9 @@ func (_ Campaigns) Transform(data APIData) (*db.DocsProvider[structs.Campaign], 
 				Type:     *campaign.Type,
 				Count:    *campaign.Count,
 			},
-		}
+		})
 	}
-	return &db.DocsProvider[structs.Campaign]{
-		CollectionName: db.CollCampaigns,
-		Docs:           campaignDocs,
-	}, nil
+	return provider
 }
 
 func parseCampaignPlanet(in *api.Campaign2_Planet) (api.Planet, error) {

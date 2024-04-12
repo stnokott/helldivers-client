@@ -91,7 +91,10 @@ func TestCampaignsTransform(t *testing.T) {
 					},
 				},
 			},
-			want:    nil,
+			want:    &db.DocsProvider[structs.Campaign]{
+				CollectionName: db.CollCampaigns,
+				Docs: []db.DocWrapper[structs.Campaign]{},
+			},
 			wantErr: true,
 		},
 		{
@@ -110,15 +113,25 @@ func TestCampaignsTransform(t *testing.T) {
 					},
 				},
 			},
-			want:    nil,
+			want:    &db.DocsProvider[structs.Campaign]{
+				CollectionName: db.CollCampaigns,
+				Docs: []db.DocWrapper[structs.Campaign]{},
+			},
 			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.c.Transform(tt.args.data)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Campaigns.Transform() error = %v, wantErr %v", err, tt.wantErr)
+			gotErr := false
+			errFunc := func(err error) {
+				if !tt.wantErr {
+					t.Logf("Campaigns.Transform() error: %v", err)
+				}
+				gotErr = true
+			}
+			got := tt.c.Transform(tt.args.data, errFunc)
+			if gotErr != tt.wantErr {
+				t.Errorf("Campaigns.Transform() returned error, wantErr %v", tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
