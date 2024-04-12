@@ -564,6 +564,8 @@ func TestAssignmentsSchema(t *testing.T) {
 				Title:       "Foobar",
 				Briefing:    "Briefing text",
 				Description: "Description text, but a bit longer",
+				Expiration:  PrimitiveTime(time.Now().Add(5 * 24 * time.Hour)),
+				Progress:    []int{2, 3, 4},
 				Tasks: []structs.AssignmentTask{
 					{
 						Type:       2,
@@ -825,6 +827,7 @@ func TestSnapshotsSchema(t *testing.T) {
 							EventID: 5,
 							Health:  700,
 						},
+						Attacking: []int{2, 3, 4},
 						Statistics: &structs.PlanetStatistics{
 							MissionsWon:  44323,
 							MissionsLost: 53555,
@@ -864,6 +867,7 @@ func TestSnapshotsSchema(t *testing.T) {
 							EventID: 5,
 							Health:  700,
 						},
+						Attacking: []int{},
 						Statistics: &structs.PlanetStatistics{
 							MissionsWon:  math.MaxInt64,
 							MissionsLost: math.MaxInt64,

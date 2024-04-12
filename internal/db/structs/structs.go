@@ -77,6 +77,10 @@ type Assignment struct {
 	Briefing string `bson:"briefing,omitempty"`
 	// A very short summary of the description
 	Description string `bson:"description,omitempty"`
+	// The date when the assignment will expire.
+	Expiration primitive.Timestamp `bson:"expiration,omitempty"`
+	// A list of numbers, how they represent progress is unknown.
+	Progress []int `bson:"progress"`
 	// A list of tasks that need to be completed for this assignment
 	Tasks []AssignmentTask `bson:"tasks,omitempty"`
 	// The reward for completing the assignment
@@ -135,8 +139,11 @@ type PlanetSnapshot struct {
 	// The faction that currently controls the planet
 	CurrentOwner string `bson:"current_owner,omitempty"`
 	// Information on the active event ongoing on this planet, if one is active
-	Event      *EventSnapshot    `bson:"event,omitempty"`
+	Event *EventSnapshot `bson:"event,omitempty"`
+	// A set of statistics scoped to this planet.
 	Statistics *PlanetStatistics `bson:"statistics,omitempty"`
+	// A list of Index integers that this planet is currently attacking.
+	Attacking []int `bson:"attacking"`
 }
 
 type EventSnapshot struct {

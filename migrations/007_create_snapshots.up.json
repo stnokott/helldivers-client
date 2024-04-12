@@ -55,7 +55,9 @@
 							"required": [
 								"planet_id",
 								"health",
-								"current_owner"
+								"current_owner",
+								"attacking",
+								"statistics"
 							],
 							"additionalProperties": false,
 							"properties": {
@@ -89,6 +91,13 @@
 											"description": "The health of the Event at the time of snapshot.",
 											"minimum": 0
 										}
+									}
+								},
+								"attacking": {
+									"bsonType": "array",
+									"description": "A list of Index integers that this planet is currently attacking.",
+									"items": {
+										"bsonType": "int"
 									}
 								},
 								"statistics": {

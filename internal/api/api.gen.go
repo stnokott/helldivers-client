@@ -45,8 +45,14 @@ type Assignment2 struct {
 	// Description A very short summary of the description.
 	Description *string `json:"description,omitempty"`
 
+	// Expiration The date when the assignment will expire.
+	Expiration *time.Time `json:"expiration,omitempty"`
+
 	// Id The unique identifier of this assignment.
 	Id *int64 `json:"id,omitempty"`
+
+	// Progress A list of numbers, how they represent progress is unknown.
+	Progress *[]int32 `json:"progress,omitempty"`
 
 	// Reward The reward for completing the assignment.
 	Reward *Assignment2_Reward `json:"reward,omitempty"`
@@ -221,6 +227,9 @@ type NewsFeedItem struct {
 
 // Planet Contains all aggregated information AH has about a planet.
 type Planet struct {
+	// Attacking A list of Index integers that this planet is currently attacking.
+	Attacking *[]int32 `json:"attacking,omitempty"`
+
 	// CurrentOwner The faction that currently controls the planet.
 	CurrentOwner *string `json:"currentOwner,omitempty"`
 

@@ -11,6 +11,8 @@
 					"title",
 					"briefing",
 					"description",
+					"progress",
+					"expiration",
 					"tasks",
 					"reward"
 				],
@@ -31,6 +33,17 @@
 					"description": {
 						"bsonType": "string",
 						"description": "A very short summary of the description."
+					},
+					"expiration": {
+						"bsonType": "timestamp",
+						"description": "The date when the assignment will expire."
+					},
+					"progress": {
+						"bsonType": "array",
+						"description": "A list of numbers, how they represent progress is unknown.",
+						"items": {
+							"bsonType": "int"
+						}
 					},
 					"tasks": {
 						"bsonType": "array",
