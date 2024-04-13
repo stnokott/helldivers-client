@@ -28,7 +28,7 @@
 						"description": "Currently active assignments",
 						"uniqueItems": true,
 						"items": {
-							"bsonType": "int"
+							"bsonType": "long"
 						}
 					},
 					"campaign_ids": {
@@ -65,7 +65,7 @@
 									"bsonType": "int"
 								},
 								"health": {
-									"bsonType": "int",
+									"bsonType": "long",
 									"description": "The current health this planet has.",
 									"minimum": 0
 								},
@@ -87,7 +87,7 @@
 											"description": "FK ID of event"
 										},
 										"health": {
-											"bsonType": "int",
+											"bsonType": "long",
 											"description": "The health of the Event at the time of snapshot.",
 											"minimum": 0
 										}
@@ -119,18 +119,15 @@
 									"properties": {
 										"missions_won": {
 											"bsonType": "long",
-											"description": "The amount of missions won.",
-											"minimum": 0
+											"description": "The amount of missions won."
 										},
 										"missions_lost": {
 											"bsonType": "long",
-											"description": "The amount of missions lost.",
-											"minimum": 0
+											"description": "The amount of missions lost."
 										},
 										"mission_time": {
 											"bsonType": "long",
-											"description": "The total amount of time spent planetside (in seconds).",
-											"minimum": 0
+											"description": "The total amount of time spent planetside (in seconds)."
 										},
 										"kills": {
 											"bsonType": "object",
@@ -144,55 +141,45 @@
 											"properties": {
 												"terminid": {
 													"bsonType": "long",
-													"description": "The total amount of bugs killed since start of the season.",
-													"minimum": 0
+													"description": "The total amount of bugs killed since start of the season."
 												},
 												"automaton": {
 													"bsonType": "long",
-													"description": "The total amount of automatons killed since start of the season.",
-													"minimum": 0
+													"description": "The total amount of automatons killed since start of the season."
 												},
 												"illuminate": {
 													"bsonType": "long",
-													"description": "The total amount of Illuminate killed since start of the season.",
-													"minimum": 0
+													"description": "The total amount of Illuminate killed since start of the season."
 												}
 											}
 										},
 										"bullets_fired": {
 											"bsonType": "long",
-											"description": "The total amount of bullets fired",
-											"minimum": 0
+											"description": "The total amount of bullets fired"
 										},
 										"bullets_hit": {
 											"bsonType": "long",
-											"description": "The total amount of bullets hit",
-											"minimum": 0
+											"description": "The total amount of bullets hit"
 										},
 										"time_played": {
 											"bsonType": "long",
-											"description": "The total amount of time played (including off-planet) in seconds.",
-											"minimum": 0
+											"description": "The total amount of time played (including off-planet) in seconds."
 										},
 										"deaths": {
 											"bsonType": "long",
-											"description": "The amount of casualties on the side of humanity.",
-											"minimum": 0
+											"description": "The amount of casualties on the side of humanity."
 										},
 										"revives": {
 											"bsonType": "long",
-											"description": "The amount of revives(?).",
-											"minimum": 0
+											"description": "The amount of revives(?)."
 										},
 										"friendlies": {
 											"bsonType": "long",
-											"description": "The amount of friendly fire casualties.",
-											"minimum": 0
+											"description": "The amount of friendly fire casualties."
 										},
 										"player_count": {
 											"bsonType": "long",
-											"description": "The total amount of players present (at the time of the snapshot).",
-											"minimum": 0
+											"description": "The total amount of players present (at the time of the snapshot)."
 										}
 									}
 								}

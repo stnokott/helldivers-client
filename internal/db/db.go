@@ -77,6 +77,7 @@ type DocsProvider[T any] struct {
 	Docs           []DocWrapper[T]
 }
 
+// TODO: add typing for ID
 type DocWrapper[T any] struct {
 	DocID    any
 	Document T

@@ -112,9 +112,9 @@ func TestAssignmentsTransform(t *testing.T) {
 					},
 				},
 			},
-			want:    &db.DocsProvider[structs.Assignment]{
+			want: &db.DocsProvider[structs.Assignment]{
 				CollectionName: db.CollAssignments,
-				Docs: []db.DocWrapper[structs.Assignment]{},
+				Docs:           []db.DocWrapper[structs.Assignment]{},
 			},
 			wantErr: true,
 		},
@@ -139,9 +139,9 @@ func TestAssignmentsTransform(t *testing.T) {
 					},
 				},
 			},
-			want:    &db.DocsProvider[structs.Assignment]{
+			want: &db.DocsProvider[structs.Assignment]{
 				CollectionName: db.CollAssignments,
-				Docs: []db.DocWrapper[structs.Assignment]{},
+				Docs:           []db.DocWrapper[structs.Assignment]{},
 			},
 			wantErr: true,
 		},

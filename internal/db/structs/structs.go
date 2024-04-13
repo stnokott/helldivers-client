@@ -2,6 +2,11 @@
 package structs
 
 import (
+	"encoding/binary"
+	"fmt"
+
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/bsontype"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -130,72 +135,95 @@ type War struct {
 	Factions []string `bson:"factions,omitempty"`
 }
 
+// TODO: add global statistics
 type Snapshot struct {
 	// The time the snapshot of the war was taken
 	Timestamp primitive.Timestamp `bson:"_id"`
 	// FK ID of war
-	WarID int `bson:"war_id"`
+	WarID int32 `bson:"war_id"`
 	// Currently active assignments
-	AssignmentIDs []int `bson:"assignment_ids"`
+	AssignmentIDs []int64 `bson:"assignment_ids"`
 	// Currently active campaigns
-	CampaignIDs []int `bson:"campaign_ids"`
+	CampaignIDs []int32 `bson:"campaign_ids"`
 	// Currently active dispatches
-	DispatchIDs []int `bson:"dispatch_ids"`
+	DispatchIDs []int32 `bson:"dispatch_ids"`
 	// Dynamic data about planets
 	Planets []PlanetSnapshot `bson:"planets"`
 }
 
 // PlanetSnapshot contains information about planets currently part of this war
 type PlanetSnapshot struct {
-	ID int `bson:"planet_id"`
+	// ID of the planet this snapshot captures.
+	ID int32 `bson:"planet_id"`
 	// The current health this planet has
-	Health int
+	Health int64
 	// The faction that currently controls the planet
 	CurrentOwner string `bson:"current_owner,omitempty"`
 	// Information on the active event ongoing on this planet, if one is active
 	Event *EventSnapshot `bson:"event,omitempty"`
 	// A set of statistics scoped to this planet.
-	Statistics *PlanetStatistics `bson:"statistics,omitempty"`
+	Statistics PlanetStatistics `bson:"statistics,omitempty"`
 	// A list of Index integers that this planet is currently attacking.
-	Attacking []int `bson:"attacking"`
+	Attacking []int32 `bson:"attacking"`
 }
 
 type EventSnapshot struct {
 	// FK ID of event
-	EventID int `bson:"event_id"`
+	EventID int32 `bson:"event_id"`
 	// The health of the Event at the time of snapshot
-	Health int
+	Health int64
+}
+
+// BSONLong implements custom BSON marshallong for uint64.
+//
+// It is required since MongoDB natively only supports signed 64-bit values (long).
+type BSONLong uint64
+
+// MarshalBSONValue implements bson.ValueMarshaler by converting to int64 which is natively supported by MongoDB.
+func (long *BSONLong) MarshalBSONValue() (bsontype.Type, []byte, error) {
+	bytes := make([]byte, 8)
+	binary.LittleEndian.PutUint64(bytes, uint64(*long))
+	return bson.TypeInt64, bytes, nil
+}
+
+// UnmarshalBSONValue implements bson.ValueUnmarshaler by converting from int64 which is natively supported by MongoDB.
+func (long *BSONLong) UnmarshalBSONValue(t bsontype.Type, b []byte) error {
+	if t != bson.TypeInt64 {
+		return fmt.Errorf("BSONLong was encoded as %s, needs %s", t.String(), bson.TypeInt64.String())
+	}
+	*long = BSONLong(binary.LittleEndian.Uint64(b))
+	return nil
 }
 
 type PlanetStatistics struct {
 	// The amount of missions won
-	MissionsWon int64 `bson:"missions_won"`
+	MissionsWon BSONLong `bson:"missions_won"`
 	// The amount of missions lost
-	MissionsLost int64 `bson:"missions_lost"`
+	MissionsLost BSONLong `bson:"missions_lost"`
 	// The total amount of time spent planetside (in seconds)
-	MissionTime int64 `bson:"mission_time"`
+	MissionTime BSONLong `bson:"mission_time"`
 	Kills       StatisticsKills
 	// The total amount of bullets fired
-	BulletsFired int64 `bson:"bullets_fired"`
+	BulletsFired BSONLong `bson:"bullets_fired"`
 	// The total amount of bullets hit
-	BulletsHit int64 `bson:"bullets_hit"`
+	BulletsHit BSONLong `bson:"bullets_hit"`
 	// The total amount of time played (including off-planet) in seconds
-	TimePlayed int64 `bson:"time_played"`
+	TimePlayed BSONLong `bson:"time_played"`
 	// The amount of casualties on the side of humanity
-	Deaths int64
+	Deaths BSONLong
 	// The amount of revives(?)
-	Revives int64
+	Revives BSONLong
 	// The amount of friendly fire casualties
-	Friendlies int64
+	Friendlies BSONLong
 	// The total amount of players present (at the time of the snapshot)
-	PlayerCount int64 `bson:"player_count"`
+	PlayerCount BSONLong `bson:"player_count"`
 }
 
 type StatisticsKills struct {
 	// The total amount of bugs killed since start of the season
-	Terminid int64
+	Terminid BSONLong
 	// The total amount of automatons killed since start of the season
-	Automaton int64
+	Automaton BSONLong
 	// The total amount of Illuminate killed since start of the season
-	Illuminate int64
+	Illuminate BSONLong
 }
