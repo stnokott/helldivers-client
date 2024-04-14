@@ -120,6 +120,9 @@ func (w *Worker) upsertData(data transform.APIData, ctx context.Context) (err er
 
 	assignmentsTransformer := transform.Assignments{}
 	upsertDoc(w, data, assignmentsTransformer, ctx)
+
+	snapshotsTransformer := transform.Snapshots{}
+	upsertDoc(w, data, snapshotsTransformer, ctx)
 	return
 }
 
