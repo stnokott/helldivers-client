@@ -77,29 +77,39 @@ type DocsProvider[T any] struct {
 	Docs           []DocWrapper[T]
 }
 
-// TODO: add typing for ID
 type DocWrapper[T any] struct {
 	DocID    any
 	Document T
 }
 
 func UpsertDocs[T any](c *Client, provider *DocsProvider[T], ctx context.Context) {
-	var matched, inserted, updated int
-	coll := c.db.Collection(string(provider.CollectionName))
-	for _, doc := range provider.Docs {
-		result, err := coll.UpdateByID(
-			ctx,
-			doc.DocID,
-			bson.D{{Key: "$set", Value: doc.Document}},
-			options.Update().SetUpsert(true),
-		)
-		if err != nil {
-			c.log.Printf("failed to upsert into '%s': %v", coll.Name(), err)
-			continue
-		}
-		matched += int(result.MatchedCount)
-		inserted += int(result.UpsertedCount)
-		updated += int(result.ModifiedCount)
+	if provider.Docs == nil || len(provider.Docs) == 0 {
+		c.log.Printf("upsert into '%s' aborted, no documents to process", provider.CollectionName)
+		return
 	}
-	c.log.Printf("upsert into '%s' finished, %d inserted, %d matched, %d updated", provider.CollectionName, inserted, matched, updated)
+
+	coll := c.db.Collection(string(provider.CollectionName))
+
+	models := make([]mongo.WriteModel, len(provider.Docs))
+	for i, doc := range provider.Docs {
+		models[i] = mongo.NewUpdateOneModel().
+			SetFilter(bson.D{{Key: "_id", Value: doc.DocID}}).
+			SetUpdate(bson.D{{Key: "$set", Value: doc.Document}}).
+			SetUpsert(true)
+	}
+	result, err := coll.BulkWrite(
+		ctx,
+		models,
+		options.BulkWrite().SetOrdered(false), // prevents from stopping on error
+	)
+	if result != nil {
+		c.log.Printf(
+			"upsert into '%s' finished, %d inserted, %d matched, %d updated",
+			provider.CollectionName,
+			result.UpsertedCount, result.MatchedCount, result.ModifiedCount,
+		)
+	}
+	if err != nil {
+		c.log.Printf("error(s) occured during upsert into '%s': %v", coll.Name(), err)
+	}
 }
