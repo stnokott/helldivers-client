@@ -36,7 +36,7 @@ func (_ Snapshots) Transform(data APIData, errFunc func(error)) *db.DocsProvider
 
 func snapshotSetWarID(snap *structs.Snapshot, warID *api.WarId, errFunc func(error)) {
 	if warID == nil || warID.Id == nil {
-		errFunc(errors.New("got nil WarI ID"))
+		errFunc(errors.New("got nil War ID, will be omitted"))
 		return
 	}
 	snap.WarID = *warID.Id
@@ -44,7 +44,7 @@ func snapshotSetWarID(snap *structs.Snapshot, warID *api.WarId, errFunc func(err
 
 func snapshotSetWar(doc *db.DocWrapper[structs.Snapshot], warPtr *api.War, errFunc func(error)) {
 	if warPtr == nil {
-		errFunc(errors.New("got nil War"))
+		errFunc(errors.New("got nil War, snapshot timestamp will be omitted"))
 		return
 	}
 	war := *warPtr
@@ -58,14 +58,14 @@ func snapshotSetWar(doc *db.DocWrapper[structs.Snapshot], warPtr *api.War, errFu
 
 func snapshotSetAssignments(snap *structs.Snapshot, assignmentsPtr *[]api.Assignment2, errFunc func(error)) {
 	if assignmentsPtr == nil {
-		errFunc(errors.New("got nil Assignments slice"))
+		errFunc(errors.New("got nil Assignments slice, will be omitted"))
 		return
 	}
 	assignments := *assignmentsPtr
 	assignmentIds := []int64{}
 	for _, assignment := range assignments {
 		if assignment.Id == nil {
-			errFunc(errors.New("got nil Assignment ID"))
+			errFunc(errors.New("got nil Assignment ID, will be omitted"))
 			continue
 		}
 		assignmentIds = append(assignmentIds, *assignment.Id)
@@ -75,14 +75,14 @@ func snapshotSetAssignments(snap *structs.Snapshot, assignmentsPtr *[]api.Assign
 
 func snapshotSetCampaigns(snap *structs.Snapshot, campaignsPtr *[]api.Campaign2, errFunc func(error)) {
 	if campaignsPtr == nil {
-		errFunc(errors.New("got nil Campaigns slice"))
+		errFunc(errors.New("got nil Campaigns slice, will be omitted"))
 		return
 	}
 	campaigns := *campaignsPtr
 	campaignIDs := []int32{}
 	for _, campaign := range campaigns {
 		if campaign.Id == nil {
-			errFunc(errors.New("got nil Campaign ID"))
+			errFunc(errors.New("got nil Campaign ID, will be omitted"))
 			continue
 		}
 		campaignIDs = append(campaignIDs, *campaign.Id)
@@ -92,14 +92,14 @@ func snapshotSetCampaigns(snap *structs.Snapshot, campaignsPtr *[]api.Campaign2,
 
 func snapshotSetDispatches(snap *structs.Snapshot, dispatchesPtr *[]api.Dispatch, errFunc func(error)) {
 	if dispatchesPtr == nil {
-		errFunc(errors.New("got nil Dispatches slice"))
+		errFunc(errors.New("got nil Dispatches slice, will be omitted"))
 		return
 	}
 	dispatches := *dispatchesPtr
 	dispatchIDs := []int32{}
 	for _, dispatch := range dispatches {
 		if dispatch.Id == nil {
-			errFunc(errors.New("got nil Dispatch ID"))
+			errFunc(errors.New("got nil Dispatch ID, will be omitted"))
 			continue
 		}
 		dispatchIDs = append(dispatchIDs, *dispatch.Id)
@@ -109,7 +109,7 @@ func snapshotSetDispatches(snap *structs.Snapshot, dispatchesPtr *[]api.Dispatch
 
 func snapshotSetPlanets(snap *structs.Snapshot, planetsPtr *[]api.Planet, errFunc func(error)) {
 	if planetsPtr == nil {
-		errFunc(errors.New("got nil Planets slice"))
+		errFunc(errors.New("got nil Planets slice, will be omitted"))
 		return
 	}
 	planets := *planetsPtr

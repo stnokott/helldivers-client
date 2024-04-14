@@ -268,7 +268,47 @@ func TestSnapshotsTransform(t *testing.T) {
 			},
 			want: &db.DocsProvider[structs.Snapshot]{
 				CollectionName: "snapshots",
-				Docs:           []db.DocWrapper[structs.Snapshot]{},
+				Docs: []db.DocWrapper[structs.Snapshot]{
+					{
+						DocID: db.PrimitiveTime(time.Date(2024, 2, 3, 4, 5, 6, 7, time.Local)),
+						Document: structs.Snapshot{
+							Timestamp:     db.PrimitiveTime(time.Date(2024, 2, 3, 4, 5, 6, 7, time.Local)),
+							WarID:         6,
+							AssignmentIDs: []int64{2, 3, 4},
+							CampaignIDs:   []int32{8, 9},
+							DispatchIDs:   []int32{10},
+							Planets: []structs.PlanetSnapshot{
+								{
+									ID:           6,
+									Health:       1234567,
+									CurrentOwner: "Humans",
+									Event: &structs.EventSnapshot{
+										EventID: 6,
+										Health:  999,
+									},
+									Statistics: structs.PlanetStatistics{
+										MissionsWon:  100,
+										MissionsLost: 55,
+										MissionTime:  12345,
+										Kills: structs.StatisticsKills{
+											Terminid:   10000,
+											Automaton:  99999,
+											Illuminate: 333333,
+										},
+										BulletsFired: 11111,
+										BulletsHit:   1111,
+										TimePlayed:   123456,
+										Deaths:       32134,
+										Revives:      94284,
+										Friendlies:   12940,
+										PlayerCount:  444442,
+									},
+									Attacking: []int32{8, 9, 10},
+								},
+							},
+						},
+					},
+				},
 			},
 			wantErr: true,
 		},
