@@ -39,7 +39,7 @@ func snapshotSetWarID(snap *structs.Snapshot, warID *api.WarId, errFunc func(err
 		errFunc(errors.New("got nil War ID, will be omitted"))
 		return
 	}
-	snap.WarID = *warID.Id
+	snap.WarSnapshot.WarID = *warID.Id
 }
 
 func snapshotSetWar(doc *db.DocWrapper[structs.Snapshot], warPtr *api.War, errFunc func(error)) {
@@ -48,12 +48,13 @@ func snapshotSetWar(doc *db.DocWrapper[structs.Snapshot], warPtr *api.War, errFu
 		return
 	}
 	war := *warPtr
-	if war.Now == nil {
+	if war.Now == nil || war.ImpactMultiplier == nil {
 		errFunc(errFromNils(warPtr))
 		return
 	}
 	doc.DocID = db.PrimitiveTime(*war.Now)
 	doc.Document.Timestamp = db.PrimitiveTime(*war.Now)
+	doc.Document.WarSnapshot.ImpactMultiplier = *war.ImpactMultiplier
 }
 
 func snapshotSetAssignments(snap *structs.Snapshot, assignmentsPtr *[]api.Assignment2, errFunc func(error)) {

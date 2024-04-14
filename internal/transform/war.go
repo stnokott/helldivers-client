@@ -25,18 +25,16 @@ func (_ War) Transform(data APIData, errFunc func(error)) *db.DocsProvider[struc
 	war := data.War
 	if war.Started == nil ||
 		war.Ended == nil ||
-		war.ImpactMultiplier == nil ||
 		war.Factions == nil {
 		errFunc(errFromNils(war))
 	} else {
 		provider.Docs = append(provider.Docs, db.DocWrapper[structs.War]{
 			DocID: *warID.Id,
 			Document: structs.War{
-				ID:               *warID.Id,
-				StartTime:        db.PrimitiveTime(*war.Started),
-				EndTime:          db.PrimitiveTime(*war.Ended),
-				ImpactMultiplier: *war.ImpactMultiplier,
-				Factions:         *war.Factions,
+				ID:        *warID.Id,
+				StartTime: db.PrimitiveTime(*war.Started),
+				EndTime:   db.PrimitiveTime(*war.Ended),
+				Factions:  *war.Factions,
 			},
 		})
 	}

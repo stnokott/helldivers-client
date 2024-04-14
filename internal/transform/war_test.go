@@ -29,10 +29,9 @@ func TestWarTransform(t *testing.T) {
 				data: APIData{
 					WarID: &api.WarId{Id: ptr(int32(2))},
 					War: &api.War{
-						Started:          ptr(time.Date(2024, 01, 01, 23, 59, 0, 0, time.Local)),
-						Ended:            ptr(time.Date(2030, 01, 01, 23, 59, 0, 0, time.Local)),
-						ImpactMultiplier: ptr(float64(2.5)),
-						Factions:         &[]string{"Humans", "Automatons"},
+						Started:  ptr(time.Date(2024, 01, 01, 23, 59, 0, 0, time.Local)),
+						Ended:    ptr(time.Date(2030, 01, 01, 23, 59, 0, 0, time.Local)),
+						Factions: &[]string{"Humans", "Automatons"},
 					},
 				},
 			},
@@ -42,11 +41,10 @@ func TestWarTransform(t *testing.T) {
 					{
 						DocID: int32(2),
 						Document: structs.War{
-							ID:               2,
-							StartTime:        primitive.Timestamp{T: uint32(time.Date(2024, 01, 01, 23, 59, 0, 0, time.Local).Unix())},
-							EndTime:          primitive.Timestamp{T: uint32(time.Date(2030, 01, 01, 23, 59, 0, 0, time.Local).Unix())},
-							ImpactMultiplier: 2.5,
-							Factions:         []string{"Humans", "Automatons"},
+							ID:        2,
+							StartTime: primitive.Timestamp{T: uint32(time.Date(2024, 01, 01, 23, 59, 0, 0, time.Local).Unix())},
+							EndTime:   primitive.Timestamp{T: uint32(time.Date(2030, 01, 01, 23, 59, 0, 0, time.Local).Unix())},
+							Factions:  []string{"Humans", "Automatons"},
 						},
 					},
 				},
@@ -58,12 +56,16 @@ func TestWarTransform(t *testing.T) {
 			args: args{
 				data: APIData{
 					WarID: &api.WarId{Id: nil},
-					War:   &api.War{},
+					War: &api.War{
+						Started:  ptr(time.Date(2024, 01, 01, 23, 59, 0, 0, time.Local)),
+						Ended:    ptr(time.Date(2030, 01, 01, 23, 59, 0, 0, time.Local)),
+						Factions: &[]string{"Humans", "Automatons"},
+					},
 				},
 			},
 			want: &db.DocsProvider[structs.War]{
 				CollectionName: db.CollWars,
-				Docs: []db.DocWrapper[structs.War]{},
+				Docs:           []db.DocWrapper[structs.War]{},
 			},
 			wantErr: true,
 		},
@@ -73,10 +75,9 @@ func TestWarTransform(t *testing.T) {
 				data: APIData{
 					WarID: &api.WarId{Id: ptr(int32(2))},
 					War: &api.War{
-						Started:          ptr(time.Date(2024, 01, 01, 23, 59, 0, 0, time.Local)),
-						Ended:            nil,
-						ImpactMultiplier: ptr(float64(2.5)),
-						Factions:         &[]string{"Humans", "Automatons"},
+						Started:  ptr(time.Date(2024, 01, 01, 23, 59, 0, 0, time.Local)),
+						Ended:    nil,
+						Factions: &[]string{"Humans", "Automatons"},
 					},
 				},
 			},

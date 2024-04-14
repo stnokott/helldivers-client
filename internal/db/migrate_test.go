@@ -228,11 +228,10 @@ func TestPlanetsSchema(t *testing.T) {
 		{
 			name: "wrong struct",
 			doc: structs.War{
-				ID:               1,
-				StartTime:        PrimitiveTime(time.Now()),
-				EndTime:          PrimitiveTime(time.Now()),
-				ImpactMultiplier: 2.0,
-				Factions:         []string{"Humans", "Automatons"},
+				ID:        1,
+				StartTime: PrimitiveTime(time.Now()),
+				EndTime:   PrimitiveTime(time.Now()),
+				Factions:  []string{"Humans", "Automatons"},
 			},
 			wantErr: true,
 		},
@@ -319,11 +318,10 @@ func TestCampaignsSchema(t *testing.T) {
 		{
 			name: "wrong struct",
 			doc: structs.War{
-				ID:               1,
-				StartTime:        PrimitiveTime(time.Now()),
-				EndTime:          PrimitiveTime(time.Now()),
-				ImpactMultiplier: 2.0,
-				Factions:         []string{"Humans", "Automatons"},
+				ID:        1,
+				StartTime: PrimitiveTime(time.Now()),
+				EndTime:   PrimitiveTime(time.Now()),
+				Factions:  []string{"Humans", "Automatons"},
 			},
 			wantErr: true,
 		},
@@ -410,11 +408,10 @@ func TestDispatchesSchema(t *testing.T) {
 		{
 			name: "wrong struct",
 			doc: structs.War{
-				ID:               1,
-				StartTime:        PrimitiveTime(time.Now()),
-				EndTime:          PrimitiveTime(time.Now()),
-				ImpactMultiplier: 2.0,
-				Factions:         []string{"Humans", "Automatons"},
+				ID:        1,
+				StartTime: PrimitiveTime(time.Now()),
+				EndTime:   PrimitiveTime(time.Now()),
+				Factions:  []string{"Humans", "Automatons"},
 			},
 			wantErr: true,
 		},
@@ -529,11 +526,10 @@ func TestEventsSchema(t *testing.T) {
 		{
 			name: "wrong struct",
 			doc: structs.War{
-				ID:               1,
-				StartTime:        PrimitiveTime(time.Now()),
-				EndTime:          PrimitiveTime(time.Now()),
-				ImpactMultiplier: 2.0,
-				Factions:         []string{"Humans", "Automatons"},
+				ID:        1,
+				StartTime: PrimitiveTime(time.Now()),
+				EndTime:   PrimitiveTime(time.Now()),
+				Factions:  []string{"Humans", "Automatons"},
 			},
 			wantErr: true,
 		},
@@ -658,11 +654,10 @@ func TestAssignmentsSchema(t *testing.T) {
 		{
 			name: "wrong struct",
 			doc: structs.War{
-				ID:               1,
-				StartTime:        PrimitiveTime(time.Now()),
-				EndTime:          PrimitiveTime(time.Now()),
-				ImpactMultiplier: 2.0,
-				Factions:         []string{"Humans", "Automatons"},
+				ID:        1,
+				StartTime: PrimitiveTime(time.Now()),
+				EndTime:   PrimitiveTime(time.Now()),
+				Factions:  []string{"Humans", "Automatons"},
 			},
 			wantErr: true,
 		},
@@ -729,10 +724,9 @@ func TestWarsSchema(t *testing.T) {
 		{
 			name: "valid struct complete",
 			doc: structs.War{
-				ID:               1,
-				StartTime:        PrimitiveTime(time.Now()),
-				EndTime:          PrimitiveTime(time.Now().Add(5 * 24 * time.Hour)),
-				ImpactMultiplier: 50.0,
+				ID:        1,
+				StartTime: PrimitiveTime(time.Now()),
+				EndTime:   PrimitiveTime(time.Now().Add(5 * 24 * time.Hour)),
 				Factions: []string{
 					"Humans", "Automatons",
 				},
@@ -745,7 +739,6 @@ func TestWarsSchema(t *testing.T) {
 				ID:        1,
 				StartTime: PrimitiveTime(time.Now()),
 				// Ended:            toPrimitiveTs(time.Now().Add(5 * 24 * time.Hour)),
-				ImpactMultiplier: 50.0,
 				Factions: []string{
 					"Humans", "Automatons",
 				},
@@ -755,23 +748,9 @@ func TestWarsSchema(t *testing.T) {
 		{
 			name: "endtime gt starttime",
 			doc: structs.War{
-				ID:               1,
-				StartTime:        PrimitiveTime(time.Now()),
-				EndTime:          PrimitiveTime(time.Now().Add(-1 * 5 * 24 * time.Hour)),
-				ImpactMultiplier: 50.0,
-				Factions: []string{
-					"Humans", "Automatons",
-				},
-			},
-			wantErr: true,
-		},
-		{
-			name: "negative impact multiplier",
-			doc: structs.War{
-				ID:               1,
-				StartTime:        PrimitiveTime(time.Now()),
-				EndTime:          PrimitiveTime(time.Now().Add(5 * 24 * time.Hour)),
-				ImpactMultiplier: -0.5,
+				ID:        1,
+				StartTime: PrimitiveTime(time.Now()),
+				EndTime:   PrimitiveTime(time.Now().Add(-1 * 5 * 24 * time.Hour)),
 				Factions: []string{
 					"Humans", "Automatons",
 				},
@@ -853,8 +832,11 @@ func TestSnapshotsSchema(t *testing.T) {
 		{
 			name: "valid struct complete",
 			doc: structs.Snapshot{
-				Timestamp:     PrimitiveTime(time.Now()),
-				WarID:         6,
+				Timestamp: PrimitiveTime(time.Now()),
+				WarSnapshot: structs.WarSnapshot{
+					WarID:            6,
+					ImpactMultiplier: 50.0,
+				},
 				AssignmentIDs: []int64{2, 3, 4},
 				CampaignIDs:   []int32{6, 7, 8},
 				DispatchIDs:   []int32{10, 11, 12},
@@ -893,8 +875,11 @@ func TestSnapshotsSchema(t *testing.T) {
 		{
 			name: "valid struct high number",
 			doc: structs.Snapshot{
-				Timestamp:     PrimitiveTime(time.Now()),
-				WarID:         6,
+				Timestamp: PrimitiveTime(time.Now()),
+				WarSnapshot: structs.WarSnapshot{
+					WarID:            6,
+					ImpactMultiplier: 50.0,
+				},
 				AssignmentIDs: []int64{2, 3, 4},
 				CampaignIDs:   []int32{6, 7, 8},
 				DispatchIDs:   []int32{10, 11, 12},
@@ -933,8 +918,11 @@ func TestSnapshotsSchema(t *testing.T) {
 		{
 			name: "valid struct incomplete",
 			doc: structs.Snapshot{
-				Timestamp:     PrimitiveTime(time.Now()),
-				WarID:         6,
+				Timestamp: PrimitiveTime(time.Now()),
+				WarSnapshot: structs.WarSnapshot{
+					WarID:            6,
+					ImpactMultiplier: 50.0,
+				},
 				AssignmentIDs: []int64{2, 3, 4},
 				CampaignIDs:   []int32{6, 7, 8},
 				DispatchIDs:   []int32{10, 11, 12},

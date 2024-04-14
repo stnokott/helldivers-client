@@ -36,7 +36,8 @@ func TestSnapshotsTransform(t *testing.T) {
 				data: APIData{
 					WarID: &api.WarId{Id: ptr(int32(6))},
 					War: &api.War{
-						Now: ptr(time.Date(2024, 2, 3, 4, 5, 6, 7, time.Local)),
+						Now:              ptr(time.Date(2024, 2, 3, 4, 5, 6, 7, time.Local)),
+						ImpactMultiplier: ptr(float64(50.5)),
 					},
 					Assignments: &[]api.Assignment2{
 						{Id: ptr(int64(2))},
@@ -86,8 +87,11 @@ func TestSnapshotsTransform(t *testing.T) {
 					{
 						DocID: db.PrimitiveTime(time.Date(2024, 2, 3, 4, 5, 6, 7, time.Local)),
 						Document: structs.Snapshot{
-							Timestamp:     db.PrimitiveTime(time.Date(2024, 2, 3, 4, 5, 6, 7, time.Local)),
-							WarID:         6,
+							Timestamp: db.PrimitiveTime(time.Date(2024, 2, 3, 4, 5, 6, 7, time.Local)),
+							WarSnapshot: structs.WarSnapshot{
+								WarID:            6,
+								ImpactMultiplier: 50.5,
+							},
 							AssignmentIDs: []int64{2, 3, 4},
 							CampaignIDs:   []int32{7, 8, 9},
 							DispatchIDs:   []int32{10},
@@ -132,7 +136,8 @@ func TestSnapshotsTransform(t *testing.T) {
 				data: APIData{
 					WarID: &api.WarId{Id: ptr(int32(6))},
 					War: &api.War{
-						Now: ptr(time.Date(2024, 2, 3, 4, 5, 6, 7, time.Local)),
+						Now:              ptr(time.Date(2024, 2, 3, 4, 5, 6, 7, time.Local)),
+						ImpactMultiplier: ptr(float64(50.5)),
 					},
 					Assignments: &[]api.Assignment2{
 						{Id: ptr(int64(2))},
@@ -179,8 +184,11 @@ func TestSnapshotsTransform(t *testing.T) {
 					{
 						DocID: db.PrimitiveTime(time.Date(2024, 2, 3, 4, 5, 6, 7, time.Local)),
 						Document: structs.Snapshot{
-							Timestamp:     db.PrimitiveTime(time.Date(2024, 2, 3, 4, 5, 6, 7, time.Local)),
-							WarID:         6,
+							Timestamp: db.PrimitiveTime(time.Date(2024, 2, 3, 4, 5, 6, 7, time.Local)),
+							WarSnapshot: structs.WarSnapshot{
+								WarID:            6,
+								ImpactMultiplier: 50.5,
+							},
 							AssignmentIDs: []int64{2, 3, 4},
 							CampaignIDs:   []int32{7, 8, 9},
 							DispatchIDs:   []int32{10},
@@ -222,7 +230,8 @@ func TestSnapshotsTransform(t *testing.T) {
 				data: APIData{
 					WarID: &api.WarId{Id: ptr(int32(6))},
 					War: &api.War{
-						Now: ptr(time.Date(2024, 2, 3, 4, 5, 6, 7, time.Local)),
+						Now:              ptr(time.Date(2024, 2, 3, 4, 5, 6, 7, time.Local)),
+						ImpactMultiplier: ptr(float64(50.5)),
 					},
 					Assignments: &[]api.Assignment2{
 						{Id: ptr(int64(2))},
@@ -272,8 +281,11 @@ func TestSnapshotsTransform(t *testing.T) {
 					{
 						DocID: db.PrimitiveTime(time.Date(2024, 2, 3, 4, 5, 6, 7, time.Local)),
 						Document: structs.Snapshot{
-							Timestamp:     db.PrimitiveTime(time.Date(2024, 2, 3, 4, 5, 6, 7, time.Local)),
-							WarID:         6,
+							Timestamp: db.PrimitiveTime(time.Date(2024, 2, 3, 4, 5, 6, 7, time.Local)),
+							WarSnapshot: structs.WarSnapshot{
+								WarID:            6,
+								ImpactMultiplier: 50.5,
+							},
 							AssignmentIDs: []int64{2, 3, 4},
 							CampaignIDs:   []int32{8, 9},
 							DispatchIDs:   []int32{10},

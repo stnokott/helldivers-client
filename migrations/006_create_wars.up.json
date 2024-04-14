@@ -12,7 +12,6 @@
 							"_id",
 							"start_time",
 							"end_time",
-							"impact_multiplier",
 							"factions"
 						],
 						"additionalProperties": false,
@@ -27,11 +26,6 @@
 							"end_time": {
 								"bsonType": "timestamp",
 								"description": "When this war will end (or has ended)."
-							},
-							"impact_multiplier": {
-								"bsonType": "double",
-								"description": "A fraction used to calculate the impact of a mission on the war effort.",
-								"minimum": 0
 							},
 							"factions": {
 								"bsonType": "array",

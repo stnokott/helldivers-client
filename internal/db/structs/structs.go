@@ -129,8 +129,6 @@ type War struct {
 	StartTime primitive.Timestamp `bson:"start_time,omitempty"`
 	// When this war will end (or has ended)
 	EndTime primitive.Timestamp `bson:"end_time,omitempty"`
-	// A fraction used to calculate the impact of a mission on the war effort
-	ImpactMultiplier float64 `bson:"impact_multiplier,omitempty"`
 	// A list of factions currently involved in the war
 	Factions []string `bson:"factions,omitempty"`
 }
@@ -139,8 +137,8 @@ type War struct {
 type Snapshot struct {
 	// The time the snapshot of the war was taken
 	Timestamp primitive.Timestamp `bson:"_id"`
-	// FK ID of war
-	WarID int32 `bson:"war_id"`
+	// Dynamic data about current war
+	WarSnapshot WarSnapshot `bson:"war"`
 	// Currently active assignments
 	AssignmentIDs []int64 `bson:"assignment_ids"`
 	// Currently active campaigns
@@ -149,6 +147,13 @@ type Snapshot struct {
 	DispatchIDs []int32 `bson:"dispatch_ids"`
 	// Dynamic data about planets
 	Planets []PlanetSnapshot `bson:"planets"`
+}
+
+type WarSnapshot struct {
+	// FK ID of current war
+	WarID int32 `bson:"war_id"`
+	// A fraction used to calculate the impact of a mission on the war effort
+	ImpactMultiplier float64 `bson:"impact_multiplier,omitempty"`
 }
 
 // PlanetSnapshot contains information about planets currently part of this war
