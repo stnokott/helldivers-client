@@ -20,7 +20,7 @@ type Client struct {
 // New creates a new client instance
 func New(cfg *config.Config, logger *log.Logger) (*Client, error) {
 	rl := rate.NewLimiter(rate.Every(time.Duration(cfg.APIRateLimitInterval)), cfg.APIRateLimitCount)
-	logger.Printf("rate limit configured as %d/%s", cfg.APIRateLimitCount, cfg.APIRateLimitInterval.String())
+	logger.Printf("rate limit configured as %dreq/%s", cfg.APIRateLimitCount, cfg.APIRateLimitInterval.String())
 	options := api.WithHTTPClient(
 		newRateLimitHTTPClient(rl, logger),
 	)
