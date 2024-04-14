@@ -8,6 +8,7 @@ import (
 	"github.com/stnokott/helldivers-client/internal/api"
 	"github.com/stnokott/helldivers-client/internal/db"
 	"github.com/stnokott/helldivers-client/internal/db/structs"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func mustAssignment2Reward(from api.Reward2) *api.Assignment2_Reward {
@@ -66,7 +67,7 @@ func TestAssignmentsTransform(t *testing.T) {
 							Title:       "Foo",
 							Briefing:    "Foo briefing",
 							Description: "Foo description",
-							Expiration:  db.PrimitiveTime(time.Date(2024, 1, 1, 0, 0, 0, 0, time.Local)),
+							Expiration:  primitive.NewDateTimeFromTime(time.Date(2024, 1, 1, 0, 0, 0, 0, time.Local)),
 							Progress:    []int32{1, 2, 3},
 							Reward: structs.AssignmentReward{
 								Amount: 100,

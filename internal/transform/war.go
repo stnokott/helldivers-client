@@ -5,6 +5,7 @@ import (
 
 	"github.com/stnokott/helldivers-client/internal/db"
 	"github.com/stnokott/helldivers-client/internal/db/structs"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // War implements worker.docTransformer
@@ -32,8 +33,8 @@ func (_ War) Transform(data APIData, errFunc func(error)) *db.DocsProvider[struc
 			DocID: *warID.Id,
 			Document: structs.War{
 				ID:        *warID.Id,
-				StartTime: db.PrimitiveTime(*war.Started),
-				EndTime:   db.PrimitiveTime(*war.Ended),
+				StartTime: primitive.NewDateTimeFromTime(*war.Started),
+				EndTime:   primitive.NewDateTimeFromTime(*war.Ended),
 				Factions:  *war.Factions,
 			},
 		})

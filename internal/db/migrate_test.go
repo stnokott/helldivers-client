@@ -229,8 +229,8 @@ func TestPlanetsSchema(t *testing.T) {
 			name: "wrong struct",
 			doc: structs.War{
 				ID:        1,
-				StartTime: PrimitiveTime(time.Now()),
-				EndTime:   PrimitiveTime(time.Now()),
+				StartTime: primitive.NewDateTimeFromTime(time.Now()),
+				EndTime:   primitive.NewDateTimeFromTime(time.Now()),
 				Factions:  []string{"Humans", "Automatons"},
 			},
 			wantErr: true,
@@ -319,8 +319,8 @@ func TestCampaignsSchema(t *testing.T) {
 			name: "wrong struct",
 			doc: structs.War{
 				ID:        1,
-				StartTime: PrimitiveTime(time.Now()),
-				EndTime:   PrimitiveTime(time.Now()),
+				StartTime: primitive.NewDateTimeFromTime(time.Now()),
+				EndTime:   primitive.NewDateTimeFromTime(time.Now()),
 				Factions:  []string{"Humans", "Automatons"},
 			},
 			wantErr: true,
@@ -389,7 +389,7 @@ func TestDispatchesSchema(t *testing.T) {
 			name: "valid struct complete",
 			doc: structs.Dispatch{
 				ID:         1,
-				CreateTime: PrimitiveTime(time.Now()),
+				CreateTime: primitive.NewDateTimeFromTime(time.Now()),
 				Type:       3,
 				Message:    "Foobar",
 			},
@@ -399,9 +399,9 @@ func TestDispatchesSchema(t *testing.T) {
 			name: "valid struct incomplete",
 			doc: structs.Dispatch{
 				ID:         1,
-				CreateTime: primitive.Timestamp{},
+				CreateTime: primitive.NewDateTimeFromTime(time.Now()),
 				Type:       3,
-				Message:    "Foobar",
+				Message:    "",
 			},
 			wantErr: true,
 		},
@@ -409,8 +409,8 @@ func TestDispatchesSchema(t *testing.T) {
 			name: "wrong struct",
 			doc: structs.War{
 				ID:        1,
-				StartTime: PrimitiveTime(time.Now()),
-				EndTime:   PrimitiveTime(time.Now()),
+				StartTime: primitive.NewDateTimeFromTime(time.Now()),
+				EndTime:   primitive.NewDateTimeFromTime(time.Now()),
 				Factions:  []string{"Humans", "Automatons"},
 			},
 			wantErr: true,
@@ -482,8 +482,8 @@ func TestEventsSchema(t *testing.T) {
 				Type:      3,
 				Faction:   "Foobar",
 				MaxHealth: 100,
-				StartTime: PrimitiveTime(time.Now()),
-				EndTime:   PrimitiveTime(time.Now().Add(10 * 24 * time.Hour)),
+				StartTime: primitive.NewDateTimeFromTime(time.Now()),
+				EndTime:   primitive.NewDateTimeFromTime(time.Now().Add(10 * 24 * time.Hour)),
 			},
 			wantErr: false,
 		},
@@ -494,7 +494,7 @@ func TestEventsSchema(t *testing.T) {
 				Type:      3,
 				Faction:   "Foobar",
 				MaxHealth: 100,
-				StartTime: PrimitiveTime(time.Now()),
+				StartTime: primitive.NewDateTimeFromTime(time.Now()),
 				// EndTime: toPrimitiveTs(time.Now().Add(10 * 24 * time.Hour)),
 			},
 			wantErr: true,
@@ -506,8 +506,8 @@ func TestEventsSchema(t *testing.T) {
 				Type:      3,
 				Faction:   "Foobar",
 				MaxHealth: 100,
-				StartTime: PrimitiveTime(time.Now()),
-				EndTime:   PrimitiveTime(time.Now().Add(-1 * 10 * 24 * time.Hour)),
+				StartTime: primitive.NewDateTimeFromTime(time.Now()),
+				EndTime:   primitive.NewDateTimeFromTime(time.Now().Add(-1 * 10 * 24 * time.Hour)),
 			},
 			wantErr: true,
 		},
@@ -518,8 +518,8 @@ func TestEventsSchema(t *testing.T) {
 				Type:      3,
 				Faction:   "Foobar",
 				MaxHealth: -1,
-				StartTime: PrimitiveTime(time.Now()),
-				EndTime:   PrimitiveTime(time.Now().Add(10 * 24 * time.Hour)),
+				StartTime: primitive.NewDateTimeFromTime(time.Now()),
+				EndTime:   primitive.NewDateTimeFromTime(time.Now().Add(10 * 24 * time.Hour)),
 			},
 			wantErr: true,
 		},
@@ -527,8 +527,8 @@ func TestEventsSchema(t *testing.T) {
 			name: "wrong struct",
 			doc: structs.War{
 				ID:        1,
-				StartTime: PrimitiveTime(time.Now()),
-				EndTime:   PrimitiveTime(time.Now()),
+				StartTime: primitive.NewDateTimeFromTime(time.Now()),
+				EndTime:   primitive.NewDateTimeFromTime(time.Now()),
 				Factions:  []string{"Humans", "Automatons"},
 			},
 			wantErr: true,
@@ -600,7 +600,7 @@ func TestAssignmentsSchema(t *testing.T) {
 				Title:       "Foobar",
 				Briefing:    "Briefing text",
 				Description: "Description text, but a bit longer",
-				Expiration:  PrimitiveTime(time.Now().Add(5 * 24 * time.Hour)),
+				Expiration:  primitive.NewDateTimeFromTime(time.Now().Add(5 * 24 * time.Hour)),
 				Progress:    []int32{2, 3, 4},
 				Tasks: []structs.AssignmentTask{
 					{
@@ -655,8 +655,8 @@ func TestAssignmentsSchema(t *testing.T) {
 			name: "wrong struct",
 			doc: structs.War{
 				ID:        1,
-				StartTime: PrimitiveTime(time.Now()),
-				EndTime:   PrimitiveTime(time.Now()),
+				StartTime: primitive.NewDateTimeFromTime(time.Now()),
+				EndTime:   primitive.NewDateTimeFromTime(time.Now()),
 				Factions:  []string{"Humans", "Automatons"},
 			},
 			wantErr: true,
@@ -725,8 +725,8 @@ func TestWarsSchema(t *testing.T) {
 			name: "valid struct complete",
 			doc: structs.War{
 				ID:        1,
-				StartTime: PrimitiveTime(time.Now()),
-				EndTime:   PrimitiveTime(time.Now().Add(5 * 24 * time.Hour)),
+				StartTime: primitive.NewDateTimeFromTime(time.Now()),
+				EndTime:   primitive.NewDateTimeFromTime(time.Now().Add(5 * 24 * time.Hour)),
 				Factions: []string{
 					"Humans", "Automatons",
 				},
@@ -737,8 +737,7 @@ func TestWarsSchema(t *testing.T) {
 			name: "valid struct incomplete",
 			doc: structs.War{
 				ID:        1,
-				StartTime: PrimitiveTime(time.Now()),
-				// Ended:            toPrimitiveTs(time.Now().Add(5 * 24 * time.Hour)),
+				StartTime: primitive.NewDateTimeFromTime(time.Now()),
 				Factions: []string{
 					"Humans", "Automatons",
 				},
@@ -749,8 +748,8 @@ func TestWarsSchema(t *testing.T) {
 			name: "endtime gt starttime",
 			doc: structs.War{
 				ID:        1,
-				StartTime: PrimitiveTime(time.Now()),
-				EndTime:   PrimitiveTime(time.Now().Add(-1 * 5 * 24 * time.Hour)),
+				StartTime: primitive.NewDateTimeFromTime(time.Now()),
+				EndTime:   primitive.NewDateTimeFromTime(time.Now().Add(-1 * 5 * 24 * time.Hour)),
 				Factions: []string{
 					"Humans", "Automatons",
 				},
@@ -764,8 +763,8 @@ func TestWarsSchema(t *testing.T) {
 				Type:      3,
 				Faction:   "Foobar",
 				MaxHealth: 100,
-				StartTime: PrimitiveTime(time.Now()),
-				EndTime:   PrimitiveTime(time.Now().Add(5 * 24 * time.Hour)),
+				StartTime: primitive.NewDateTimeFromTime(time.Now()),
+				EndTime:   primitive.NewDateTimeFromTime(time.Now().Add(5 * 24 * time.Hour)),
 			},
 			wantErr: true,
 		},
@@ -832,7 +831,7 @@ func TestSnapshotsSchema(t *testing.T) {
 		{
 			name: "valid struct complete",
 			doc: structs.Snapshot{
-				Timestamp: PrimitiveTime(time.Now()),
+				Timestamp: primitive.NewDateTimeFromTime(time.Now()),
 				WarSnapshot: structs.WarSnapshot{
 					WarID:            6,
 					ImpactMultiplier: 50.0,
@@ -875,7 +874,7 @@ func TestSnapshotsSchema(t *testing.T) {
 		{
 			name: "valid struct high number",
 			doc: structs.Snapshot{
-				Timestamp: PrimitiveTime(time.Now()),
+				Timestamp: primitive.NewDateTimeFromTime(time.Now()),
 				WarSnapshot: structs.WarSnapshot{
 					WarID:            6,
 					ImpactMultiplier: 50.0,
@@ -918,7 +917,7 @@ func TestSnapshotsSchema(t *testing.T) {
 		{
 			name: "valid struct incomplete",
 			doc: structs.Snapshot{
-				Timestamp: PrimitiveTime(time.Now()),
+				Timestamp: primitive.NewDateTimeFromTime(time.Now()),
 				WarSnapshot: structs.WarSnapshot{
 					WarID:            6,
 					ImpactMultiplier: 50.0,
@@ -936,8 +935,8 @@ func TestSnapshotsSchema(t *testing.T) {
 				Type:      3,
 				Faction:   "Foobar",
 				MaxHealth: 100,
-				StartTime: PrimitiveTime(time.Now()),
-				EndTime:   PrimitiveTime(time.Now().Add(5 * 24 * time.Hour)),
+				StartTime: primitive.NewDateTimeFromTime(time.Now()),
+				EndTime:   primitive.NewDateTimeFromTime(time.Now().Add(5 * 24 * time.Hour)),
 			},
 			wantErr: true,
 		},

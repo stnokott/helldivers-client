@@ -35,7 +35,7 @@
 						"description": "A very short summary of the description."
 					},
 					"expiration": {
-						"bsonType": "timestamp",
+						"bsonType": "date",
 						"description": "The date when the assignment will expire."
 					},
 					"progress": {

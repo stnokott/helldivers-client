@@ -7,6 +7,7 @@ import (
 	"github.com/stnokott/helldivers-client/internal/api"
 	"github.com/stnokott/helldivers-client/internal/db"
 	"github.com/stnokott/helldivers-client/internal/db/structs"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // Events implements worker.docTransformer
@@ -42,8 +43,8 @@ func (_ Events) Transform(data APIData, errFunc func(error)) *db.DocsProvider[st
 				Type:      *event.EventType,
 				Faction:   *event.Faction,
 				MaxHealth: *event.MaxHealth,
-				StartTime: db.PrimitiveTime(*event.StartTime),
-				EndTime:   db.PrimitiveTime(*event.EndTime),
+				StartTime: primitive.NewDateTimeFromTime(*event.StartTime),
+				EndTime:   primitive.NewDateTimeFromTime(*event.EndTime),
 			},
 		})
 	}

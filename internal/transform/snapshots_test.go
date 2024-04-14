@@ -9,6 +9,7 @@ import (
 	"github.com/stnokott/helldivers-client/internal/api"
 	"github.com/stnokott/helldivers-client/internal/db"
 	"github.com/stnokott/helldivers-client/internal/db/structs"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func mustStatistics(from api.Statistics) *api.Planet_Statistics {
@@ -85,9 +86,9 @@ func TestSnapshotsTransform(t *testing.T) {
 				CollectionName: "snapshots",
 				Docs: []db.DocWrapper[structs.Snapshot]{
 					{
-						DocID: db.PrimitiveTime(time.Date(2024, 2, 3, 4, 5, 6, 7, time.Local)),
+						DocID: primitive.NewDateTimeFromTime(time.Date(2024, 2, 3, 4, 5, 6, 7, time.Local)),
 						Document: structs.Snapshot{
-							Timestamp: db.PrimitiveTime(time.Date(2024, 2, 3, 4, 5, 6, 7, time.Local)),
+							Timestamp: primitive.NewDateTimeFromTime(time.Date(2024, 2, 3, 4, 5, 6, 7, time.Local)),
 							WarSnapshot: structs.WarSnapshot{
 								WarID:            6,
 								ImpactMultiplier: 50.5,
@@ -182,9 +183,9 @@ func TestSnapshotsTransform(t *testing.T) {
 				CollectionName: "snapshots",
 				Docs: []db.DocWrapper[structs.Snapshot]{
 					{
-						DocID: db.PrimitiveTime(time.Date(2024, 2, 3, 4, 5, 6, 7, time.Local)),
+						DocID: primitive.NewDateTimeFromTime(time.Date(2024, 2, 3, 4, 5, 6, 7, time.Local)),
 						Document: structs.Snapshot{
-							Timestamp: db.PrimitiveTime(time.Date(2024, 2, 3, 4, 5, 6, 7, time.Local)),
+							Timestamp: primitive.NewDateTimeFromTime(time.Date(2024, 2, 3, 4, 5, 6, 7, time.Local)),
 							WarSnapshot: structs.WarSnapshot{
 								WarID:            6,
 								ImpactMultiplier: 50.5,
@@ -279,9 +280,9 @@ func TestSnapshotsTransform(t *testing.T) {
 				CollectionName: "snapshots",
 				Docs: []db.DocWrapper[structs.Snapshot]{
 					{
-						DocID: db.PrimitiveTime(time.Date(2024, 2, 3, 4, 5, 6, 7, time.Local)),
+						DocID: primitive.NewDateTimeFromTime(time.Date(2024, 2, 3, 4, 5, 6, 7, time.Local)),
 						Document: structs.Snapshot{
-							Timestamp: db.PrimitiveTime(time.Date(2024, 2, 3, 4, 5, 6, 7, time.Local)),
+							Timestamp: primitive.NewDateTimeFromTime(time.Date(2024, 2, 3, 4, 5, 6, 7, time.Local)),
 							WarSnapshot: structs.WarSnapshot{
 								WarID:            6,
 								ImpactMultiplier: 50.5,

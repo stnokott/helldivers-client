@@ -36,11 +36,11 @@
 								"minimum": 0
 							},
 							"start_time": {
-								"bsonType": "timestamp",
+								"bsonType": "date",
 								"description": "When the event started."
 							},
 							"end_time": {
-								"bsonType": "timestamp",
+								"bsonType": "date",
 								"description": "When the event will end."
 							}
 						}

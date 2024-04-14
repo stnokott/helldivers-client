@@ -7,6 +7,7 @@ import (
 	"github.com/stnokott/helldivers-client/internal/api"
 	"github.com/stnokott/helldivers-client/internal/db"
 	"github.com/stnokott/helldivers-client/internal/db/structs"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // Assignments implements worker.docTransformer
@@ -55,7 +56,7 @@ func (_ Assignments) Transform(data APIData, errFunc func(error)) *db.DocsProvid
 				Briefing: *assignment.Briefing,
 
 				Description: *assignment.Description,
-				Expiration:  db.PrimitiveTime(*assignment.Expiration),
+				Expiration:  primitive.NewDateTimeFromTime(*assignment.Expiration),
 				Progress:    *assignment.Progress,
 				Reward: structs.AssignmentReward{
 					Type:   *reward.Type,

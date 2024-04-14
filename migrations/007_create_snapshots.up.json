@@ -16,7 +16,7 @@
 				"additionalProperties": false,
 				"properties": {
 					"_id": {
-						"bsonType": "timestamp",
+						"bsonType": "date",
 						"description": "The time the snapshot of the war was taken."
 					},
 					"war": {

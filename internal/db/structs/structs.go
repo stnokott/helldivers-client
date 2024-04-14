@@ -65,7 +65,7 @@ type Dispatch struct {
 	// The unique identifier of this dispatch
 	ID int32 `bson:"_id"`
 	// When the dispatch was published
-	CreateTime primitive.Timestamp `bson:"create_time,omitempty"`
+	CreateTime primitive.DateTime `bson:"create_time,omitempty"`
 	// The type of dispatch, purpose unknown
 	Type int32
 	// The message this dispatch represents
@@ -82,9 +82,9 @@ type Event struct {
 	// The maximum health of the Event at the time of snapshot
 	MaxHealth int64 `bson:"max_health"`
 	// When the event started
-	StartTime primitive.Timestamp `bson:"start_time,omitempty"`
+	StartTime primitive.DateTime `bson:"start_time,omitempty"`
 	// When the event will end
-	EndTime primitive.Timestamp `bson:"end_time,omitempty"`
+	EndTime primitive.DateTime `bson:"end_time,omitempty"`
 }
 
 type Assignment struct {
@@ -97,7 +97,7 @@ type Assignment struct {
 	// A very short summary of the description
 	Description string `bson:"description,omitempty"`
 	// The date when the assignment will expire.
-	Expiration primitive.Timestamp `bson:"expiration,omitempty"`
+	Expiration primitive.DateTime `bson:"expiration,omitempty"`
 	// A list of numbers, how they represent progress is unknown.
 	Progress []int32 `bson:"progress"`
 	// A list of tasks that need to be completed for this assignment
@@ -126,9 +126,9 @@ type AssignmentReward struct {
 type War struct {
 	ID int32 `bson:"_id"`
 	// When this war was started
-	StartTime primitive.Timestamp `bson:"start_time,omitempty"`
+	StartTime primitive.DateTime `bson:"start_time,omitempty"`
 	// When this war will end (or has ended)
-	EndTime primitive.Timestamp `bson:"end_time,omitempty"`
+	EndTime primitive.DateTime `bson:"end_time,omitempty"`
 	// A list of factions currently involved in the war
 	Factions []string `bson:"factions,omitempty"`
 }
@@ -136,7 +136,7 @@ type War struct {
 // TODO: add global statistics
 type Snapshot struct {
 	// The time the snapshot of the war was taken
-	Timestamp primitive.Timestamp `bson:"_id"`
+	Timestamp primitive.DateTime `bson:"_id"`
 	// Dynamic data about current war
 	WarSnapshot WarSnapshot `bson:"war"`
 	// Currently active assignments

@@ -8,6 +8,7 @@ import (
 	"github.com/stnokott/helldivers-client/internal/api"
 	"github.com/stnokott/helldivers-client/internal/db"
 	"github.com/stnokott/helldivers-client/internal/db/structs"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func TestDispatchesTransform(t *testing.T) {
@@ -48,7 +49,7 @@ func TestDispatchesTransform(t *testing.T) {
 						DocID: int32(5),
 						Document: structs.Dispatch{
 							ID:         5,
-							CreateTime: db.PrimitiveTime(time.Date(2024, 12, 31, 23, 59, 59, 0, time.Local)),
+							CreateTime: primitive.NewDateTimeFromTime(time.Date(2024, 12, 31, 23, 59, 59, 0, time.Local)),
 							Type:       7,
 							Message:    "Foo",
 						},
@@ -57,7 +58,7 @@ func TestDispatchesTransform(t *testing.T) {
 						DocID: int32(6),
 						Document: structs.Dispatch{
 							ID:         6,
-							CreateTime: db.PrimitiveTime(time.Date(2025, 12, 31, 23, 59, 59, 0, time.Local)),
+							CreateTime: primitive.NewDateTimeFromTime(time.Date(2025, 12, 31, 23, 59, 59, 0, time.Local)),
 							Type:       8,
 							Message:    "Bar",
 						},
@@ -80,9 +81,9 @@ func TestDispatchesTransform(t *testing.T) {
 					},
 				},
 			},
-			want:    &db.DocsProvider[structs.Dispatch]{
+			want: &db.DocsProvider[structs.Dispatch]{
 				CollectionName: db.CollDispatches,
-				Docs: []db.DocWrapper[structs.Dispatch]{},
+				Docs:           []db.DocWrapper[structs.Dispatch]{},
 			},
 			wantErr: true,
 		},

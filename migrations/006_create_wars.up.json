@@ -20,11 +20,11 @@
 								"bsonType": "int"
 							},
 							"start_time": {
-								"bsonType": "timestamp",
+								"bsonType": "date",
 								"description": "When this war was started."
 							},
 							"end_time": {
-								"bsonType": "timestamp",
+								"bsonType": "date",
 								"description": "When this war will end (or has ended)."
 							},
 							"factions": {

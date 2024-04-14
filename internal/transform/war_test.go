@@ -42,8 +42,8 @@ func TestWarTransform(t *testing.T) {
 						DocID: int32(2),
 						Document: structs.War{
 							ID:        2,
-							StartTime: primitive.Timestamp{T: uint32(time.Date(2024, 01, 01, 23, 59, 0, 0, time.Local).Unix())},
-							EndTime:   primitive.Timestamp{T: uint32(time.Date(2030, 01, 01, 23, 59, 0, 0, time.Local).Unix())},
+							StartTime: primitive.NewDateTimeFromTime(time.Date(2024, 01, 01, 23, 59, 0, 0, time.Local)),
+							EndTime:   primitive.NewDateTimeFromTime(time.Date(2030, 01, 01, 23, 59, 0, 0, time.Local)),
 							Factions:  []string{"Humans", "Automatons"},
 						},
 					},

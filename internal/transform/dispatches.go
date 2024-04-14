@@ -5,6 +5,7 @@ import (
 
 	"github.com/stnokott/helldivers-client/internal/db"
 	"github.com/stnokott/helldivers-client/internal/db/structs"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // Dispatches implements worker.docTransformer
@@ -36,11 +37,11 @@ func (_ Dispatches) Transform(data APIData, errFunc func(error)) *db.DocsProvide
 			DocID: *dispatch.Id,
 			Document: structs.Dispatch{
 				ID:         *dispatch.Id,
-				CreateTime: db.PrimitiveTime(*dispatch.Published),
+				CreateTime: primitive.NewDateTimeFromTime(*dispatch.Published),
 				Type:       *dispatch.Type,
 				Message:    *dispatch.Message,
 			},
-		}) 
+		})
 	}
 	return provider
 }

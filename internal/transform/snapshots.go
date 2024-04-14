@@ -7,6 +7,7 @@ import (
 	"github.com/stnokott/helldivers-client/internal/api"
 	"github.com/stnokott/helldivers-client/internal/db"
 	"github.com/stnokott/helldivers-client/internal/db/structs"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // Snapshots implements worker.docTransformer
@@ -52,8 +53,8 @@ func snapshotSetWar(doc *db.DocWrapper[structs.Snapshot], warPtr *api.War, errFu
 		errFunc(errFromNils(warPtr))
 		return
 	}
-	doc.DocID = db.PrimitiveTime(*war.Now)
-	doc.Document.Timestamp = db.PrimitiveTime(*war.Now)
+	doc.DocID = primitive.NewDateTimeFromTime(*war.Now)
+	doc.Document.Timestamp = primitive.NewDateTimeFromTime(*war.Now)
 	doc.Document.WarSnapshot.ImpactMultiplier = *war.ImpactMultiplier
 }
 

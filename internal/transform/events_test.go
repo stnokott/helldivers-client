@@ -8,6 +8,7 @@ import (
 	"github.com/stnokott/helldivers-client/internal/api"
 	"github.com/stnokott/helldivers-client/internal/db"
 	"github.com/stnokott/helldivers-client/internal/db/structs"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func mustPlanetEvent(from api.Event) *api.Planet_Event {
@@ -71,8 +72,8 @@ func TestEventsTransform(t *testing.T) {
 							Type:      6,
 							Faction:   "Foo",
 							MaxHealth: 10000,
-							StartTime: db.PrimitiveTime(time.Date(2024, 12, 31, 23, 59, 59, 0, time.Local)),
-							EndTime:   db.PrimitiveTime(time.Date(2025, 12, 31, 23, 59, 59, 0, time.Local)),
+							StartTime: primitive.NewDateTimeFromTime(time.Date(2024, 12, 31, 23, 59, 59, 0, time.Local)),
+							EndTime:   primitive.NewDateTimeFromTime(time.Date(2025, 12, 31, 23, 59, 59, 0, time.Local)),
 						},
 					},
 					{
@@ -82,8 +83,8 @@ func TestEventsTransform(t *testing.T) {
 							Type:      7,
 							Faction:   "Bar",
 							MaxHealth: 10000,
-							StartTime: db.PrimitiveTime(time.Date(2026, 1, 1, 0, 0, 0, 0, time.Local)),
-							EndTime:   db.PrimitiveTime(time.Date(2027, 1, 1, 0, 0, 0, 0, time.Local)),
+							StartTime: primitive.NewDateTimeFromTime(time.Date(2026, 1, 1, 0, 0, 0, 0, time.Local)),
+							EndTime:   primitive.NewDateTimeFromTime(time.Date(2027, 1, 1, 0, 0, 0, 0, time.Local)),
 						},
 					},
 				},
@@ -110,9 +111,9 @@ func TestEventsTransform(t *testing.T) {
 					},
 				},
 			},
-			want:    &db.DocsProvider[structs.Event]{
+			want: &db.DocsProvider[structs.Event]{
 				CollectionName: db.CollEvents,
-				Docs: []db.DocWrapper[structs.Event]{},
+				Docs:           []db.DocWrapper[structs.Event]{},
 			},
 			wantErr: true,
 		},
