@@ -75,10 +75,6 @@ func (w *Worker) do(timeout time.Duration) {
 
 func (w *Worker) queryData(ctx context.Context) (data transform.APIData) {
 	var err error
-	data.Planets, err = w.api.Planets(ctx)
-	if err != nil {
-		w.log.Printf("failed to query planets: %v", err)
-	}
 	data.WarID, err = w.api.WarID(ctx)
 	if err != nil {
 		w.log.Printf("failed to query current war ID: %v", err)
@@ -86,6 +82,10 @@ func (w *Worker) queryData(ctx context.Context) (data transform.APIData) {
 	data.War, err = w.api.War(ctx)
 	if err != nil {
 		w.log.Printf("failed to query current war: %v", err)
+	}
+	data.Planets, err = w.api.Planets(ctx)
+	if err != nil {
+		w.log.Printf("failed to query planets: %v", err)
 	}
 	data.Campaigns, err = w.api.Campaigns(ctx)
 	if err != nil {

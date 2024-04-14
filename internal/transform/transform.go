@@ -10,9 +10,9 @@ import (
 )
 
 type APIData struct {
-	Planets     *[]api.Planet
 	WarID       *api.WarId
 	War         *api.War
+	Planets     *[]api.Planet
 	Campaigns   *[]api.Campaign2
 	Dispatches  *[]api.Dispatch
 	Assignments *[]api.Assignment2
