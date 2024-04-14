@@ -70,6 +70,7 @@
 							"name",
 							"description"
 						],
+						"additionalProperties": false,
 						"properties": {
 							"name": {
 								"bsonType": "string",
@@ -90,6 +91,7 @@
 								"name",
 								"description"
 							],
+							"additionalProperties": false,
 							"properties": {
 								"name": {
 									"bsonType": "string",
