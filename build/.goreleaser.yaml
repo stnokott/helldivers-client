@@ -107,14 +107,10 @@ archives:
     builds:
       - linux
     format: tar.gz
-    #strip_binary_directory: true
-    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
   - id: windows
     builds:
       - windows
     format: zip
-    # strip_binary_directory: true
-    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
 
 release:
   target_commitish: "{{ .Commit }}"
