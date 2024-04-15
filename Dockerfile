@@ -1,3 +1,5 @@
 FROM scratch
-COPY app /
+
+COPY ["migrations/*.json", "migrations/"]
+COPY ["app", "/app"]
 ENTRYPOINT [ "/app" ]
