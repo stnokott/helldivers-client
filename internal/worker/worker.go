@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/stnokott/helldivers-client/internal/client"
-	"github.com/stnokott/helldivers-client/internal/config"
 	"github.com/stnokott/helldivers-client/internal/db"
 	"github.com/stnokott/helldivers-client/internal/transform"
 )
@@ -31,8 +30,8 @@ func New(api *client.Client, db *db.Client, logger *log.Logger) *Worker {
 }
 
 // Run schedules a new sync job at the specified interval. It is blocking.
-func (w *Worker) Run(interval config.Interval, stop <-chan struct{}) {
-	ticker := time.NewTicker(time.Duration(interval))
+func (w *Worker) Run(interval time.Duration, stop <-chan struct{}) {
+	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 
 	w.log.Printf("worker running every %s", interval.String())

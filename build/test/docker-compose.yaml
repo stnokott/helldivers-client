@@ -17,11 +17,11 @@ services:
     volumes:
       - ./../../:/code
     environment:
-      HELL_MONGODB_URI: mongodb://root:test@db:27017
-      HELL_API_URL: http://api:8080
-      HELL_API_RATE_LIMIT_INTERVAL: 10s
-      HELL_API_RATE_LIMIT_COUNT: 5
-      HELL_WORKER_INTERVAL: 30s
+      MONGO_URI: mongodb://root:test@db:27017
+      API_URL: http://api:8080
+      API_RATE_LIMIT_INTERVAL: 10s
+      API_RATE_LIMIT_COUNT: 5
+      WORKER_INTERVAL: 30s
     networks:
       - default
 
