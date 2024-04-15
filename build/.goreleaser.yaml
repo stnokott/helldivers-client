@@ -3,9 +3,11 @@
 before:
   hooks:
     - go mod tidy
+    - go mod vendor
     - go mod verify
 builds:
-  - env:
+  - binary: app
+    env:
       - CGO_ENABLED=0
     goos:
       - windows
@@ -13,12 +15,42 @@ builds:
     goarch:
       - amd64
       - arm
-      - arm64
     goarm:
       - "7"
     ldflags:
       - -s # -s and -w reduce binary size, but prevent debugging (not necessary for production build)
       - -w
+
+# TODO: use templates for image name
+dockers:
+  - use: buildx
+    image_templates:
+      - "stnokott/helldivers-client:{{ .Version }}-amd64"
+    dockerfile: Dockerfile
+    build_flag_templates:
+      - "--pull"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.title={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
+      - "--platform=linux/amd64"
+  - use: buildx
+    image_templates:
+      - "stnokott/helldivers-client:{{ .Version }}-armv7"
+    dockerfile: Dockerfile
+    build_flag_templates:
+      - "--pull"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.title={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
+      - "--platform=linux/arm/7"
+
+docker_manifests:
+  - name_template: "stnokott/helldivers-client:{{ .Version }}"
+    image_templates:
+      - "stnokott/helldivers-client:{{ .Version }}-amd64"
+      - "stnokott/helldivers-client:{{ .Version }}-armv7"
 
 changelog:
   sort: asc
@@ -29,7 +61,7 @@ changelog:
       - "^style"
       - "^test"
       - "^chore"
-      - "^build\\(dev\\)"
+      - "\\(dev\\)"
       - "^Merge"
 
   groups:
@@ -48,9 +80,6 @@ changelog:
     - title: Performance
       regexp: "^perf"
       order: 2
-    - title: Dependencies
-      regexp: "^build\\(deps\\)"
-      order: 7
     - title: Build
       regexp: "^build"
       order: 5
