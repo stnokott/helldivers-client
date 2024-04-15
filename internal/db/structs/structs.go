@@ -2,9 +2,6 @@
 package structs
 
 import (
-	"encoding/binary"
-	"fmt"
-
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/bsontype"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -185,18 +182,18 @@ type EventSnapshot struct {
 type BSONLong uint64
 
 // MarshalBSONValue implements bson.ValueMarshaler by converting to int64 which is natively supported by MongoDB.
-func (long *BSONLong) MarshalBSONValue() (bsontype.Type, []byte, error) {
-	bytes := make([]byte, 8)
-	binary.LittleEndian.PutUint64(bytes, uint64(*long))
-	return bson.TypeInt64, bytes, nil
+func (long BSONLong) MarshalBSONValue() (bsontype.Type, []byte, error) {
+	var converted = int64(long)
+	return bson.MarshalValue(converted)
 }
 
 // UnmarshalBSONValue implements bson.ValueUnmarshaler by converting from int64 which is natively supported by MongoDB.
 func (long *BSONLong) UnmarshalBSONValue(t bsontype.Type, b []byte) error {
-	if t != bson.TypeInt64 {
-		return fmt.Errorf("BSONLong was encoded as %s, needs %s", t.String(), bson.TypeInt64.String())
+	var unmarshalled int64
+	if err := bson.UnmarshalValue(t, b, &unmarshalled); err != nil {
+		return err
 	}
-	*long = BSONLong(binary.LittleEndian.Uint64(b))
+	*long = BSONLong(unmarshalled)
 	return nil
 }
 
