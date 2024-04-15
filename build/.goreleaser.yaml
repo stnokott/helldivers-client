@@ -6,11 +6,11 @@ before:
     - go mod vendor
     - go mod verify
 builds:
-  - binary: app
+  - id: linux
+    binary: app
     env:
       - CGO_ENABLED=0
     goos:
-      - windows
       - linux
     goarch:
       - amd64
@@ -19,6 +19,20 @@ builds:
       - "7"
     ldflags:
       - -s # -s and -w reduce binary size, but prevent debugging (not necessary for production build)
+      - -w
+  - id: windows
+    binary: app
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - windows
+    goarch:
+      - amd64
+      - arm
+    goarm:
+      - "7"
+    ldflags:
+      - -s
       - -w
 
 # TODO: use templates for image name
@@ -90,9 +104,18 @@ changelog:
       order: 999
 
 archives:
-  - rlcp: true
+  - id: linux
+    builds:
+      - linux
+    format: tar.gz
+    #strip_binary_directory: true
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+  - id: windows
+    builds:
+      - windows
     format: zip
-    strip_binary_directory: true
+    # strip_binary_directory: true
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
 
 release:
   target_commitish: "{{ .Commit }}"
