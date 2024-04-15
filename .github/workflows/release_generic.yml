@@ -22,7 +22,7 @@ jobs:
           cache: false # don't use cache because it's huge (>1GB)
       - if: inputs.snapshot == false
         name: Login to GitHub Container Registry
-        run: docker login ghcr.io -u ${{ secrets.DOCKER_USER }} -p ${{ secrets.DOCKER_PASS }}
+        run: docker login ghcr.io -u stnokott -p ${{ secrets.GITHUB_TOKEN }}
       - if: inputs.snapshot == false
         uses: goreleaser/goreleaser-action@v5.0.0
         with:
