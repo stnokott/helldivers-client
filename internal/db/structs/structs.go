@@ -130,12 +130,11 @@ type War struct {
 	Factions []string `bson:"factions,omitempty"`
 }
 
-// TODO: add global statistics
 type Snapshot struct {
 	// The time the snapshot of the war was taken
 	Timestamp primitive.DateTime `bson:"_id"`
 	// Dynamic data about current war
-	WarSnapshot WarSnapshot `bson:"war"`
+	WarSnapshot WarSnapshot `bson:"war,omitempty"`
 	// Currently active assignments
 	AssignmentIDs []int64 `bson:"assignment_ids"`
 	// Currently active campaigns
@@ -144,6 +143,8 @@ type Snapshot struct {
 	DispatchIDs []int32 `bson:"dispatch_ids"`
 	// Dynamic data about planets
 	Planets []PlanetSnapshot `bson:"planets"`
+	// Global statistics for the current war
+	Statistics Statistics `bson:"statistics,omitempty"`
 }
 
 type WarSnapshot struct {
@@ -164,7 +165,7 @@ type PlanetSnapshot struct {
 	// Information on the active event ongoing on this planet, if one is active
 	Event *EventSnapshot `bson:"event,omitempty"`
 	// A set of statistics scoped to this planet.
-	Statistics PlanetStatistics `bson:"statistics,omitempty"`
+	Statistics Statistics `bson:"statistics,omitempty"`
 	// A list of Index integers that this planet is currently attacking.
 	Attacking []int32 `bson:"attacking"`
 }
@@ -176,7 +177,7 @@ type EventSnapshot struct {
 	Health int64
 }
 
-// BSONLong implements custom BSON marshallong for uint64.
+// BSONLong implements custom BSON marshalling for uint64.
 //
 // It is required since MongoDB natively only supports signed 64-bit values (long).
 type BSONLong uint64
@@ -197,14 +198,14 @@ func (long *BSONLong) UnmarshalBSONValue(t bsontype.Type, b []byte) error {
 	return nil
 }
 
-type PlanetStatistics struct {
+type Statistics struct {
 	// The amount of missions won
 	MissionsWon BSONLong `bson:"missions_won"`
 	// The amount of missions lost
 	MissionsLost BSONLong `bson:"missions_lost"`
 	// The total amount of time spent planetside (in seconds)
-	MissionTime BSONLong `bson:"mission_time"`
-	Kills       StatisticsKills
+	MissionTime BSONLong        `bson:"mission_time"`
+	Kills       StatisticsKills `bson:"inline"`
 	// The total amount of bullets fired
 	BulletsFired BSONLong `bson:"bullets_fired"`
 	// The total amount of bullets hit
@@ -212,20 +213,20 @@ type PlanetStatistics struct {
 	// The total amount of time played (including off-planet) in seconds
 	TimePlayed BSONLong `bson:"time_played"`
 	// The amount of casualties on the side of humanity
-	Deaths BSONLong
+	Deaths BSONLong `bson:"deaths"`
 	// The amount of revives(?)
-	Revives BSONLong
+	Revives BSONLong `bson:"revives"`
 	// The amount of friendly fire casualties
-	Friendlies BSONLong
+	Friendlies BSONLong `bson:"friendlies"`
 	// The total amount of players present (at the time of the snapshot)
 	PlayerCount BSONLong `bson:"player_count"`
 }
 
 type StatisticsKills struct {
 	// The total amount of bugs killed since start of the season
-	Terminid BSONLong
+	Terminid BSONLong `bson:"terminid_kills"`
 	// The total amount of automatons killed since start of the season
-	Automaton BSONLong
+	Automaton BSONLong `bson:"automaton_kills"`
 	// The total amount of Illuminate killed since start of the season
-	Illuminate BSONLong
+	Illuminate BSONLong `bson:"illuminate_kills"`
 }

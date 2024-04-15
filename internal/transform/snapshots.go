@@ -18,7 +18,6 @@ func (_ Snapshots) Transform(data APIData, errFunc func(error)) *db.DocsProvider
 		CollectionName: db.CollSnapshots,
 		Docs:           []db.DocWrapper[structs.Snapshot]{},
 	}
-	// TODO: ensure only valid documents are added to Docs across Transform functions
 
 	doc := db.DocWrapper[structs.Snapshot]{
 		DocID:    nil,
@@ -56,6 +55,13 @@ func snapshotSetWar(doc *db.DocWrapper[structs.Snapshot], warPtr *api.War, errFu
 	doc.DocID = primitive.NewDateTimeFromTime(*war.Now)
 	doc.Document.Timestamp = primitive.NewDateTimeFromTime(*war.Now)
 	doc.Document.WarSnapshot.ImpactMultiplier = *war.ImpactMultiplier
+
+	stats, err := makeWarStatistics(war.Statistics)
+	if err != nil {
+		errFunc(err)
+		return
+	}
+	doc.Document.Statistics = *stats
 }
 
 func snapshotSetAssignments(snap *structs.Snapshot, assignmentsPtr *[]api.Assignment2, errFunc func(error)) {
@@ -128,7 +134,7 @@ func snapshotSetPlanets(snap *structs.Snapshot, planetsPtr *[]api.Planet, errFun
 			errFunc(err)
 			continue
 		}
-		planetStatistics, err := makeStatistics(planet.Statistics)
+		planetStatistics, err := makePlanetStatistics(planet.Statistics)
 		if err != nil {
 			errFunc(err)
 			continue
@@ -168,15 +174,7 @@ func makeEventSnapshot(eventPtr *api.Planet_Event) (*structs.EventSnapshot, erro
 	}, nil
 }
 
-func makeStatistics(statsPtr *api.Planet_Statistics) (*structs.PlanetStatistics, error) {
-	if statsPtr == nil {
-		return nil, errors.New("got nil Planet Statistics")
-	}
-	stats, err := statsPtr.AsStatistics()
-	if err != nil {
-		return nil, fmt.Errorf("cannot parse Planet Statistics: %w", err)
-	}
-
+func makeStatistics(stats api.Statistics) (*structs.Statistics, error) {
 	if stats.MissionsWon == nil ||
 		stats.MissionsLost == nil ||
 		stats.MissionTime == nil ||
@@ -193,7 +191,7 @@ func makeStatistics(statsPtr *api.Planet_Statistics) (*structs.PlanetStatistics,
 		return nil, errFromNils(&stats)
 	}
 
-	return &structs.PlanetStatistics{
+	return &structs.Statistics{
 		MissionsWon:  structs.BSONLong(*stats.MissionsWon),
 		MissionsLost: structs.BSONLong(*stats.MissionsLost),
 		MissionTime:  structs.BSONLong(*stats.MissionTime),
@@ -210,4 +208,26 @@ func makeStatistics(statsPtr *api.Planet_Statistics) (*structs.PlanetStatistics,
 		Friendlies:   structs.BSONLong(*stats.Friendlies),
 		PlayerCount:  structs.BSONLong(*stats.PlayerCount),
 	}, nil
+}
+
+func makePlanetStatistics(statsPtr *api.Planet_Statistics) (*structs.Statistics, error) {
+	if statsPtr == nil {
+		return nil, errors.New("got nil Planet Statistics")
+	}
+	stats, err := statsPtr.AsStatistics()
+	if err != nil {
+		return nil, fmt.Errorf("cannot parse Planet Statistics: %w", err)
+	}
+	return makeStatistics(stats)
+}
+
+func makeWarStatistics(statsPtr *api.War_Statistics) (*structs.Statistics, error) {
+	if statsPtr == nil {
+		return nil, errors.New("got nil War Statistics")
+	}
+	stats, err := statsPtr.AsStatistics()
+	if err != nil {
+		return nil, fmt.Errorf("cannot parse War Statistics: %w", err)
+	}
+	return makeStatistics(stats)
 }

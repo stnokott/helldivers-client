@@ -12,12 +12,20 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func mustStatistics(from api.Statistics) *api.Planet_Statistics {
+func mustPlanetStatistics(from api.Statistics) *api.Planet_Statistics {
 	planetStats := new(api.Planet_Statistics)
 	if err := planetStats.FromStatistics(from); err != nil {
 		panic(err)
 	}
 	return planetStats
+}
+
+func mustWarStatistics(from api.Statistics) *api.War_Statistics {
+	warStats := new(api.War_Statistics)
+	if err := warStats.FromStatistics(from); err != nil {
+		panic(err)
+	}
+	return warStats
 }
 
 func TestSnapshotsTransform(t *testing.T) {
@@ -39,6 +47,21 @@ func TestSnapshotsTransform(t *testing.T) {
 					War: &api.War{
 						Now:              ptr(time.Date(2024, 2, 3, 4, 5, 6, 7, time.Local)),
 						ImpactMultiplier: ptr(float64(50.5)),
+						Statistics: mustWarStatistics(api.Statistics{
+							MissionsWon:     ptr(uint64(100)),
+							MissionsLost:    ptr(uint64(55)),
+							MissionTime:     ptr(uint64(12345)),
+							TerminidKills:   ptr(uint64(10000)),
+							AutomatonKills:  ptr(uint64(99999)),
+							IlluminateKills: ptr(uint64(333333)),
+							BulletsFired:    ptr(uint64(11111)),
+							BulletsHit:      ptr(uint64(1111)),
+							TimePlayed:      ptr(uint64(123456)),
+							Deaths:          ptr(uint64(32134)),
+							Revives:         ptr(uint64(94284)),
+							Friendlies:      ptr(uint64(12940)),
+							PlayerCount:     ptr(uint64(444442)),
+						}),
 					},
 					Assignments: &[]api.Assignment2{
 						{Id: ptr(int64(2))},
@@ -62,7 +85,7 @@ func TestSnapshotsTransform(t *testing.T) {
 								Id:     ptr(int32(6)),
 								Health: ptr(int64(999)),
 							}),
-							Statistics: mustStatistics(api.Statistics{
+							Statistics: mustPlanetStatistics(api.Statistics{
 								MissionsWon:     ptr(uint64(100)),
 								MissionsLost:    ptr(uint64(55)),
 								MissionTime:     ptr(uint64(12345)),
@@ -105,7 +128,7 @@ func TestSnapshotsTransform(t *testing.T) {
 										EventID: 6,
 										Health:  999,
 									},
-									Statistics: structs.PlanetStatistics{
+									Statistics: structs.Statistics{
 										MissionsWon:  100,
 										MissionsLost: 55,
 										MissionTime:  12345,
@@ -125,6 +148,23 @@ func TestSnapshotsTransform(t *testing.T) {
 									Attacking: []int32{8, 9, 10},
 								},
 							},
+							Statistics: structs.Statistics{
+								MissionsWon:  100,
+								MissionsLost: 55,
+								MissionTime:  12345,
+								Kills: structs.StatisticsKills{
+									Terminid:   10000,
+									Automaton:  99999,
+									Illuminate: 333333,
+								},
+								BulletsFired: 11111,
+								BulletsHit:   1111,
+								TimePlayed:   123456,
+								Deaths:       32134,
+								Revives:      94284,
+								Friendlies:   12940,
+								PlayerCount:  444442,
+							},
 						},
 					},
 				},
@@ -139,6 +179,21 @@ func TestSnapshotsTransform(t *testing.T) {
 					War: &api.War{
 						Now:              ptr(time.Date(2024, 2, 3, 4, 5, 6, 7, time.Local)),
 						ImpactMultiplier: ptr(float64(50.5)),
+						Statistics: mustWarStatistics(api.Statistics{
+							MissionsWon:     ptr(uint64(100)),
+							MissionsLost:    ptr(uint64(55)),
+							MissionTime:     ptr(uint64(12345)),
+							TerminidKills:   ptr(uint64(10000)),
+							AutomatonKills:  ptr(uint64(99999)),
+							IlluminateKills: ptr(uint64(333333)),
+							BulletsFired:    ptr(uint64(11111)),
+							BulletsHit:      ptr(uint64(1111)),
+							TimePlayed:      ptr(uint64(123456)),
+							Deaths:          ptr(uint64(32134)),
+							Revives:         ptr(uint64(94284)),
+							Friendlies:      ptr(uint64(12940)),
+							PlayerCount:     ptr(uint64(444442)),
+						}),
 					},
 					Assignments: &[]api.Assignment2{
 						{Id: ptr(int64(2))},
@@ -159,7 +214,7 @@ func TestSnapshotsTransform(t *testing.T) {
 							Health:       ptr(int64(1234567)),
 							CurrentOwner: ptr("Humans"),
 							Event:        nil,
-							Statistics: mustStatistics(api.Statistics{
+							Statistics: mustPlanetStatistics(api.Statistics{
 								MissionsWon:     ptr(uint64(100)),
 								MissionsLost:    ptr(uint64(55)),
 								MissionTime:     ptr(uint64(12345)),
@@ -199,7 +254,7 @@ func TestSnapshotsTransform(t *testing.T) {
 									Health:       1234567,
 									CurrentOwner: "Humans",
 									Event:        nil,
-									Statistics: structs.PlanetStatistics{
+									Statistics: structs.Statistics{
 										MissionsWon:  100,
 										MissionsLost: 55,
 										MissionTime:  12345,
@@ -219,6 +274,23 @@ func TestSnapshotsTransform(t *testing.T) {
 									Attacking: []int32{8, 9, 10},
 								},
 							},
+							Statistics: structs.Statistics{
+								MissionsWon:  100,
+								MissionsLost: 55,
+								MissionTime:  12345,
+								Kills: structs.StatisticsKills{
+									Terminid:   10000,
+									Automaton:  99999,
+									Illuminate: 333333,
+								},
+								BulletsFired: 11111,
+								BulletsHit:   1111,
+								TimePlayed:   123456,
+								Deaths:       32134,
+								Revives:      94284,
+								Friendlies:   12940,
+								PlayerCount:  444442,
+							},
 						},
 					},
 				},
@@ -233,6 +305,21 @@ func TestSnapshotsTransform(t *testing.T) {
 					War: &api.War{
 						Now:              ptr(time.Date(2024, 2, 3, 4, 5, 6, 7, time.Local)),
 						ImpactMultiplier: ptr(float64(50.5)),
+						Statistics: mustWarStatistics(api.Statistics{
+							MissionsWon:     ptr(uint64(100)),
+							MissionsLost:    ptr(uint64(55)),
+							MissionTime:     ptr(uint64(12345)),
+							TerminidKills:   ptr(uint64(10000)),
+							AutomatonKills:  ptr(uint64(99999)),
+							IlluminateKills: ptr(uint64(333333)),
+							BulletsFired:    ptr(uint64(11111)),
+							BulletsHit:      ptr(uint64(1111)),
+							TimePlayed:      ptr(uint64(123456)),
+							Deaths:          ptr(uint64(32134)),
+							Revives:         ptr(uint64(94284)),
+							Friendlies:      ptr(uint64(12940)),
+							PlayerCount:     ptr(uint64(444442)),
+						}),
 					},
 					Assignments: &[]api.Assignment2{
 						{Id: ptr(int64(2))},
@@ -256,7 +343,7 @@ func TestSnapshotsTransform(t *testing.T) {
 								Id:     ptr(int32(6)),
 								Health: ptr(int64(999)),
 							}),
-							Statistics: mustStatistics(api.Statistics{
+							Statistics: mustPlanetStatistics(api.Statistics{
 								MissionsWon:     ptr(uint64(100)),
 								MissionsLost:    ptr(uint64(55)),
 								MissionTime:     ptr(uint64(12345)),
@@ -299,7 +386,7 @@ func TestSnapshotsTransform(t *testing.T) {
 										EventID: 6,
 										Health:  999,
 									},
-									Statistics: structs.PlanetStatistics{
+									Statistics: structs.Statistics{
 										MissionsWon:  100,
 										MissionsLost: 55,
 										MissionTime:  12345,
@@ -318,6 +405,23 @@ func TestSnapshotsTransform(t *testing.T) {
 									},
 									Attacking: []int32{8, 9, 10},
 								},
+							},
+							Statistics: structs.Statistics{
+								MissionsWon:  100,
+								MissionsLost: 55,
+								MissionTime:  12345,
+								Kills: structs.StatisticsKills{
+									Terminid:   10000,
+									Automaton:  99999,
+									Illuminate: 333333,
+								},
+								BulletsFired: 11111,
+								BulletsHit:   1111,
+								TimePlayed:   123456,
+								Deaths:       32134,
+								Revives:      94284,
+								Friendlies:   12940,
+								PlayerCount:  444442,
 							},
 						},
 					},
