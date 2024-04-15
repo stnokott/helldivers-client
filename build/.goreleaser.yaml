@@ -38,8 +38,8 @@ builds:
 dockers:
   - use: buildx
     image_templates:
-      - "gcr.io/stnokott/{{ .ProjectName }}:{{ .Version }}-amd64"
-      - "gcr.io/stnokott/{{ .ProjectName }}:latest-amd64"
+      - "ghcr.io/stnokott/{{ .ProjectName }}:{{ .Version }}-amd64"
+      - "ghcr.io/stnokott/{{ .ProjectName }}:latest-amd64"
     dockerfile: Dockerfile
     build_flag_templates:
       - "--pull"
@@ -50,8 +50,8 @@ dockers:
       - "--platform=linux/amd64"
   - use: buildx
     image_templates:
-      - "gcr.io/stnokott/{{ .ProjectName }}:{{ .Version }}-armv7"
-      - "gcr.io/stnokott/{{ .ProjectName }}:latest-armv7"
+      - "ghcr.io/stnokott/{{ .ProjectName }}:{{ .Version }}-armv7"
+      - "ghcr.io/stnokott/{{ .ProjectName }}:latest-armv7"
     dockerfile: Dockerfile
     build_flag_templates:
       - "--pull"
@@ -62,12 +62,12 @@ dockers:
       - "--platform=linux/arm/7"
 
 docker_manifests:
-  - name_template: "gcr.io/stnokott/{{ .ProjectName }}:{{ .Version }}"
+  - name_template: "ghcr.io/stnokott/{{ .ProjectName }}:{{ .Version }}"
     image_templates:
-      - "gcr.io/stnokott/{{ .ProjectName }}:{{ .Version }}-amd64"
-      - "gcr.io/stnokott/{{ .ProjectName }}:latest-amd64"
-      - "gcr.io/stnokott/{{ .ProjectName }}:{{ .Version }}-armv7"
-      - "gcr.io/stnokott/{{ .ProjectName }}:latest-armv7"
+      - "ghcr.io/stnokott/{{ .ProjectName }}:{{ .Version }}-amd64"
+      - "ghcr.io/stnokott/{{ .ProjectName }}:latest-amd64"
+      - "ghcr.io/stnokott/{{ .ProjectName }}:{{ .Version }}-armv7"
+      - "ghcr.io/stnokott/{{ .ProjectName }}:latest-armv7"
 
 changelog:
   sort: asc
