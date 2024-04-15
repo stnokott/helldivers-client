@@ -31,7 +31,7 @@ func New(api *client.Client, db *db.Client, logger *log.Logger) *Worker {
 }
 
 // Run schedules a new sync job at the specified interval. It is blocking.
-func (w *Worker) Run(interval config.Interval) {
+func (w *Worker) Run(interval config.Interval, stop <-chan struct{}) {
 	ticker := time.NewTicker(time.Duration(interval))
 	defer ticker.Stop()
 
@@ -43,8 +43,15 @@ func (w *Worker) Run(interval config.Interval) {
 
 	// this construct forces w.do() to run immediately after starting the ticker.
 	// (by default, NewTicker sends the first tick after interval has expired for the 1st time)
-	for ; true; <-ticker.C {
+	for {
 		w.do(workTimeout)
+		select {
+		case <-ticker.C:
+			continue
+		case <-stop:
+			w.log.Println("received stop signal")
+			return
+		}
 	}
 }
 

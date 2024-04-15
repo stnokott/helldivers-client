@@ -4,6 +4,7 @@ package main
 import (
 	"log"
 	"os"
+	"os/signal"
 
 	"github.com/stnokott/helldivers-client/internal/client"
 	"github.com/stnokott/helldivers-client/internal/config"
@@ -22,7 +23,9 @@ func main() {
 		logger.Fatal(err)
 	}
 	defer func() {
-		logger.Println(dbClient.Disconnect())
+		if errInner := dbClient.Disconnect(); errInner != nil {
+			logger.Println(errInner)
+		}
 	}()
 	if err = dbClient.MigrateUp("./migrations"); err != nil {
 		logger.Fatal(err)
@@ -34,8 +37,20 @@ func main() {
 	}
 
 	worker := worker.New(apiClient, dbClient, loggerFor("worker"))
-	// TODO: catch interrupt
-	worker.Run(cfg.WorkerInterval)
+	stopWorkerChan := make(chan struct{}, 1)
+
+	stopSignal(stopWorkerChan, logger)
+	worker.Run(cfg.WorkerInterval, stopWorkerChan)
+}
+
+func stopSignal(stopChan chan<- struct{}, logger *log.Logger) {
+	osSignalChan := make(chan os.Signal, 1)
+	signal.Notify(osSignalChan, os.Interrupt)
+	go func() {
+		s := <-osSignalChan
+		logger.Printf("received %s signal, stopping once current process finishes", s.String())
+		stopChan <- struct{}{}
+	}()
 }
 
 func loggerFor(name string) *log.Logger {
