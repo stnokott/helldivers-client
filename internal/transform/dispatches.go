@@ -8,10 +8,11 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-// Dispatches implements worker.docTransformer
+// Dispatches implements worker.DocTransformer
 type Dispatches struct{}
 
-func (_ Dispatches) Transform(data APIData, errFunc func(error)) *db.DocsProvider[structs.Dispatch] {
+// Transform implements the worker.DocTransformer interface
+func (Dispatches) Transform(data APIData, errFunc func(error)) *db.DocsProvider[structs.Dispatch] {
 	provider := &db.DocsProvider[structs.Dispatch]{
 		CollectionName: db.CollDispatches,
 		Docs:           []db.DocWrapper[structs.Dispatch]{},

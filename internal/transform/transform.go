@@ -9,6 +9,7 @@ import (
 	"github.com/stnokott/helldivers-client/internal/api"
 )
 
+// APIData contains all relevant (unprocessed) data from the API, used for further processing.
 type APIData struct {
 	WarID       *api.WarId
 	War         *api.War

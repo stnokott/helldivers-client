@@ -10,10 +10,11 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-// Events implements worker.docTransformer
+// Events implements worker.DocTransformer
 type Events struct{}
 
-func (_ Events) Transform(data APIData, errFunc func(error)) *db.DocsProvider[structs.Event] {
+// Transform implements the worker.DocTransformer interface
+func (Events) Transform(data APIData, errFunc func(error)) *db.DocsProvider[structs.Event] {
 	provider := &db.DocsProvider[structs.Event]{
 		CollectionName: db.CollEvents,
 		Docs:           []db.DocWrapper[structs.Event]{},

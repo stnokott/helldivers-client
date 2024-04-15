@@ -9,10 +9,11 @@ import (
 	"github.com/stnokott/helldivers-client/internal/db/structs"
 )
 
-// Planets implements worker.docTransformer
+// Planets implements worker.DocTransformer
 type Planets struct{}
 
-func (_ Planets) Transform(data APIData, errFunc func(error)) *db.DocsProvider[structs.Planet] {
+// Transform implements the worker.DocTransformer interface
+func (Planets) Transform(data APIData, errFunc func(error)) *db.DocsProvider[structs.Planet] {
 	provider := &db.DocsProvider[structs.Planet]{
 		CollectionName: db.CollPlanets,
 		Docs:           []db.DocWrapper[structs.Planet]{},
@@ -76,7 +77,7 @@ func (_ Planets) Transform(data APIData, errFunc func(error)) *db.DocsProvider[s
 				InitialOwner:   *planet.InitialOwner,
 				RegenPerSecond: *planet.RegenPerSecond,
 			},
-		}) 
+		})
 	}
 	return provider
 }

@@ -48,7 +48,8 @@ func (w *Worker) Run(interval config.Interval) {
 	}
 }
 
-type docTransformer[T any] interface {
+// DocTransformer provides a means of converting API data into structs ready for passing to the MongoDB driver.
+type DocTransformer[T any] interface {
 	Transform(data transform.APIData, errFunc func(error)) *db.DocsProvider[T]
 }
 
@@ -68,7 +69,7 @@ func (w *Worker) do(timeout time.Duration) {
 
 	data := w.queryData(ctx)
 
-	if err = w.upsertData(data, ctx); err != nil {
+	if err = w.upsertData(ctx, data); err != nil {
 		return
 	}
 }
@@ -102,33 +103,33 @@ func (w *Worker) queryData(ctx context.Context) (data transform.APIData) {
 	return
 }
 
-func (w *Worker) upsertData(data transform.APIData, ctx context.Context) (err error) {
+func (w *Worker) upsertData(ctx context.Context, data transform.APIData) (err error) {
 	warTransformer := transform.War{}
-	upsertDoc(w, data, warTransformer, ctx)
+	upsertDoc(ctx, w, data, warTransformer)
 
 	planetsTransformer := transform.Planets{}
-	upsertDoc(w, data, planetsTransformer, ctx)
+	upsertDoc(ctx, w, data, planetsTransformer)
 
 	campaignsTransformer := transform.Campaigns{}
-	upsertDoc(w, data, campaignsTransformer, ctx)
+	upsertDoc(ctx, w, data, campaignsTransformer)
 
 	dispatchesTransformer := transform.Dispatches{}
-	upsertDoc(w, data, dispatchesTransformer, ctx)
+	upsertDoc(ctx, w, data, dispatchesTransformer)
 
 	eventsTransformer := transform.Events{}
-	upsertDoc(w, data, eventsTransformer, ctx)
+	upsertDoc(ctx, w, data, eventsTransformer)
 
 	assignmentsTransformer := transform.Assignments{}
-	upsertDoc(w, data, assignmentsTransformer, ctx)
+	upsertDoc(ctx, w, data, assignmentsTransformer)
 
 	snapshotsTransformer := transform.Snapshots{}
-	upsertDoc(w, data, snapshotsTransformer, ctx)
+	upsertDoc(ctx, w, data, snapshotsTransformer)
 	return
 }
 
-func upsertDoc[T any](w *Worker, data transform.APIData, t docTransformer[T], ctx context.Context) {
+func upsertDoc[T any](ctx context.Context, w *Worker, data transform.APIData, t DocTransformer[T]) {
 	provider := t.Transform(data, func(err error) {
 		w.log.Printf("error during %T transformation: %v", t, err)
 	})
-	db.UpsertDocs(w.db, provider, ctx)
+	db.UpsertDocs(ctx, w.db, provider)
 }

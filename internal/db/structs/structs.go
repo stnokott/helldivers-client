@@ -7,6 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+// Planet represents information of a planet from the 'WarInfo' endpoint returned by ArrowHead's API.
 type Planet struct {
 	// The unique identifier ArrowHead assigned to this planet
 	ID int32 `bson:"_id"`
@@ -32,21 +33,25 @@ type Planet struct {
 	RegenPerSecond float64 `bson:"regen_per_second"`
 }
 
+// PlanetPosition contains the 2D-coordinates of a planet on the galaxy map
 type PlanetPosition struct {
 	X float64
 	Y float64
 }
 
+// Biome represents information about a biome of a planet.
 type Biome struct {
 	Description string `bson:"description,omitempty"`
 	Name        string `bson:"name,omitempty"`
 }
 
+// Hazard describes an environmental hazard that can be present on a Planet.
 type Hazard struct {
 	Description string `bson:"description,omitempty"`
 	Name        string `bson:"name,omitempty"`
 }
 
+// Campaign represents an ongoing campaign on a planet.
 type Campaign struct {
 	// The unique identifier of this Campaign
 	ID int32 `bson:"_id"`
@@ -58,6 +63,7 @@ type Campaign struct {
 	Count int32
 }
 
+// Dispatch represents a message from high command to the players, usually updates on the status of the war effort.
 type Dispatch struct {
 	// The unique identifier of this dispatch
 	ID int32 `bson:"_id"`
@@ -69,6 +75,7 @@ type Dispatch struct {
 	Message string `bson:"message,omitempty"`
 }
 
+// Event represents an ongoing event on a Planet.
 type Event struct {
 	// The unique identifier of this event
 	ID int32 `bson:"_id"`
@@ -84,6 +91,7 @@ type Event struct {
 	EndTime primitive.DateTime `bson:"end_time,omitempty"`
 }
 
+// Assignment represents an assignment given by Super Earth to the community. This is also known as 'Major Order's in the game.
 type Assignment struct {
 	// The unique identifier of this assignment
 	ID int64 `bson:"_id"`
@@ -113,6 +121,7 @@ type AssignmentTask struct {
 	ValueTypes []int32 `bson:"value_types,omitempty"`
 }
 
+// AssignmentReward represents the reward for completing the assignment.
 type AssignmentReward struct {
 	// The type of reward (medals, super credits, ...)
 	Type int32
@@ -120,6 +129,7 @@ type AssignmentReward struct {
 	Amount int32
 }
 
+// War represents the global information of the ongoing war.
 type War struct {
 	ID int32 `bson:"_id"`
 	// When this war was started
@@ -130,6 +140,7 @@ type War struct {
 	Factions []string `bson:"factions,omitempty"`
 }
 
+// Snapshot contains the dynamic data of any metrics changing over time.
 type Snapshot struct {
 	// The time the snapshot of the war was taken
 	Timestamp primitive.DateTime `bson:"_id"`
@@ -147,6 +158,7 @@ type Snapshot struct {
 	Statistics Statistics `bson:"statistics,omitempty"`
 }
 
+// WarSnapshot contains the dynamic data about a war.
 type WarSnapshot struct {
 	// FK ID of current war
 	WarID int32 `bson:"war_id"`
@@ -154,7 +166,7 @@ type WarSnapshot struct {
 	ImpactMultiplier float64 `bson:"impact_multiplier,omitempty"`
 }
 
-// PlanetSnapshot contains information about planets currently part of this war
+// PlanetSnapshot contains dynamic data about a planet currently part of this war
 type PlanetSnapshot struct {
 	// ID of the planet this snapshot captures.
 	ID int32 `bson:"planet_id"`
@@ -170,6 +182,7 @@ type PlanetSnapshot struct {
 	Attacking []int32 `bson:"attacking"`
 }
 
+// EventSnapshot contains dynamic data about a currently-ongoing event.
 type EventSnapshot struct {
 	// FK ID of event
 	EventID int32 `bson:"event_id"`
@@ -198,6 +211,7 @@ func (long *BSONLong) UnmarshalBSONValue(t bsontype.Type, b []byte) error {
 	return nil
 }
 
+// Statistics contains statistics of missions, kills, success rate etc.
 type Statistics struct {
 	// The amount of missions won
 	MissionsWon BSONLong `bson:"missions_won"`
@@ -222,6 +236,7 @@ type Statistics struct {
 	PlayerCount BSONLong `bson:"player_count"`
 }
 
+// StatisticsKills maps kills to enemy factions.
 type StatisticsKills struct {
 	// The total amount of bugs killed since start of the season
 	Terminid BSONLong `bson:"terminid_kills"`

@@ -15,16 +15,24 @@ import (
 
 const appName = "HELLDIVERS_2_CLIENT"
 
+// CollectionName is the name of a collection in the MongoDB database.
 type CollectionName string
 
 const (
-	CollPlanets     CollectionName = "planets"
-	CollCampaigns   CollectionName = "campaigns"
-	CollDispatches  CollectionName = "dispatches"
-	CollEvents      CollectionName = "events"
+	// CollPlanets is the collection name for Planets
+	CollPlanets CollectionName = "planets"
+	// CollCampaigns is the collection name for Campaigns
+	CollCampaigns CollectionName = "campaigns"
+	// CollDispatches is the collection name for Dispatches
+	CollDispatches CollectionName = "dispatches"
+	// CollEvents is the collection name for Events
+	CollEvents CollectionName = "events"
+	// CollAssignments is the collection name for Assignments
 	CollAssignments CollectionName = "assignments"
-	CollWars        CollectionName = "wars"
-	CollSnapshots   CollectionName = "snapshots"
+	// CollWars is the collection name for Wars
+	CollWars CollectionName = "wars"
+	// CollSnapshots is the collection name for Snapshots
+	CollSnapshots CollectionName = "snapshots"
 )
 
 // Client is the abstraction layer for the MongoDB connector
@@ -72,17 +80,30 @@ func (c *Client) Disconnect() error {
 	return nil
 }
 
+// DocsProvider wraps collection name and document slice for further processing.
+//
+// T should be the Document type.
 type DocsProvider[T any] struct {
 	CollectionName CollectionName
 	Docs           []DocWrapper[T]
 }
 
+// DocWrapper holds the document to be processed plus its document ID.
+//
+// T should be the Document type.
 type DocWrapper[T any] struct {
 	DocID    any
 	Document T
 }
 
-func UpsertDocs[T any](c *Client, provider *DocsProvider[T], ctx context.Context) {
+// UpsertDocs inserts or updates a list of documents based on their IDs.
+//
+// Documents are matched by ID ("_id"). If a document with that ID already exists, it is updated.
+// If it doesn't exist, it is inserted.
+//
+// If an error occurs during upsert of one of the documents, processing continues.
+// Thus, no error is returned.
+func UpsertDocs[T any](ctx context.Context, c *Client, provider *DocsProvider[T]) {
 	if provider.Docs == nil || len(provider.Docs) == 0 {
 		c.log.Printf("upsert into '%s' aborted, no documents to process", provider.CollectionName)
 		return

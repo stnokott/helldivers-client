@@ -9,10 +9,11 @@ import (
 	"github.com/stnokott/helldivers-client/internal/db/structs"
 )
 
-// Campaigns implements worker.docTransformer
+// Campaigns implements worker.DocTransformer
 type Campaigns struct{}
 
-func (_ Campaigns) Transform(data APIData, errFunc func(error)) *db.DocsProvider[structs.Campaign] {
+// Transform implements the worker.DocTransformer interface
+func (Campaigns) Transform(data APIData, errFunc func(error)) *db.DocsProvider[structs.Campaign] {
 	provider := &db.DocsProvider[structs.Campaign]{
 		CollectionName: db.CollCampaigns,
 		Docs:           []db.DocWrapper[structs.Campaign]{},

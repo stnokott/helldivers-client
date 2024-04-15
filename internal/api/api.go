@@ -18,6 +18,7 @@ func respErr(resp *http.Response) error {
 	return fmt.Errorf("HTTP status %s: '%s'", resp.Status, string(body))
 }
 
+// Data implements the interface required for client processing
 func (resp *GetRawApiWarSeasonCurrentWarIDResponse) Data() (*WarId, error) {
 	if resp.StatusCode() == 200 {
 		return resp.JSON200, nil
@@ -25,6 +26,7 @@ func (resp *GetRawApiWarSeasonCurrentWarIDResponse) Data() (*WarId, error) {
 	return nil, respErr(resp.HTTPResponse)
 }
 
+// Data implements the interface required for client processing
 func (resp *GetApiV1WarResponse) Data() (*War, error) {
 	if resp.StatusCode() == 200 {
 		return resp.JSON200, nil
@@ -32,6 +34,7 @@ func (resp *GetApiV1WarResponse) Data() (*War, error) {
 	return nil, respErr(resp.HTTPResponse)
 }
 
+// Data implements the interface required for client processing
 func (resp *GetApiV1AssignmentsAllResponse) Data() (*[]Assignment2, error) {
 	if resp.StatusCode() == 200 {
 		return resp.JSON200, nil
@@ -39,6 +42,7 @@ func (resp *GetApiV1AssignmentsAllResponse) Data() (*[]Assignment2, error) {
 	return nil, respErr(resp.HTTPResponse)
 }
 
+// Data implements the interface required for client processing
 func (resp *GetApiV1CampaignsAllResponse) Data() (*[]Campaign2, error) {
 	if resp.StatusCode() == 200 {
 		return resp.JSON200, nil
@@ -46,6 +50,7 @@ func (resp *GetApiV1CampaignsAllResponse) Data() (*[]Campaign2, error) {
 	return nil, respErr(resp.HTTPResponse)
 }
 
+// Data implements the interface required for client processing
 func (resp *GetApiV1DispatchesAllResponse) Data() (*[]Dispatch, error) {
 	if resp.StatusCode() == 200 {
 		return resp.JSON200, nil
@@ -53,6 +58,7 @@ func (resp *GetApiV1DispatchesAllResponse) Data() (*[]Dispatch, error) {
 	return nil, respErr(resp.HTTPResponse)
 }
 
+// Data implements the interface required for client processing
 func (resp *GetApiV1PlanetsAllResponse) Data() (*[]Planet, error) {
 	if resp.StatusCode() == 200 {
 		return resp.JSON200, nil

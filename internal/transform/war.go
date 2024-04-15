@@ -8,10 +8,11 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-// War implements worker.docTransformer
+// War implements worker.DocTransformer
 type War struct{}
 
-func (_ War) Transform(data APIData, errFunc func(error)) *db.DocsProvider[structs.War] {
+// Transform implements the worker.DocTransformer interface
+func (War) Transform(data APIData, errFunc func(error)) *db.DocsProvider[structs.War] {
 	provider := &db.DocsProvider[structs.War]{
 		CollectionName: db.CollWars,
 		Docs:           []db.DocWrapper[structs.War]{},

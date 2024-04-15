@@ -30,8 +30,10 @@ func Get() *Config {
 	return c
 }
 
+// Interval is a duration implementing the envconfig.Decoder interface
 type Interval time.Duration
 
+// Decode implements the envconfig.Decoder interface
 func (id *Interval) Decode(value string) error {
 	d, err := time.ParseDuration(value)
 	if err != nil {
@@ -41,6 +43,7 @@ func (id *Interval) Decode(value string) error {
 	return nil
 }
 
+// String implement the Stringer interface
 func (id *Interval) String() string {
 	return time.Duration(*id).String()
 }

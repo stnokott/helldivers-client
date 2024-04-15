@@ -46,12 +46,12 @@ func TestWorkerQueryData(t *testing.T) {
 	}
 }
 
-func testWorkerUpsertDoc[T any](transformer docTransformer[T], t *testing.T) {
+func testWorkerUpsertDoc[T any](transformer DocTransformer[T], t *testing.T) {
 	t.Skip("currently skipped until we can disable rate-limiting in API") // TODO
 	worker := mustWorker(t)
 
 	data := worker.queryData(context.Background())
-	upsertDoc(worker, data, transformer, context.Background())
+	upsertDoc(context.Background(), worker, data, transformer)
 }
 
 func TestWorkerUpsertPlanets(t *testing.T) {

@@ -10,10 +10,11 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-// Snapshots implements worker.docTransformer
+// Snapshots implements worker.DocTransformer
 type Snapshots struct{}
 
-func (_ Snapshots) Transform(data APIData, errFunc func(error)) *db.DocsProvider[structs.Snapshot] {
+// Transform implements the worker.DocTransformer interface
+func (Snapshots) Transform(data APIData, errFunc func(error)) *db.DocsProvider[structs.Snapshot] {
 	provider := &db.DocsProvider[structs.Snapshot]{
 		CollectionName: db.CollSnapshots,
 		Docs:           []db.DocWrapper[structs.Snapshot]{},

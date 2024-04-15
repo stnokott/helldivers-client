@@ -10,10 +10,11 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-// Assignments implements worker.docTransformer
+// Assignments implements worker.DocTransformer
 type Assignments struct{}
 
-func (_ Assignments) Transform(data APIData, errFunc func(error)) *db.DocsProvider[structs.Assignment] {
+// Transform implements the worker.DocTransformer interface
+func (Assignments) Transform(data APIData, errFunc func(error)) *db.DocsProvider[structs.Assignment] {
 	provider := &db.DocsProvider[structs.Assignment]{
 		CollectionName: db.CollAssignments,
 		Docs:           []db.DocWrapper[structs.Assignment]{},
