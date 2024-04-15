@@ -2,7 +2,8 @@
 package config
 
 import (
-	"log"
+	"fmt"
+	"os"
 	"time"
 
 	"github.com/kelseyhightower/envconfig"
@@ -12,11 +13,11 @@ const envPrefix = "HELL"
 
 // Config contains configuration values
 type Config struct {
-	MongoURI             string   `envconfig:"MONGODB_URI" required:"true"`
-	APIRootURL           string   `envconfig:"API_URL" required:"true"`
-	APIRateLimitInterval Interval `envconfig:"API_RATE_LIMIT_INTERVAL" default:"10s"`
-	APIRateLimitCount    int      `envconfig:"API_RATE_LIMIT_COUNT" default:"5"`
-	WorkerInterval       Interval `envconfig:"WORKER_INTERVAL" default:"5m"`
+	MongoURI             string   `envconfig:"MONGODB_URI" required:"true" desc:"URI to MongoDB host. Example: mongodb://user:pass@localhost:27017"`
+	APIRootURL           string   `envconfig:"API_URL" required:"true" desc:"Root URL of Helldivers 2 API. Example: http://localhost:4000"`
+	APIRateLimitInterval Interval `envconfig:"API_RATE_LIMIT_INTERVAL" default:"10s" desc:"Interval of API rate limit. Requests will wait if internal rate limit is exceeded."`
+	APIRateLimitCount    int      `envconfig:"API_RATE_LIMIT_COUNT" default:"5" desc:"Allowed requests per interval of API rate limit. Requests will wait if internal rate limit is exceeded."`
+	WorkerInterval       Interval `envconfig:"WORKER_INTERVAL" default:"5m" desc:"Interval at which data will be queried from the API and written to the database."`
 }
 
 // Get reads environment variables and parses them into a Config struct.
@@ -25,7 +26,9 @@ type Config struct {
 func Get() *Config {
 	c := new(Config)
 	if err := envconfig.Process(envPrefix, c); err != nil {
-		log.Fatalf("failed to read config from ENV: %v", err)
+		fmt.Printf("failed to read config from ENV: %v\n\n", err)
+		envconfig.Usage(envPrefix, c) // nolint:errcheck
+		os.Exit(1)
 	}
 	return c
 }
