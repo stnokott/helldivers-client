@@ -4,12 +4,10 @@ package db
 import (
 	"log"
 	"os"
-	"reflect"
 	"testing"
 
 	"github.com/joho/godotenv"
 	"github.com/stnokott/helldivers-client/internal/config"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func TestMain(m *testing.M) {
@@ -28,27 +26,22 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-// getMongoURI reads the config from ENV and returns the mongo URI inside
-func getMongoURI() string {
-	return config.Get().MongoURI
-}
-
 func TestNew(t *testing.T) {
 	logger := log.Default()
 	type args struct {
-		uri string
+		cfg *config.Config
 	}
 	tests := []struct {
 		name    string
 		args    args
 		wantErr bool
 	}{
-		{name: "valid", args: args{uri: getMongoURI()}, wantErr: false},
-		{name: "invalid", args: args{uri: "http://localhost"}, wantErr: true},
+		{name: "valid", args: args{config.Get()}, wantErr: false},
+		{name: "invalid", args: args{&config.Config{MongoURI: "http://localhost"}}, wantErr: true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			client, err := New(tt.args.uri, tt.name+" db", logger)
+			client, err := New(tt.args.cfg, tt.name+" db", logger)
 			defer func() {
 				if client != nil {
 					client.Disconnect()
@@ -63,8 +56,8 @@ func TestNew(t *testing.T) {
 }
 
 func TestClientDisconnect(t *testing.T) {
-	mongoURI := getMongoURI()
-	client, err := New(mongoURI, "test_client_disconnect", log.Default())
+	cfg := config.Get()
+	client, err := New(cfg, "test_client_disconnect", log.Default())
 	if err != nil {
 		t.Fatalf("could not initialize DB connection: %v", err)
 	}
@@ -73,22 +66,5 @@ func TestClientDisconnect(t *testing.T) {
 	}
 	if err := client.Disconnect(); err == nil {
 		t.Fatalf("Disconnect() (while not connected) error = nil, want err")
-	}
-}
-
-func TestClient_database(t *testing.T) {
-	tests := []struct {
-		name string
-		c    *Client
-		want *mongo.Database
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.c.database(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Client.database() = %v, want %v", got, tt.want)
-			}
-		})
 	}
 }

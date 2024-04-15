@@ -9,7 +9,7 @@
 			"command": "docker",
 			"options": {
 				"env": {
-					"COMPOSE_FILE": "${workspaceFolder}/docker-compose.test.yaml"
+					"COMPOSE_FILE": "${workspaceFolder}/build/test/docker-compose.yaml"
 				}
 			},
 			"args": [

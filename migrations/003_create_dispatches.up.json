@@ -19,7 +19,7 @@
 						"description": "The unique identifier of this dispatch."
 					},
 					"create_time": {
-						"bsonType": "timestamp",
+						"bsonType": "date",
 						"description": "When the dispatch was published."
 					},
 					"type": {

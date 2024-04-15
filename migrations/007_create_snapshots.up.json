@@ -7,28 +7,44 @@
 				"title": "snapshots",
 				"required": [
 					"_id",
-					"war_id",
+					"war",
 					"assignment_ids",
 					"campaign_ids",
 					"dispatch_ids",
-					"planets"
+					"planets",
+					"statistics"
 				],
 				"additionalProperties": false,
 				"properties": {
 					"_id": {
-						"bsonType": "timestamp",
+						"bsonType": "date",
 						"description": "The time the snapshot of the war was taken."
 					},
-					"war_id": {
-						"bsonType": "int",
-						"description": "FK ID of war"
+					"war": {
+						"bsonType": "object",
+						"description": "Dynamic data about current war",
+						"required": [
+							"war_id",
+							"impact_multiplier"
+						],
+						"properties": {
+							"war_id": {
+								"bsonType": "int",
+								"description": "FK ID of current war"
+							},
+							"impact_multiplier": {
+								"bsonType": "double",
+								"description": "A fraction used to calculate the impact of a mission on the war effort.",
+								"minimum": 0
+							}
+						}
 					},
 					"assignment_ids": {
 						"bsonType": "array",
 						"description": "Currently active assignments",
 						"uniqueItems": true,
 						"items": {
-							"bsonType": "int"
+							"bsonType": "long"
 						}
 					},
 					"campaign_ids": {
@@ -55,7 +71,9 @@
 							"required": [
 								"planet_id",
 								"health",
-								"current_owner"
+								"current_owner",
+								"attacking",
+								"statistics"
 							],
 							"additionalProperties": false,
 							"properties": {
@@ -63,7 +81,7 @@
 									"bsonType": "int"
 								},
 								"health": {
-									"bsonType": "int",
+									"bsonType": "long",
 									"description": "The current health this planet has.",
 									"minimum": 0
 								},
@@ -85,10 +103,17 @@
 											"description": "FK ID of event"
 										},
 										"health": {
-											"bsonType": "int",
+											"bsonType": "long",
 											"description": "The health of the Event at the time of snapshot.",
 											"minimum": 0
 										}
+									}
+								},
+								"attacking": {
+									"bsonType": "array",
+									"description": "A list of Index integers that this planet is currently attacking.",
+									"items": {
+										"bsonType": "int"
 									}
 								},
 								"statistics": {
@@ -97,7 +122,9 @@
 										"missions_won",
 										"missions_lost",
 										"mission_time",
-										"kills",
+										"terminid_kills",
+										"automaton_kills",
+										"illuminate_kills",
 										"bullets_fired",
 										"bullets_hit",
 										"time_played",
@@ -110,83 +137,132 @@
 									"properties": {
 										"missions_won": {
 											"bsonType": "long",
-											"description": "The amount of missions won.",
-											"minimum": 0
+											"description": "The amount of missions won."
 										},
 										"missions_lost": {
 											"bsonType": "long",
-											"description": "The amount of missions lost.",
-											"minimum": 0
+											"description": "The amount of missions lost."
 										},
 										"mission_time": {
 											"bsonType": "long",
-											"description": "The total amount of time spent planetside (in seconds).",
-											"minimum": 0
+											"description": "The total amount of time spent planetside (in seconds)."
 										},
-										"kills": {
-											"bsonType": "object",
-											"title": "kills",
-											"required": [
-												"terminid",
-												"automaton",
-												"illuminate"
-											],
-											"additionalProperties": false,
-											"properties": {
-												"terminid": {
-													"bsonType": "long",
-													"description": "The total amount of bugs killed since start of the season.",
-													"minimum": 0
-												},
-												"automaton": {
-													"bsonType": "long",
-													"description": "The total amount of automatons killed since start of the season.",
-													"minimum": 0
-												},
-												"illuminate": {
-													"bsonType": "long",
-													"description": "The total amount of Illuminate killed since start of the season.",
-													"minimum": 0
-												}
-											}
+										"terminid_kills": {
+											"bsonType": "long",
+											"description": "The total amount of bugs killed since start of the season."
+										},
+										"automaton_kills": {
+											"bsonType": "long",
+											"description": "The total amount of automatons killed since start of the season."
+										},
+										"illuminate_kills": {
+											"bsonType": "long",
+											"description": "The total amount of Illuminate killed since start of the season."
 										},
 										"bullets_fired": {
 											"bsonType": "long",
-											"description": "The total amount of bullets fired",
-											"minimum": 0
+											"description": "The total amount of bullets fired"
 										},
 										"bullets_hit": {
 											"bsonType": "long",
-											"description": "The total amount of bullets hit",
-											"minimum": 0
+											"description": "The total amount of bullets hit"
 										},
 										"time_played": {
 											"bsonType": "long",
-											"description": "The total amount of time played (including off-planet) in seconds.",
-											"minimum": 0
+											"description": "The total amount of time played (including off-planet) in seconds."
 										},
 										"deaths": {
 											"bsonType": "long",
-											"description": "The amount of casualties on the side of humanity.",
-											"minimum": 0
+											"description": "The amount of casualties on the side of humanity."
 										},
 										"revives": {
 											"bsonType": "long",
-											"description": "The amount of revives(?).",
-											"minimum": 0
+											"description": "The amount of revives(?)."
 										},
 										"friendlies": {
 											"bsonType": "long",
-											"description": "The amount of friendly fire casualties.",
-											"minimum": 0
+											"description": "The amount of friendly fire casualties."
 										},
 										"player_count": {
 											"bsonType": "long",
-											"description": "The total amount of players present (at the time of the snapshot).",
-											"minimum": 0
+											"description": "The total amount of players present (at the time of the snapshot)."
 										}
 									}
 								}
+							}
+						}
+					},
+					"statistics": {
+						"bsonType": "object",
+						"description": "Global statistics for the current war",
+						"required": [
+							"missions_won",
+							"missions_lost",
+							"mission_time",
+							"terminid_kills",
+							"automaton_kills",
+							"illuminate_kills",
+							"bullets_fired",
+							"bullets_hit",
+							"time_played",
+							"deaths",
+							"revives",
+							"friendlies",
+							"player_count"
+						],
+						"additionalProperties": false,
+						"properties": {
+							"missions_won": {
+								"bsonType": "long",
+								"description": "The amount of missions won."
+							},
+							"missions_lost": {
+								"bsonType": "long",
+								"description": "The amount of missions lost."
+							},
+							"mission_time": {
+								"bsonType": "long",
+								"description": "The total amount of time spent planetside (in seconds)."
+							},
+							"terminid_kills": {
+								"bsonType": "long",
+								"description": "The total amount of bugs killed since start of the season."
+							},
+							"automaton_kills": {
+								"bsonType": "long",
+								"description": "The total amount of automatons killed since start of the season."
+							},
+							"illuminate_kills": {
+								"bsonType": "long",
+								"description": "The total amount of Illuminate killed since start of the season."
+							},
+							"bullets_fired": {
+								"bsonType": "long",
+								"description": "The total amount of bullets fired"
+							},
+							"bullets_hit": {
+								"bsonType": "long",
+								"description": "The total amount of bullets hit"
+							},
+							"time_played": {
+								"bsonType": "long",
+								"description": "The total amount of time played (including off-planet) in seconds."
+							},
+							"deaths": {
+								"bsonType": "long",
+								"description": "The amount of casualties on the side of humanity."
+							},
+							"revives": {
+								"bsonType": "long",
+								"description": "The amount of revives(?)."
+							},
+							"friendlies": {
+								"bsonType": "long",
+								"description": "The amount of friendly fire casualties."
+							},
+							"player_count": {
+								"bsonType": "long",
+								"description": "The total amount of players present (at the time of the snapshot)."
 							}
 						}
 					}

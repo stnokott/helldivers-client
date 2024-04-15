@@ -13,19 +13,29 @@ services:
       dockerfile: Dockerfile.test
     depends_on:
       - api
+      - db
     volumes:
-      - ./:/code
+      - ./../../:/code
     environment:
-      MONGODB_URI: mongodb://root:test@db:27017
+      HELL_MONGODB_URI: mongodb://root:test@db:27017
+      HELL_API_URL: http://api:8080
+      HELL_API_RATE_LIMIT_INTERVAL: 10s
+      HELL_API_RATE_LIMIT_COUNT: 5
+      HELL_WORKER_INTERVAL: 30s
     networks:
       - default
 
   api:
     build:
-      context: https://github.com/helldivers-2/helldivers2-api.git
+      context: https://github.com/helldivers-2/api.git#ec1e49af15e57fa9b6a464ca5463f3618ee01dac
       dockerfile: ./src/Helldivers-2-API/Dockerfile
+      args:
+        OPENAPI: false
     networks:
       - default
+    environment:
+      Helldivers__Synchronization__IntervalSeconds: 30
+      Helldivers__Synchronization__DefaultLanguage: en-US
 
   db:
     image: mongo:7.0.7

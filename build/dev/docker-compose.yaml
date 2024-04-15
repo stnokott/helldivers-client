@@ -7,12 +7,17 @@ networks:
 services:
   api:
     build:
-      context: https://github.com/helldivers-2/helldivers2-api.git
+      context: https://github.com/helldivers-2/api.git#ec1e49af15e57fa9b6a464ca5463f3618ee01dac
       dockerfile: ./src/Helldivers-2-API/Dockerfile
+      args:
+        OPENAPI: true
     ports:
       - 4000:8080
     networks:
       - default
+    environment:
+      Helldivers__Synchronization__IntervalSeconds: 30
+      Helldivers__Synchronization__DefaultLanguage: en-US
 
   db:
     image: mongo:7.0.7
