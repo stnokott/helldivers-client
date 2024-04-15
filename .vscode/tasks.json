@@ -38,7 +38,7 @@
 		{
 			"label": "build snapshot",
 			"type": "shell",
-			"command": "goreleaser build --clean --snapshot --config=build/.goreleaser.yaml",
+			"command": "goreleaser release --skip=publish --clean --snapshot --config=build/.goreleaser.yaml",
 			"problemMatcher": "$go",
 			"group": "build"
 		}

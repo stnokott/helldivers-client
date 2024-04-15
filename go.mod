@@ -5,8 +5,8 @@ go 1.22.0
 require (
 	github.com/golang-migrate/migrate/v4 v4.17.0
 	github.com/joho/godotenv v1.5.1
-	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/oapi-codegen/runtime v1.1.1
+	go-simpler.org/env v0.11.0
 	go.mongodb.org/mongo-driver v1.15.0
 	golang.org/x/time v0.5.0
 )
@@ -15,6 +15,7 @@ require (
 	github.com/apapsch/go-jsonmerge/v2 v2.0.0 // indirect
 	github.com/cenkalti/backoff/v4 v4.1.2 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
+	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/google/uuid v1.5.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect

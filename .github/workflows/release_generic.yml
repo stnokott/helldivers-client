@@ -10,7 +10,7 @@ on:
 
 jobs:
   goreleaser:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4.1.2
         with:
@@ -24,21 +24,23 @@ jobs:
         uses: goreleaser/goreleaser-action@v5.0.0
         with:
           distribution: goreleaser
-          version: latest
-          args: release --clean --config=build/.goreleaser.yaml
+          version: v1.25.1
+          args: release --config=build/.goreleaser.yaml --clean 
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - if: inputs.snapshot == true
         uses: goreleaser/goreleaser-action@v5.0.0
         with:
           distribution: goreleaser
-          version: latest
-          args: build --clean --config=build/.goreleaser.yaml --snapshot
+          version: v1.25.1
+          args: release --config=build/.goreleaser.yaml --clean --snapshot --skip=publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - if: inputs.snapshot == true
         uses: actions/upload-artifact@v4
         with:
           name: release-binary
-          path: dist/**/*.exe
+          path: |
+            dist/*.zip
+            dist/*.tar.gz
           retention-days: 2
