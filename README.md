@@ -54,6 +54,8 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: REPLACEME
+    volumes:
+      - /path/to/persistent/storage:/data/db  # Persist your DB data
     networks:
       - default
 ```
