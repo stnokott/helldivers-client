@@ -109,12 +109,17 @@ func (w *Worker) mergeData(ctx context.Context, data transform.APIData) (err err
 	var (
 		assignments []db.EntityMerger
 		planets     []db.EntityMerger
+		wars        []db.EntityMerger
 	)
-	assignments, err = transform.Assignments(data)
+	wars, err = transform.Wars(data)
 	if err != nil {
 		return
 	}
 	planets, err = transform.Planets(data)
+	if err != nil {
+		return
+	}
+	assignments, err = transform.Assignments(data)
 	if err != nil {
 		return
 	}
@@ -130,7 +135,6 @@ func (w *Worker) mergeData(ctx context.Context, data transform.APIData) (err err
 	// TODO: use transaction, only commit when no errors occured
 
 	w.log.Println("merging transformed entities into database")
-	w.db.Merge(ctx, planets, assignments)
-
+	err = w.db.Merge(ctx, wars, planets, assignments)
 	return
 }

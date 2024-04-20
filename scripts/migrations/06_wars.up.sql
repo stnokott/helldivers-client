@@ -2,8 +2,10 @@ CREATE TABLE IF NOT EXISTS wars
 (
     id integer NOT NULL UNIQUE,
     start_time timestamp without time zone NOT NULL,
-    end_time timestamp without time zone NOT NULL CHECK (end_time > start_time),
+    end_time timestamp without time zone NOT NULL,
+    CONSTRAINT end_time_after_start_time CHECK (end_time > start_time),
     factions text[] NOT NULL,
+	CONSTRAINT at_least_one_faction CHECK (array_length(factions, 1) IS NOT NULL),
     PRIMARY KEY (id)
 );
 

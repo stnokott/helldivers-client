@@ -23,14 +23,15 @@
 			"problemMatcher": []
 		},
 		{
-			"type": "go",
-			"label": "Run DB unit tests locally",
-			"command": "test",
+			"type": "shell",
+			"label": "Run tests locally",
+			"command": "godotenv",
 			"args": [
-				"${workspaceFolder}/internal/db"
-			],
-			"problemMatcher": [
-				"$go"
+				"-f",
+				"${workspaceFolder}/.env.test",
+				"go",
+				"test",
+				"./..."
 			],
 			"group": "test",
 		},

@@ -2,7 +2,7 @@
 package config
 
 import (
-	"log"
+	"fmt"
 	"os"
 	"time"
 
@@ -27,9 +27,9 @@ func Get() *Config {
 
 	c := new(Config)
 	if err := env.Load(c, nil); err != nil {
-		log.Printf("failed to read config from ENV: %v", err)
-		log.Println("Usage:")
-		env.Usage(c, log.Default().Writer())
+		fmt.Printf("failed to read config from ENV: %v\n", err)
+		fmt.Println("Usage:")
+		env.Usage(c, os.Stdout)
 		os.Exit(1)
 	}
 	return c

@@ -3,28 +3,10 @@ package db
 
 import (
 	"log"
-	"os"
 	"testing"
 
-	"github.com/joho/godotenv"
 	"github.com/stnokott/helldivers-client/internal/config"
 )
-
-func TestMain(m *testing.M) {
-	envFile := "../../.env.test"
-	// we only try to load .env.test if it is present.
-	// The usecase for this is local development when running through Docker is not available.
-	// Env variables will then be supplied through the env file instead of the Docker container.
-	// This is required because VSCode tasks.json doesn't allow loading from a .env file.
-	if _, err := os.Stat(envFile); err == nil {
-		log.Printf("using env file for tests: %s", envFile)
-		if err = godotenv.Load(envFile); err != nil {
-			log.Fatalf("could not load env file for tests: %v", err)
-		}
-	}
-	code := m.Run()
-	os.Exit(code)
-}
 
 func TestNew(t *testing.T) {
 	logger := log.Default()
