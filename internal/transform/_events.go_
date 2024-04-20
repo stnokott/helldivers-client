@@ -1,0 +1,60 @@
+package transform
+
+import (
+	"errors"
+	"fmt"
+
+	"github.com/stnokott/helldivers-client/internal/api"
+	"github.com/stnokott/helldivers-client/internal/db"
+	"github.com/stnokott/helldivers-client/internal/db/gen"
+)
+
+func Events(data APIData, errFunc func(error)) (e []db.Event) {
+	e = []db.Event{}
+
+	if data.Planets == nil {
+		errFunc(errors.New(("got nil planets slice (required for events)")))
+		return
+	}
+
+	planets := *data.Planets
+
+	for _, planet := range planets {
+		if planet.Event == nil {
+			continue
+		}
+		event, err := parsePlanetEvent(planet.Event)
+		if err != nil {
+			errFunc(err)
+			continue
+		}
+
+		e = append(e, db.Event{
+			E: gen.Event{
+				ID:        *event.Id,
+				Type:      *event.EventType,
+				Faction:   *event.Faction,
+				MaxHealth: *event.MaxHealth,
+				StartTime: db.PGTimestamp(*event.StartTime),
+				EndTime:   db.PGTimestamp(*event.EndTime),
+			},
+		})
+	}
+	return
+}
+
+func parsePlanetEvent(in *api.Planet_Event) (api.Event, error) {
+	event, err := in.AsEvent()
+	if err != nil {
+		return api.Event{}, fmt.Errorf("cannot parse planet event: %w", err)
+	}
+	if event.Id == nil ||
+		event.EventType == nil ||
+		event.Faction == nil ||
+		event.MaxHealth == nil ||
+		event.StartTime == nil ||
+		event.EndTime == nil {
+		return api.Event{}, errFromNils(&event)
+	}
+	return event, nil
+}

@@ -1,7 +1,5 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json
 
-version: '3.8'
-
 networks:
   default:
     driver: bridge
@@ -17,7 +15,7 @@ services:
     volumes:
       - ./../../:/code
     environment:
-      MONGO_URI: mongodb://root:test@db:27017
+      POSTGRES_URI: postgresql://postgres:dev@db:5432/helldivers
       API_URL: http://api:8080
       API_RATE_LIMIT_INTERVAL: 10s
       API_RATE_LIMIT_COUNT: 5
@@ -38,9 +36,10 @@ services:
       Helldivers__Synchronization__DefaultLanguage: en-US
 
   db:
-    image: mongo:7.0.7
+    image: postgres:16.2
     environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: test
+      POSTGRES_DB: helldivers
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: dev
     networks:
       - default

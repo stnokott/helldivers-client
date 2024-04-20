@@ -1,0 +1,56 @@
+package transform
+
+import (
+	"errors"
+	"fmt"
+
+	"github.com/stnokott/helldivers-client/internal/api"
+	"github.com/stnokott/helldivers-client/internal/db"
+	"github.com/stnokott/helldivers-client/internal/db/gen"
+)
+
+func Campaigns(data APIData, errFunc func(error)) (c []db.EntityMerger) {
+	if data.Campaigns == nil {
+		errFunc(errors.New("got nil campaigns slice"))
+		return nil
+	}
+
+	mergers := []db.EntityMerger{}
+	for _, campaign := range *data.Campaigns {
+		if campaign.Id == nil ||
+			campaign.Planet == nil ||
+			campaign.Type == nil ||
+			campaign.Count == nil {
+			errFunc(errFromNils(&campaign))
+			continue
+		}
+
+		planetRef, err := parseCampaignPlanet(campaign.Planet)
+		if err != nil {
+			errFunc(err)
+			continue
+		}
+
+		mergers = append(mergers, &db.Campaign{
+			Campaign: gen.Campaign{
+				ID:       *campaign.Id,
+				PlanetID: *planetRef.Index,
+				Type:     *campaign.Type,
+				Count:    *campaign.Count,
+			},
+			Planet: planetRef,
+		})
+	}
+	return
+}
+
+func parseCampaignPlanet(in *api.Campaign2_Planet) (api.Planet, error) {
+	planet, err := in.AsPlanet()
+	if err != nil {
+		return api.Planet{}, fmt.Errorf("cannot parse campaign planet: %w", err)
+	}
+	if planet.Index == nil {
+		return api.Planet{}, errFromNils(&planet)
+	}
+	return planet, nil
+}

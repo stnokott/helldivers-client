@@ -15,7 +15,6 @@
 			"args": [
 				"compose",
 				"up",
-				"--build",
 				"--exit-code-from=app",
 				"--attach=app",
 				"--force-recreate"
@@ -41,6 +40,16 @@
 			"command": "goreleaser release --skip=publish --clean --snapshot --config=build/.goreleaser.yaml",
 			"problemMatcher": "$go",
 			"group": "build"
+		},
+		{
+			"label": "sqlc generate",
+			"type": "shell",
+			"command": "sqlc generate",
+			"problemMatcher": [],
+			"group": "none",
+			"icon": {
+				"id": "wand"
+			}
 		}
 	]
 }

@@ -1,0 +1,33 @@
+package transform
+
+import (
+	"errors"
+
+	"github.com/stnokott/helldivers-client/internal/db"
+	"github.com/stnokott/helldivers-client/internal/db/gen"
+)
+
+func War(data APIData, errFunc func(error)) *db.War {
+	warID := data.WarID
+	if warID.Id == nil {
+		errFunc(errors.New("got nil war ID"))
+		return nil
+	}
+
+	war := data.War
+	if war.Started == nil ||
+		war.Ended == nil ||
+		war.Factions == nil {
+		errFunc(errFromNils(war))
+	} else {
+		return &db.War{
+			W: gen.War{
+				ID:        *warID.Id,
+				StartTime: db.PGTimestamp(*war.Started),
+				EndTime:   db.PGTimestamp(*war.Ended),
+				Factions:  *war.Factions,
+			},
+		}
+	}
+	return nil
+}

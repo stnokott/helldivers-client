@@ -54,11 +54,6 @@ func (w *Worker) Run(interval time.Duration, stop <-chan struct{}) {
 	}
 }
 
-// DocTransformer provides a means of converting API data into structs ready for passing to the MongoDB driver.
-type DocTransformer[T any] interface {
-	Transform(data transform.APIData, errFunc func(error)) *db.DocsProvider[T]
-}
-
 func (w *Worker) do(timeout time.Duration) {
 	w.log.Println("synchronizing")
 
@@ -75,7 +70,7 @@ func (w *Worker) do(timeout time.Duration) {
 
 	data := w.queryData(ctx)
 
-	if err = w.upsertData(ctx, data); err != nil {
+	if err = w.mergeData(ctx, data); err != nil {
 		return
 	}
 }
@@ -109,33 +104,33 @@ func (w *Worker) queryData(ctx context.Context) (data transform.APIData) {
 	return
 }
 
-func (w *Worker) upsertData(ctx context.Context, data transform.APIData) (err error) {
-	warTransformer := transform.War{}
-	upsertDoc(ctx, w, data, warTransformer)
+func (w *Worker) mergeData(ctx context.Context, data transform.APIData) (err error) {
+	w.log.Println("transforming API responses")
+	var (
+		assignments []db.EntityMerger
+		planets     []db.EntityMerger
+	)
+	assignments, err = transform.Assignments(data)
+	if err != nil {
+		return
+	}
+	planets, err = transform.Planets(data)
+	if err != nil {
+		return
+	}
 
-	planetsTransformer := transform.Planets{}
-	upsertDoc(ctx, w, data, planetsTransformer)
+	/*
+		campaigns := transform.Campaigns(data, errFunc("CAMPAIGNS"))
+		dispatches := transform.Dispatches(data, errFunc("DISPATCHES"))
+		events := transform.Events(data, errFunc("EVENTS"))
+		snapshot := transform.Snapshot(data, errFunc("SNAPSHOT"))
+		war := transform.War(data, errFunc("WAR"))
+	*/
+	// TODO: remaining entities
+	// TODO: use transaction, only commit when no errors occured
 
-	campaignsTransformer := transform.Campaigns{}
-	upsertDoc(ctx, w, data, campaignsTransformer)
+	w.log.Println("merging transformed entities into database")
+	w.db.Merge(ctx, planets, assignments)
 
-	dispatchesTransformer := transform.Dispatches{}
-	upsertDoc(ctx, w, data, dispatchesTransformer)
-
-	eventsTransformer := transform.Events{}
-	upsertDoc(ctx, w, data, eventsTransformer)
-
-	assignmentsTransformer := transform.Assignments{}
-	upsertDoc(ctx, w, data, assignmentsTransformer)
-
-	snapshotsTransformer := transform.Snapshots{}
-	upsertDoc(ctx, w, data, snapshotsTransformer)
 	return
-}
-
-func upsertDoc[T any](ctx context.Context, w *Worker, data transform.APIData, t DocTransformer[T]) {
-	provider := t.Transform(data, func(err error) {
-		w.log.Printf("error during %T transformation: %v", t, err)
-	})
-	db.UpsertDocs(ctx, w.db, provider)
 }

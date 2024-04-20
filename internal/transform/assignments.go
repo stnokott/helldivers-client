@@ -6,28 +6,17 @@ import (
 
 	"github.com/stnokott/helldivers-client/internal/api"
 	"github.com/stnokott/helldivers-client/internal/db"
-	"github.com/stnokott/helldivers-client/internal/db/structs"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"github.com/stnokott/helldivers-client/internal/db/gen"
 )
 
-// Assignments implements worker.DocTransformer
-type Assignments struct{}
-
-// Transform implements the worker.DocTransformer interface
-func (Assignments) Transform(data APIData, errFunc func(error)) *db.DocsProvider[structs.Assignment] {
-	provider := &db.DocsProvider[structs.Assignment]{
-		CollectionName: db.CollAssignments,
-		Docs:           []db.DocWrapper[structs.Assignment]{},
-	}
-
+func Assignments(data APIData) ([]db.EntityMerger, error) {
 	if data.Assignments == nil {
-		errFunc(errors.New("got nil assignments slice"))
-		return provider
+		return nil, errors.New("got nil assignments slice")
 	}
 
-	assignments := *data.Assignments
-
-	for _, assignment := range assignments {
+	src := *data.Assignments
+	assignments := make([]db.EntityMerger, len(src))
+	for i, assignment := range src {
 		if assignment.Id == nil ||
 			assignment.Title == nil ||
 			assignment.Briefing == nil ||
@@ -35,39 +24,34 @@ func (Assignments) Transform(data APIData, errFunc func(error)) *db.DocsProvider
 			assignment.Expiration == nil ||
 			assignment.Tasks == nil ||
 			assignment.Reward == nil {
-			errFunc(errFromNils(&assignment))
-			continue
+			return nil, errFromNils(&assignment)
 		}
 
 		reward, err := parseAssignmentReward(assignment.Reward)
 		if err != nil {
-			errFunc(err)
-			continue
+			return nil, err
 		}
 		tasks, err := convertAssignmentTasks(assignment.Tasks)
 		if err != nil {
-			errFunc(err)
-			continue
+			return nil, err
 		}
-		provider.Docs = append(provider.Docs, db.DocWrapper[structs.Assignment]{
-			DocID: *assignment.Id,
-			Document: structs.Assignment{
-				ID:       *assignment.Id,
-				Title:    *assignment.Title,
-				Briefing: *assignment.Briefing,
 
-				Description: *assignment.Description,
-				Expiration:  primitive.NewDateTimeFromTime(*assignment.Expiration),
-				Progress:    *assignment.Progress,
-				Reward: structs.AssignmentReward{
-					Type:   *reward.Type,
-					Amount: *reward.Amount,
-				},
-				Tasks: tasks,
+		assignments[i] = &db.Assignment{
+			Assignment: gen.Assignment{
+				ID:           *assignment.Id,
+				Title:        *assignment.Title,
+				Briefing:     *assignment.Briefing,
+				Description:  *assignment.Description,
+				Expiration:   db.PGTimestamp(*assignment.Expiration),
+				TaskIds:      nil, // will be filled from DB
+				Progress:     *assignment.Progress,
+				RewardType:   *reward.Type,
+				RewardAmount: *reward.Amount,
 			},
-		})
+			Tasks: tasks,
+		}
 	}
-	return provider
+	return assignments, nil
 }
 
 func parseAssignmentReward(in *api.Assignment2_Reward) (api.Reward2, error) {
@@ -81,13 +65,13 @@ func parseAssignmentReward(in *api.Assignment2_Reward) (api.Reward2, error) {
 	return reward, nil
 }
 
-func convertAssignmentTasks(in *[]api.Task2) ([]structs.AssignmentTask, error) {
-	tasks := make([]structs.AssignmentTask, len(*in))
+func convertAssignmentTasks(in *[]api.Task2) ([]db.AssignmentTask, error) {
+	tasks := make([]db.AssignmentTask, len(*in))
 	for i, task := range *in {
 		if task.Type == nil || task.ValueTypes == nil || task.Values == nil {
 			return nil, errFromNils(&task)
 		}
-		tasks[i] = structs.AssignmentTask{
+		tasks[i] = db.AssignmentTask{
 			Type:       *task.Type,
 			Values:     *task.Values,
 			ValueTypes: *task.ValueTypes,

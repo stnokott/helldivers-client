@@ -13,7 +13,7 @@ const envPrefix = "HELL"
 
 // Config contains configuration values
 type Config struct {
-	MongoURI             string        `env:"MONGO_URI,required" usage:"URI to MongoDB host. Example: mongodb://user:pass@localhost:27017"`
+	PostgresURI          string        `env:"POSTGRES_URI,required" usage:"URI to MongoDB host. Example: postgresql://user:pass@localhost:5432/database"`
 	APIRootURL           string        `env:"API_URL,required" usage:"Root URL of Helldivers 2 API. Example: http://localhost:4000"`
 	APIRateLimitInterval time.Duration `env:"API_RATE_LIMIT_INTERVAL" default:"10s" usage:"Interval of API rate limit. Requests will wait if internal rate limit is exceeded."`
 	APIRateLimitCount    int           `env:"API_RATE_LIMIT_COUNT" default:"5" usage:"Allowed requests per interval of API rate limit. Requests will wait if internal rate limit is exceeded."`

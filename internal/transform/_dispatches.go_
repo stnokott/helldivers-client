@@ -1,0 +1,39 @@
+package transform
+
+import (
+	"errors"
+
+	"github.com/stnokott/helldivers-client/internal/db"
+	"github.com/stnokott/helldivers-client/internal/db/gen"
+)
+
+func Dispatches(data APIData, errFunc func(error)) (d []db.Dispatch) {
+	d = []db.Dispatch{}
+
+	if data.Dispatches == nil {
+		errFunc(errors.New(("got nil dispatches slice")))
+		return
+	}
+
+	dispatches := *data.Dispatches
+
+	for _, dispatch := range dispatches {
+		if dispatch.Id == nil ||
+			dispatch.Published == nil ||
+			dispatch.Type == nil ||
+			dispatch.Message == nil {
+			errFunc(errFromNils(&dispatch))
+			continue
+		}
+
+		d = append(d, db.Dispatch{
+			D: gen.Dispatch{
+				ID:         *dispatch.Id,
+				CreateTime: db.PGTimestamp(*dispatch.Published),
+				Type:       *dispatch.Type,
+				Message:    *dispatch.Message,
+			},
+		})
+	}
+	return
+}

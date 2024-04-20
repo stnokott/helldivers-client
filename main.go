@@ -18,7 +18,7 @@ func main() {
 	cfg := config.Get()
 	logger := loggerFor("main")
 
-	dbClient, err := db.New(cfg, databaseName, loggerFor("mongo"))
+	dbClient, err := db.New(cfg, loggerFor("postgresql"))
 	if err != nil {
 		logger.Fatal(err)
 	}
@@ -27,7 +27,7 @@ func main() {
 			logger.Println(errInner)
 		}
 	}()
-	if err = dbClient.MigrateUp("./migrations"); err != nil {
+	if err = dbClient.MigrateUp("./scripts/migrations"); err != nil {
 		logger.Fatal(err)
 	}
 
