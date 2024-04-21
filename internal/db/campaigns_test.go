@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"log"
 	"testing"
 
 	"github.com/golang-migrate/migrate/v4"
@@ -55,7 +54,7 @@ func TestCampaignsSchema(t *testing.T) {
 					return
 				}
 
-				if err := validCampaignPlanet.Merge(context.Background(), client.queries, &MergeStats{}, log.Default()); err != nil {
+				if err := validCampaignPlanet.Merge(context.Background(), client.queries, tableMergeStats{}); err != nil {
 					t.Errorf("failed to merge campaign planet (check planet tests): %v", err)
 					return
 				}
@@ -63,7 +62,7 @@ func TestCampaignsSchema(t *testing.T) {
 				campaign := validCampaign
 				tt.modifier(&campaign)
 
-				err := campaign.Merge(context.Background(), client.queries, &MergeStats{}, log.Default())
+				err := campaign.Merge(context.Background(), client.queries, tableMergeStats{})
 				if (err != nil) != tt.wantErr {
 					t.Errorf("Campaign.Merge() error = %v, wantErr = %v", err, tt.wantErr)
 					return

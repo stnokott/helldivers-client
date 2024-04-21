@@ -3,7 +3,6 @@ package db
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/stnokott/helldivers-client/internal/db/gen"
 )
@@ -19,9 +18,8 @@ type Assignment struct {
 
 type AssignmentTask gen.AssignmentTask
 
-func (a *Assignment) Merge(ctx context.Context, tx *gen.Queries, stats *MergeStats, logger *log.Logger) error {
-	logger.Printf("** merging assignment '%s'", a.Title)
-	taskIDs, err := mergeAssignmentTasks(ctx, tx, a.Tasks, logger)
+func (a *Assignment) Merge(ctx context.Context, tx *gen.Queries, stats tableMergeStats) error {
+	taskIDs, err := mergeAssignmentTasks(ctx, tx, a.Tasks, stats)
 	if err != nil {
 		return err
 	}
@@ -37,18 +35,18 @@ func (a *Assignment) Merge(ctx context.Context, tx *gen.Queries, stats *MergeSta
 		if _, err = tx.UpdateAssignment(ctx, gen.UpdateAssignmentParams(a.Assignment)); err != nil {
 			return fmt.Errorf("failed to update assignment ('%s'): %v", a.Title, err)
 		}
-		stats.Updates++
+		stats.IncrUpdate("Assignments")
 	} else {
 		// perform INSERT
 		if _, err = tx.InsertAssignment(ctx, gen.InsertAssignmentParams(a.Assignment)); err != nil {
 			return fmt.Errorf("failed to insert assignment ('%s'): %v", a.Title, err)
 		}
-		stats.Inserts++
+		stats.IncrInsert("Assignments")
 	}
 	return nil
 }
 
-func mergeAssignmentTasks(ctx context.Context, tx *gen.Queries, tasks []AssignmentTask, logger *log.Logger) ([]int64, error) {
+func mergeAssignmentTasks(ctx context.Context, tx *gen.Queries, tasks []AssignmentTask, stats tableMergeStats) ([]int64, error) {
 	taskIDs := make([]int64, len(tasks))
 	for i, task := range tasks {
 		id, err := tx.GetAssignmentTask(ctx, task.ID)
@@ -60,6 +58,7 @@ func mergeAssignmentTasks(ctx context.Context, tx *gen.Queries, tasks []Assignme
 			if err != nil {
 				return nil, fmt.Errorf("failed to update assignment task (ID=%d): %v", task.ID, err)
 			}
+			stats.IncrUpdate("Assignment Tasks")
 		} else {
 			// perform INSERT
 			taskID, err = tx.InsertAssignmentTask(ctx, gen.InsertAssignmentTaskParams{
@@ -70,6 +69,7 @@ func mergeAssignmentTasks(ctx context.Context, tx *gen.Queries, tasks []Assignme
 			if err != nil {
 				return nil, fmt.Errorf("failed to insert assignment task (ID=%d): %v", task.ID, err)
 			}
+			stats.IncrInsert("Assignment Tasks")
 		}
 		taskIDs[i] = taskID
 	}

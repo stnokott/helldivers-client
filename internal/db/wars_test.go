@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"log"
 	"testing"
 	"time"
 
@@ -55,7 +54,7 @@ func TestWarsSchema(t *testing.T) {
 				war := validWar
 				tt.modifier(&war)
 
-				err := war.Merge(context.Background(), client.queries, &MergeStats{}, log.Default())
+				err := war.Merge(context.Background(), client.queries, tableMergeStats{})
 				if (err != nil) != tt.wantErr {
 					t.Errorf("War.Merge() error = %v, wantErr = %v", err, tt.wantErr)
 					return

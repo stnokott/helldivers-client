@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"log"
 	"testing"
 	"time"
 
@@ -78,7 +77,7 @@ func TestAssignmentsSchema(t *testing.T) {
 				assignment := validAssignment
 				tt.modifier(&assignment)
 
-				err := assignment.Merge(context.Background(), client.queries, &MergeStats{}, log.Default())
+				err := assignment.Merge(context.Background(), client.queries, tableMergeStats{})
 				if (err != nil) != tt.wantErr {
 					t.Errorf("Assignment.Merge() error = %v, wantErr = %v", err, tt.wantErr)
 					return

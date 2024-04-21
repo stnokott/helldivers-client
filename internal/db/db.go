@@ -65,12 +65,7 @@ func (c *Client) Disconnect() error {
 }
 
 type EntityMerger interface {
-	Merge(ctx context.Context, tx *gen.Queries, stats *MergeStats, logger *log.Logger) error
-}
-
-type MergeStats struct {
-	Inserts int
-	Updates int
+	Merge(ctx context.Context, tx *gen.Queries, stats tableMergeStats) error
 }
 
 func (c *Client) Merge(ctx context.Context, mergers ...[]EntityMerger) (err error) {
@@ -80,7 +75,8 @@ func (c *Client) Merge(ctx context.Context, mergers ...[]EntityMerger) (err erro
 	}
 
 	qtx := c.queries.WithTx(tx)
-	stats := MergeStats{}
+
+	// defer commit/rollback depending on error
 	defer func() {
 		if err != nil {
 			// roll back on error
@@ -90,25 +86,28 @@ func (c *Client) Merge(ctx context.Context, mergers ...[]EntityMerger) (err erro
 			}
 		} else {
 			// commit when no error
-			c.log.Println("committing changes")
 			if errComm := tx.Commit(ctx); errComm != nil {
 				c.log.Printf("failed to commit: %v", errComm)
 			} else {
-				c.log.Printf("committed %d inserts and %d updates", stats.Inserts, stats.Updates)
+				c.log.Println("committed changes")
 			}
 		}
 	}()
 
+	// prepare insert/update statistics
+	stats := tableMergeStats{}
+	// run merges
 	for _, mSlice := range mergers {
 		if len(mSlice) == 0 {
 			c.log.Println("WARN: got 0 entities to merge")
 		}
 		for _, merger := range mSlice {
-			if err = merger.Merge(ctx, qtx, &stats, c.log); err != nil {
+			if err = merger.Merge(ctx, qtx, stats); err != nil {
 				return
 			}
 		}
 	}
+	stats.Print(c.log)
 	return
 }
 

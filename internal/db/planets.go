@@ -3,7 +3,6 @@ package db
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/stnokott/helldivers-client/internal/db/gen"
 )
@@ -22,15 +21,14 @@ type Biome gen.Biome
 
 type Hazard gen.Hazard
 
-func (p *Planet) Merge(ctx context.Context, tx *gen.Queries, stats *MergeStats, logger *log.Logger) error {
-	logger.Printf("** merging planet '%s'", p.Name)
-	biomeName, err := mergeBiome(ctx, tx, p.Biome, logger)
+func (p *Planet) Merge(ctx context.Context, tx *gen.Queries, stats tableMergeStats) error {
+	biomeName, err := mergeBiome(ctx, tx, p.Biome, stats)
 	if err != nil {
 		return err
 	}
 	p.BiomeName = biomeName
 
-	hazardNames, err := mergeHazards(ctx, tx, p.Hazards, logger)
+	hazardNames, err := mergeHazards(ctx, tx, p.Hazards, stats)
 	if err != nil {
 		return err
 	}
@@ -46,18 +44,18 @@ func (p *Planet) Merge(ctx context.Context, tx *gen.Queries, stats *MergeStats, 
 		if _, err = tx.UpdatePlanet(ctx, gen.UpdatePlanetParams(p.Planet)); err != nil {
 			return fmt.Errorf("failed to update planet ('%s'): %v", p.Name, err)
 		}
-		stats.Updates++
+		stats.IncrUpdate("Planets")
 	} else {
 		// perform INSERT
 		if _, err = tx.InsertPlanet(ctx, gen.InsertPlanetParams(p.Planet)); err != nil {
 			return fmt.Errorf("failed to insert planet ('%s'): %v", p.Name, err)
 		}
-		stats.Inserts++
+		stats.IncrInsert("Planets")
 	}
 	return nil
 }
 
-func mergeBiome(ctx context.Context, tx *gen.Queries, biome Biome, logger *log.Logger) (string, error) {
+func mergeBiome(ctx context.Context, tx *gen.Queries, biome Biome, stats tableMergeStats) (string, error) {
 	id, err := tx.GetBiome(ctx, biome.Name)
 	exists, err := entityExistsByPK(id, err, biome.Name)
 	var biomeName string
@@ -67,17 +65,19 @@ func mergeBiome(ctx context.Context, tx *gen.Queries, biome Biome, logger *log.L
 		if err != nil {
 			return "", fmt.Errorf("failed to update biome ('%s'): %v", biome.Name, err)
 		}
+		stats.IncrUpdate("Biomes")
 	} else {
 		// perform INSERT
 		biomeName, err = tx.InsertBiome(ctx, gen.InsertBiomeParams(biome))
 		if err != nil {
 			return "", fmt.Errorf("failed to insert biome ('%s'): %v", biome.Name, err)
 		}
+		stats.IncrInsert("Biomes")
 	}
 	return biomeName, nil
 }
 
-func mergeHazards(ctx context.Context, tx *gen.Queries, hazards []Hazard, logger *log.Logger) ([]string, error) {
+func mergeHazards(ctx context.Context, tx *gen.Queries, hazards []Hazard, stats tableMergeStats) ([]string, error) {
 	hazardNames := make([]string, len(hazards))
 	for i, hazard := range hazards {
 		id, err := tx.GetHazard(ctx, hazard.Name)
@@ -89,12 +89,14 @@ func mergeHazards(ctx context.Context, tx *gen.Queries, hazards []Hazard, logger
 			if err != nil {
 				return nil, fmt.Errorf("failed to update hazard ('%s'): %v", hazard.Name, err)
 			}
+			stats.IncrUpdate("Hazards")
 		} else {
 			// perform INSERT
 			hazardName, err = tx.InsertHazard(ctx, gen.InsertHazardParams(hazard))
 			if err != nil {
 				return nil, fmt.Errorf("failed to insert hazard ('%s'): %v", hazard.Name, err)
 			}
+			stats.IncrInsert("Hazards")
 		}
 		hazardNames[i] = hazardName
 	}

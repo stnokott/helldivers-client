@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"log"
 	"testing"
 
 	"github.com/golang-migrate/migrate/v4"
@@ -131,7 +130,7 @@ func TestPlanetsSchema(t *testing.T) {
 				planet := validPlanet
 				tt.modifier(&planet)
 
-				err := planet.Merge(context.Background(), client.queries, &MergeStats{}, log.Default())
+				err := planet.Merge(context.Background(), client.queries, tableMergeStats{})
 				if (err != nil) != tt.wantErr {
 					t.Errorf("Planet.Merge() error = %v, wantErr = %v", err, tt.wantErr)
 					return
