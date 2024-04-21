@@ -6,42 +6,36 @@ import (
 
 	"github.com/stnokott/helldivers-client/internal/api"
 	"github.com/stnokott/helldivers-client/internal/db"
-	"github.com/stnokott/helldivers-client/internal/db/gen"
 )
 
-func Campaigns(data APIData, errFunc func(error)) (c []db.EntityMerger) {
+func Campaigns(data APIData) ([]db.EntityMerger, error) {
 	if data.Campaigns == nil {
-		errFunc(errors.New("got nil campaigns slice"))
-		return nil
+		return nil, errors.New("got nil campaigns slice")
 	}
 
-	mergers := []db.EntityMerger{}
-	for _, campaign := range *data.Campaigns {
+	src := *data.Campaigns
+	mergers := make([]db.EntityMerger, len(src))
+	for i, campaign := range src {
 		if campaign.Id == nil ||
 			campaign.Planet == nil ||
 			campaign.Type == nil ||
 			campaign.Count == nil {
-			errFunc(errFromNils(&campaign))
-			continue
+			return nil, errFromNils(&campaign)
 		}
 
 		planetRef, err := parseCampaignPlanet(campaign.Planet)
 		if err != nil {
-			errFunc(err)
-			continue
+			return nil, err
 		}
 
-		mergers = append(mergers, &db.Campaign{
-			Campaign: gen.Campaign{
-				ID:       *campaign.Id,
-				PlanetID: *planetRef.Index,
-				Type:     *campaign.Type,
-				Count:    *campaign.Count,
-			},
-			Planet: planetRef,
-		})
+		mergers[i] = &db.Campaign{
+			ID:       *campaign.Id,
+			PlanetID: *planetRef.Index,
+			Type:     *campaign.Type,
+			Count:    *campaign.Count,
+		}
 	}
-	return
+	return mergers, nil
 }
 
 func parseCampaignPlanet(in *api.Campaign2_Planet) (api.Planet, error) {

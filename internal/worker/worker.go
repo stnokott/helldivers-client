@@ -106,16 +106,17 @@ func (w *Worker) queryData(ctx context.Context) (data transform.APIData) {
 
 func (w *Worker) mergeData(ctx context.Context, data transform.APIData) (err error) {
 	w.log.Println("transforming API responses")
-	var (
-		assignments []db.EntityMerger
-		planets     []db.EntityMerger
-		wars        []db.EntityMerger
-	)
+	var assignments, planets, campaigns, wars []db.EntityMerger
+
 	wars, err = transform.Wars(data)
 	if err != nil {
 		return
 	}
 	planets, err = transform.Planets(data)
+	if err != nil {
+		return
+	}
+	campaigns, err = transform.Campaigns(data)
 	if err != nil {
 		return
 	}
@@ -125,16 +126,14 @@ func (w *Worker) mergeData(ctx context.Context, data transform.APIData) (err err
 	}
 
 	/*
-		campaigns := transform.Campaigns(data, errFunc("CAMPAIGNS"))
 		dispatches := transform.Dispatches(data, errFunc("DISPATCHES"))
 		events := transform.Events(data, errFunc("EVENTS"))
 		snapshot := transform.Snapshot(data, errFunc("SNAPSHOT"))
-		war := transform.War(data, errFunc("WAR"))
 	*/
 	// TODO: remaining entities
-	// TODO: use transaction, only commit when no errors occured
+	// TODO: sort table insert order everywhere sensibly
 
 	w.log.Println("merging transformed entities into database")
-	err = w.db.Merge(ctx, wars, planets, assignments)
+	err = w.db.Merge(ctx, wars, planets, campaigns, assignments)
 	return
 }
