@@ -28,7 +28,7 @@ func (p *Planet) Merge(ctx context.Context, tx *gen.Queries, stats *MergeStats, 
 	if err != nil {
 		return err
 	}
-	p.Biome.Name = biomeName
+	p.BiomeName = biomeName
 
 	hazardNames, err := mergeHazards(ctx, tx, p.Hazards, logger)
 	if err != nil {

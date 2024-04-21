@@ -14,6 +14,8 @@ var _ EntityMerger = (*Campaign)(nil)
 // Campaign implements EntityMerger
 type Campaign gen.Campaign
 
+// Merge implements EntityMerger. It is assumed that the currently known planets are already present
+// in the database.
 func (c *Campaign) Merge(ctx context.Context, tx *gen.Queries, stats *MergeStats, logger *log.Logger) error {
 	logger.Printf("** merging campaign ID=%d", c.ID)
 

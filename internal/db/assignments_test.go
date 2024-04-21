@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"log"
 	"testing"
 	"time"
 
@@ -35,32 +36,28 @@ func TestAssignmentsSchema(t *testing.T) {
 	// modifier applies a change to the valid struct, based on the test
 	type modifier func(*Assignment)
 	tests := []struct {
-		name          string
-		modifier      modifier
-		wantTaskErr   bool
-		wantAssignErr bool
+		name     string
+		modifier modifier
+		wantErr  bool
 	}{
 		{
-			name:          "valid",
-			modifier:      func(*Assignment) {},
-			wantTaskErr:   false,
-			wantAssignErr: false,
+			name:     "valid",
+			modifier: func(*Assignment) {},
+			wantErr:  false,
 		},
 		{
 			name: "empty required title",
 			modifier: func(a *Assignment) {
 				a.Title = ""
 			},
-			wantTaskErr:   false,
-			wantAssignErr: true,
+			wantErr: true,
 		},
 		{
 			name: "empty required expiration time",
 			modifier: func(a *Assignment) {
 				a.Expiration = pgtype.Timestamp{}
 			},
-			wantTaskErr:   false,
-			wantAssignErr: true,
+			wantErr: true,
 		},
 		{
 			name: "mismatched assignment task array lengths",
@@ -68,7 +65,7 @@ func TestAssignmentsSchema(t *testing.T) {
 				a.Tasks[0].Values = []int32{2, 3, 4}
 				a.Tasks[0].ValueTypes = []int32{5, 6}
 			},
-			wantTaskErr: true,
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
@@ -81,27 +78,13 @@ func TestAssignmentsSchema(t *testing.T) {
 				assignment := validAssignment
 				tt.modifier(&assignment)
 
-				for _, task := range assignment.Tasks {
-					_, err := client.queries.InsertAssignmentTask(context.Background(), gen.InsertAssignmentTaskParams{
-						Type:       task.Type,
-						Values:     task.Values,
-						ValueTypes: task.ValueTypes,
-					})
-					if (err != nil) != tt.wantTaskErr {
-						t.Errorf("InsertAssignmentTask() error = %v, wantTaskErr = %v", err, tt.wantTaskErr)
-						return
-					}
-					if err != nil {
-						return
-					}
-				}
-
-				_, err := client.queries.InsertAssignment(context.Background(), gen.InsertAssignmentParams(assignment.Assignment))
-				if (err != nil) != tt.wantAssignErr {
-					t.Errorf("InsertAssignment() error = %v, wantErr = %v", err, tt.wantAssignErr)
+				err := assignment.Merge(context.Background(), client.queries, &MergeStats{}, log.Default())
+				if (err != nil) != tt.wantErr {
+					t.Errorf("Assignment.Merge() error = %v, wantErr = %v", err, tt.wantErr)
 					return
 				}
 				if err != nil {
+					// any subsequent tests don't make sense if error encountered
 					return
 				}
 				fetchedResult, err := client.queries.GetAssignment(context.Background(), assignment.ID)

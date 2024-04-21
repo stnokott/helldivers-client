@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"log"
 	"testing"
 
 	"github.com/golang-migrate/migrate/v4"
@@ -37,102 +38,87 @@ func TestPlanetsSchema(t *testing.T) {
 	// modifier applies a change to the valid struct, based on the test
 	type modifier func(*Planet)
 	tests := []struct {
-		name          string
-		modifier      modifier
-		wantBiomeErr  bool
-		wantHazardErr bool
-		wantPlanetErr bool
+		name     string
+		modifier modifier
+		wantErr  bool
 	}{
 		{
-			name:          "valid",
-			modifier:      func(p *Planet) {},
-			wantBiomeErr:  false,
-			wantHazardErr: false,
-			wantPlanetErr: false,
+			name:     "valid",
+			modifier: func(p *Planet) {},
+			wantErr:  false,
 		},
 		{
 			name: "empty required sector",
 			modifier: func(p *Planet) {
 				p.Sector = ""
 			},
-			wantBiomeErr:  false,
-			wantHazardErr: false,
-			wantPlanetErr: true,
-		},
-		{
-			name: "empty foreign key biome name",
-			modifier: func(p *Planet) {
-				p.BiomeName = ""
-			},
-			wantBiomeErr:  false,
-			wantHazardErr: false,
-			wantPlanetErr: true,
+			wantErr: true,
 		},
 		{
 			name: "position Y coordinate missing",
 			modifier: func(p *Planet) {
 				p.Position = []float64{5}
 			},
-			wantBiomeErr:  false,
-			wantHazardErr: false,
-			wantPlanetErr: true,
+			wantErr: true,
 		},
 		{
 			name: "position has too many coordinates",
 			modifier: func(p *Planet) {
 				p.Position = []float64{3, 4, 5}
 			},
-			wantBiomeErr:  false,
-			wantHazardErr: false,
-			wantPlanetErr: true,
+			wantErr: true,
 		},
 		{
-			name: "biome foreign key not existing",
+			name: "empty foreign key biome name",
+			modifier: func(p *Planet) {
+				p.BiomeName = ""
+			},
+			// biome name in planet will be changed to inserted planet, so should not produce error
+			wantErr: false,
+		},
+		{
+			name: "biome foreign key different",
 			modifier: func(p *Planet) {
 				p.Biome.Name = "a different biome"
 			},
-			wantBiomeErr:  false,
-			wantHazardErr: false,
-			wantPlanetErr: true,
+			// same as above
+			wantErr: false,
 		},
 		{
 			name: "hazard foreign key not existing",
 			modifier: func(p *Planet) {
 				p.Hazards = []Hazard{}
 			},
-			wantBiomeErr:  false,
-			wantHazardErr: false,
-			wantPlanetErr: true,
+			// same as for biomes
+			wantErr: false,
 		},
 		{
 			name: "biome name empty",
 			modifier: func(p *Planet) {
 				p.Biome.Name = ""
 			},
-			wantBiomeErr: true,
+			wantErr: true,
 		},
 		{
 			name: "biome description empty",
 			modifier: func(p *Planet) {
 				p.Biome.Description = ""
 			},
-			wantBiomeErr: true,
+			wantErr: true,
 		},
 		{
 			name: "hazard name empty",
 			modifier: func(p *Planet) {
 				p.Hazards[0].Name = ""
 			},
-			wantBiomeErr:  false,
-			wantHazardErr: true,
+			wantErr: true,
 		},
 		{
 			name: "hazard description empty",
 			modifier: func(p *Planet) {
 				p.Hazards[0].Description = ""
 			},
-			wantBiomeErr:  false,
-			wantHazardErr: true,
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
@@ -145,28 +131,16 @@ func TestPlanetsSchema(t *testing.T) {
 				planet := validPlanet
 				tt.modifier(&planet)
 
-				_, err := client.queries.InsertBiome(context.Background(), gen.InsertBiomeParams(planet.Biome))
-				if (err != nil) != tt.wantBiomeErr {
-					t.Logf("InsertBiome() error = %v, wantBiomeErr = %v", err, tt.wantBiomeErr)
-					return
-				}
-
-				for _, hazard := range planet.Hazards {
-					_, err = client.queries.InsertHazard(context.Background(), gen.InsertHazardParams(hazard))
-					if (err != nil) != tt.wantHazardErr {
-						t.Logf("InsertHazard() error = %v, wantHazardErr = %v", err, tt.wantHazardErr)
-						return
-					}
-				}
-
-				_, err = client.queries.InsertPlanet(context.Background(), gen.InsertPlanetParams(planet.Planet))
-				if (err != nil) != tt.wantPlanetErr {
-					t.Errorf("InsertPlanet() error = %v, wantErr = %v", err, tt.wantPlanetErr)
+				err := planet.Merge(context.Background(), client.queries, &MergeStats{}, log.Default())
+				if (err != nil) != tt.wantErr {
+					t.Errorf("Planet.Merge() error = %v, wantErr = %v", err, tt.wantErr)
 					return
 				}
 				if err != nil {
+					// any subsequent tests don't make sense if error encountered
 					return
 				}
+
 				fetchedResult, err := client.queries.GetPlanet(context.Background(), planet.ID)
 				if err != nil {
 					t.Errorf("failed to fetch inserted planet: %v", err)

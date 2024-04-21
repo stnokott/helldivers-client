@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS campaigns
 (
     id integer NOT NULL UNIQUE,
-    planet_id integer NOT NULL,
+    planet_id integer NOT NULL REFERENCES planets,
     type integer NOT NULL,
     count integer NOT NULL CHECK (count >= 0),
     PRIMARY KEY (id)

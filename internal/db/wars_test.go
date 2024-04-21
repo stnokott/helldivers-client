@@ -2,11 +2,11 @@ package db
 
 import (
 	"context"
+	"log"
 	"testing"
 	"time"
 
 	"github.com/golang-migrate/migrate/v4"
-	"github.com/stnokott/helldivers-client/internal/db/gen"
 )
 
 var validWar = War{
@@ -55,14 +55,16 @@ func TestWarsSchema(t *testing.T) {
 				war := validWar
 				tt.modifier(&war)
 
-				_, err := client.queries.InsertWar(context.Background(), gen.InsertWarParams(war))
+				err := war.Merge(context.Background(), client.queries, &MergeStats{}, log.Default())
 				if (err != nil) != tt.wantErr {
-					t.Errorf("InsertWar() error = %v, wantErr = %v", err, tt.wantErr)
+					t.Errorf("War.Merge() error = %v, wantErr = %v", err, tt.wantErr)
 					return
 				}
 				if err != nil {
+					// any subsequent tests don't make sense if error encountered
 					return
 				}
+
 				fetchedResult, err := client.queries.GetWar(context.Background(), war.ID)
 				if err != nil {
 					t.Errorf("failed to fetch inserted war: %v", err)

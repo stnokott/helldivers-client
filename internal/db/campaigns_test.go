@@ -2,10 +2,10 @@ package db
 
 import (
 	"context"
+	"log"
 	"testing"
 
 	"github.com/golang-migrate/migrate/v4"
-	"github.com/stnokott/helldivers-client/internal/db/gen"
 )
 
 var validCampaign = Campaign{
@@ -14,8 +14,12 @@ var validCampaign = Campaign{
 	Type:     8,
 	Count:    100,
 }
+var validCampaignPlanet = validPlanet
 
 func TestCampaignsSchema(t *testing.T) {
+	// synchronize planet IDs so we have a valid starting point
+	validCampaignPlanet.ID = validCampaign.PlanetID
+
 	// modifier applies a change to the valid struct, based on the test
 	type modifier func(*Campaign)
 	tests := []struct {
@@ -51,10 +55,21 @@ func TestCampaignsSchema(t *testing.T) {
 					return
 				}
 
+				if err := validCampaignPlanet.Merge(context.Background(), client.queries, &MergeStats{}, log.Default()); err != nil {
+					t.Errorf("failed to merge campaign planet (check planet tests): %v", err)
+					return
+				}
+
 				campaign := validCampaign
 				tt.modifier(&campaign)
-				_, err := client.queries.InsertCampaign(context.Background(), gen.InsertCampaignParams(campaign))
+
+				err := campaign.Merge(context.Background(), client.queries, &MergeStats{}, log.Default())
+				if (err != nil) != tt.wantErr {
+					t.Errorf("Campaign.Merge() error = %v, wantErr = %v", err, tt.wantErr)
+					return
+				}
 				if err != nil {
+					// any subsequent tests don't make sense if error encountered
 					return
 				}
 				fetchedResult, err := client.queries.GetCampaign(context.Background(), campaign.ID)

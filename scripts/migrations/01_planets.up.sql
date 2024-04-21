@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS biomes
 (
-    name text NOT NULL UNIQUE,
-    description text NOT NULL,
+    name text NOT NULL UNIQUE CHECK (name <> ''),
+    description text NOT NULL CHECK (description <> ''),
     PRIMARY KEY (name)
 );
 
@@ -12,8 +12,8 @@ COMMENT ON TABLE biomes
 
 CREATE TABLE IF NOT EXISTS hazards
 (
-    name text NOT NULL UNIQUE,
-    description text NOT NULL,
+    name text NOT NULL UNIQUE CHECK (name <> ''),
+    description text NOT NULL CHECK (description <> ''),
     PRIMARY KEY (name)
 );
 
@@ -27,11 +27,12 @@ CREATE TABLE IF NOT EXISTS planets
     id integer NOT NULL UNIQUE,
     name text NOT NULL UNIQUE CONSTRAINT name_not_empty CHECK (name <> ''),
     sector text NOT NULL CONSTRAINT sector_not_empty CHECK (sector <> ''),
-    position double precision[2] NOT NULL CONSTRAINT position_exactly_two_values CHECK (array_length(position, 1) = 2),
+    position double precision[2] NOT NULL,
+    CONSTRAINT position_exactly_two_values CHECK (array_length(position, 1) = 2),
     waypoint_ids integer[] NOT NULL,
     disabled boolean NOT NULL,
     biome_name text NOT NULL REFERENCES biomes,
-    hazard_names text[] NOT NULL, -- reference check is performed in trigger function
+    hazard_names text[] NOT NULL, -- reference check is performed in trigger function below
     max_health bigint NOT NULL CONSTRAINT max_health_not_negative CHECK (max_health > 0),
     initial_owner text NOT NULL CONSTRAINT initial_owner_not_empty CHECK (initial_owner <> ''),
     PRIMARY KEY (id)
