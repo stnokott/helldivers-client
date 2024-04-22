@@ -89,7 +89,7 @@ func (c *Client) Merge(ctx context.Context, mergers ...[]EntityMerger) (err erro
 			if errComm := tx.Commit(ctx); errComm != nil {
 				c.log.Printf("failed to commit: %v", errComm)
 			} else {
-				c.log.Println("committed changes")
+				c.log.Println("changes committed")
 			}
 		}
 	}()
