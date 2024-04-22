@@ -65,13 +65,13 @@ func parseAssignmentReward(in *api.Assignment2_Reward) (api.Reward2, error) {
 	return reward, nil
 }
 
-func convertAssignmentTasks(in *[]api.Task2) ([]db.AssignmentTask, error) {
-	tasks := make([]db.AssignmentTask, len(*in))
+func convertAssignmentTasks(in *[]api.Task2) ([]gen.AssignmentTask, error) {
+	tasks := make([]gen.AssignmentTask, len(*in))
 	for i, task := range *in {
 		if task.Type == nil || task.ValueTypes == nil || task.Values == nil {
 			return nil, errFromNils(&task)
 		}
-		tasks[i] = db.AssignmentTask{
+		tasks[i] = gen.AssignmentTask{
 			Type:       *task.Type,
 			Values:     *task.Values,
 			ValueTypes: *task.ValueTypes,

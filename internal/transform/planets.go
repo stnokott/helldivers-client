@@ -62,7 +62,7 @@ func Planets(data APIData) ([]db.EntityMerger, error) {
 				MaxHealth:    *planet.MaxHealth,
 				InitialOwner: *planet.InitialOwner,
 			},
-			Biome: db.Biome{
+			Biome: gen.Biome{
 				Name:        *biome.Name,
 				Description: *biome.Description,
 			},
@@ -94,13 +94,13 @@ func parsePlanetBiome(in *api.Planet_Biome) (api.Biome, error) {
 	return biome, nil
 }
 
-func convertPlanetHazards(in *[]api.Hazard) ([]db.Hazard, error) {
-	hazards := make([]db.Hazard, len(*in))
+func convertPlanetHazards(in *[]api.Hazard) ([]gen.Hazard, error) {
+	hazards := make([]gen.Hazard, len(*in))
 	for i, hazard := range *in {
 		if hazard.Name == nil || hazard.Description == nil {
 			return nil, errFromNils(&hazard)
 		}
-		hazards[i] = db.Hazard{
+		hazards[i] = gen.Hazard{
 			Name:        *hazard.Name,
 			Description: *hazard.Description,
 		}

@@ -76,13 +76,15 @@ func TestEvent(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			event := validEvent
 			planets := []api.Planet{
 				{
-					Event: mustPlanetEvent(validEvent),
+					Event: mustPlanetEvent(event),
 				},
 			}
-			// call modifiers on valid copies
+
 			tt.modifier(&planets[0])
+
 			data := APIData{
 				Planets: &planets,
 			}
@@ -93,8 +95,6 @@ func TestEvent(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Events() = %v, want %v", got, tt.want)
-				t.Log(got[0])
-				t.Log(tt.want[0])
 				return
 			}
 		})

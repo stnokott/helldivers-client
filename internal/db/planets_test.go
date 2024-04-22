@@ -22,11 +22,11 @@ var validPlanet = Planet{
 		MaxHealth:    1000,
 		InitialOwner: "Super Humans",
 	},
-	Biome: Biome{
+	Biome: gen.Biome{
 		Name:        "FooBiome",
 		Description: "This biome contains a lot of spaghetti",
 	},
-	Hazards: []Hazard{
+	Hazards: []gen.Hazard{
 		{
 			Name:        "BarHazard",
 			Description: "This hazard contains a lot of bugs",
@@ -101,7 +101,7 @@ func TestPlanetsSchema(t *testing.T) {
 		{
 			name: "hazard foreign key not existing",
 			modifier: func(p *Planet) {
-				p.Hazards = []Hazard{}
+				p.Hazards = []gen.Hazard{}
 			},
 			// same as for biomes
 			wantErr: false,

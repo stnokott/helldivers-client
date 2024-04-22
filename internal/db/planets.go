@@ -13,13 +13,9 @@ var _ EntityMerger = (*Planet)(nil)
 // Planet implements EntityMerger
 type Planet struct {
 	gen.Planet
-	Biome   Biome
-	Hazards []Hazard
+	Biome   gen.Biome
+	Hazards []gen.Hazard
 }
-
-type Biome gen.Biome
-
-type Hazard gen.Hazard
 
 func (p *Planet) Merge(ctx context.Context, tx *gen.Queries, stats tableMergeStats) error {
 	biomeName, err := mergeBiome(ctx, tx, p.Biome, stats)
@@ -55,7 +51,7 @@ func (p *Planet) Merge(ctx context.Context, tx *gen.Queries, stats tableMergeSta
 	return nil
 }
 
-func mergeBiome(ctx context.Context, tx *gen.Queries, biome Biome, stats tableMergeStats) (string, error) {
+func mergeBiome(ctx context.Context, tx *gen.Queries, biome gen.Biome, stats tableMergeStats) (string, error) {
 	id, err := tx.GetBiome(ctx, biome.Name)
 	exists, err := entityExistsByPK(id, err, biome.Name)
 	var biomeName string
@@ -77,7 +73,7 @@ func mergeBiome(ctx context.Context, tx *gen.Queries, biome Biome, stats tableMe
 	return biomeName, nil
 }
 
-func mergeHazards(ctx context.Context, tx *gen.Queries, hazards []Hazard, stats tableMergeStats) ([]string, error) {
+func mergeHazards(ctx context.Context, tx *gen.Queries, hazards []gen.Hazard, stats tableMergeStats) ([]string, error) {
 	hazardNames := make([]string, len(hazards))
 	for i, hazard := range hazards {
 		id, err := tx.GetHazard(ctx, hazard.Name)

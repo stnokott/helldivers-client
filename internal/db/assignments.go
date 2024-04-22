@@ -13,10 +13,8 @@ var _ EntityMerger = (*Assignment)(nil)
 // Assignment implements EntityMerger
 type Assignment struct {
 	gen.Assignment
-	Tasks []AssignmentTask
+	Tasks []gen.AssignmentTask
 }
-
-type AssignmentTask gen.AssignmentTask
 
 func (a *Assignment) Merge(ctx context.Context, tx *gen.Queries, stats tableMergeStats) error {
 	taskIDs, err := mergeAssignmentTasks(ctx, tx, a.Tasks, stats)
@@ -46,7 +44,7 @@ func (a *Assignment) Merge(ctx context.Context, tx *gen.Queries, stats tableMerg
 	return nil
 }
 
-func mergeAssignmentTasks(ctx context.Context, tx *gen.Queries, tasks []AssignmentTask, stats tableMergeStats) ([]int64, error) {
+func mergeAssignmentTasks(ctx context.Context, tx *gen.Queries, tasks []gen.AssignmentTask, stats tableMergeStats) ([]int64, error) {
 	taskIDs := make([]int64, len(tasks))
 	for i, task := range tasks {
 		id, err := tx.GetAssignmentTask(ctx, task.ID)

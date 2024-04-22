@@ -14,9 +14,8 @@ var validWarID = api.WarId{
 }
 
 var validWar = api.War{
-	Started:          ptr(time.Date(2024, 1, 1, 1, 1, 1, 1, time.Local)),
-	Ended:            ptr(time.Date(2025, 1, 1, 1, 1, 1, 1, time.Local)),
-	ImpactMultiplier: ptr(float64(0.0004)),
+	Started: ptr(time.Date(2024, 1, 1, 1, 1, 1, 1, time.Local)),
+	Ended:   ptr(time.Date(2025, 1, 1, 1, 1, 1, 1, time.Local)),
 	Factions: &[]string{
 		"Humans",
 		"Automatons",

@@ -65,7 +65,7 @@ func TestAssignments(t *testing.T) {
 						RewardAmount: 100,
 						TaskIds:      nil,
 					},
-					Tasks: []db.AssignmentTask{
+					Tasks: []gen.AssignmentTask{
 						{
 							Type:       4,
 							ValueTypes: []int32{2, 3, 4},

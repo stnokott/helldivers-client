@@ -29,6 +29,11 @@ func (s tableMergeStats) IncrInsert(tableName string) {
 	s[tableName].Inserted++
 }
 
+func (s tableMergeStats) IncrInserts(tableName string, n int) {
+	s.must(tableName)
+	s[tableName].Inserted += n
+}
+
 func (s tableMergeStats) Print(logger *log.Logger) {
 	var padTableName, padInserted, padUpdated int
 	for tableName, stats := range s {

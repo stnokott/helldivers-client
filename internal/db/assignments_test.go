@@ -22,7 +22,7 @@ var validAssignment = Assignment{
 		RewardType:   8,
 		RewardAmount: 100,
 	},
-	Tasks: []AssignmentTask{
+	Tasks: []gen.AssignmentTask{
 		{
 			Type:       9,
 			Values:     []int32{7, 8, 9},

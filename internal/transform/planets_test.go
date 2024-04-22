@@ -84,11 +84,11 @@ func TestPlanets(t *testing.T) {
 						Sector:       "A sector",
 						WaypointIds:  []int32{3, 4, 5},
 					},
-					Biome: db.Biome{
+					Biome: gen.Biome{
 						Name:        "Foobiome",
 						Description: "Foodescription",
 					},
-					Hazards: []db.Hazard{
+					Hazards: []gen.Hazard{
 						{
 							Name:        "Barhazard",
 							Description: "Bardescription",
@@ -117,11 +117,11 @@ func TestPlanets(t *testing.T) {
 						Sector:       "A sector",
 						WaypointIds:  []int32{},
 					},
-					Biome: db.Biome{
+					Biome: gen.Biome{
 						Name:        "Foobiome",
 						Description: "Foodescription",
 					},
-					Hazards: []db.Hazard{
+					Hazards: []gen.Hazard{
 						{
 							Name:        "Barhazard",
 							Description: "Bardescription",

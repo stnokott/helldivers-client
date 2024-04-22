@@ -20,7 +20,7 @@ COMMENT ON COLUMN war_snapshots.impact_multiplier
 CREATE TABLE IF NOT EXISTS event_snapshots
 (
     id bigint NOT NULL UNIQUE GENERATED ALWAYS AS IDENTITY,
-    event_id integer NOT NULL,
+    event_id integer NOT NULL REFERENCES events,
     health bigint NOT NULL CHECK (health >= 0),
     PRIMARY KEY (id)
 );
@@ -90,6 +90,24 @@ CREATE TABLE IF NOT EXISTS planet_snapshots
     PRIMARY KEY (id)
 );
 
+CREATE OR REPLACE FUNCTION validate_planet_snapshot_refs() RETURNS TRIGGER AS $validate_planet_snapshot_refs$
+	DECLARE
+		new_attacking_planet_id integer;
+    BEGIN
+		-- check attacking planet IDs
+		FOREACH new_attacking_planet_id IN ARRAY NEW.attacking_planet_ids LOOP
+			IF NOT EXISTS (SELECT 1 FROM planets WHERE id = new_attacking_planet_id) THEN
+				RAISE EXCEPTION 'planet statistic ID=% has non-existent attacking planet ID %', NEW.id, new_attacking_planet_id;
+			END IF;
+		END LOOP;
+
+        RETURN NEW;
+    END;
+$validate_planet_snapshot_refs$ LANGUAGE plpgsql;
+
+CREATE TRIGGER validate_planet_snapshot_refs BEFORE INSERT OR UPDATE ON planet_snapshots
+    FOR EACH ROW EXECUTE FUNCTION validate_planet_snapshot_refs();
+
 COMMENT ON TABLE planet_snapshots
     IS 'Contains dynamic data about a planet currently part of this war';
 
@@ -126,10 +144,52 @@ CREATE TABLE IF NOT EXISTS snapshots
     assignment_ids bigint[] NOT NULL,
     campaign_ids integer[] NOT NULL,
     dispatch_ids integer[] NOT NULL,
-    planet_snapshot_ids bigint[] NOT NULL, -- TODO: array FK constraint
+    planet_snapshot_ids bigint[] NOT NULL,
     statistics_id bigint NOT NULL REFERENCES snapshot_statistics,
     PRIMARY KEY (create_time)
 );
+
+CREATE OR REPLACE FUNCTION validate_snapshot_refs() RETURNS TRIGGER AS $validate_snapshot_refs$
+	DECLARE
+		new_assignment_id bigint;
+        new_campaign_id integer;
+        new_dispatch_id integer;
+        new_planet_snapshot_id integer;
+    BEGIN
+		-- check assignment refs
+		FOREACH new_assignment_id IN ARRAY NEW.assignment_ids LOOP
+			IF NOT EXISTS (SELECT 1 FROM assignments WHERE id = new_assignment_id) THEN
+				RAISE EXCEPTION 'snapshot at % has non-existent assignment ID %', NEW.create_time, new_assignment_id;
+			END IF;
+		END LOOP;
+
+        -- check campaign refs
+		FOREACH new_campaign_id IN ARRAY NEW.campaign_ids LOOP
+			IF NOT EXISTS (SELECT 1 FROM campaigns WHERE id = new_campaign_id) THEN
+				RAISE EXCEPTION 'snapshot at % has non-existent campaign ID %', NEW.create_time, new_campaign_id;
+			END IF;
+		END LOOP;
+
+        -- check dispatch refs
+		FOREACH new_dispatch_id IN ARRAY NEW.dispatch_ids LOOP
+			IF NOT EXISTS (SELECT 1 FROM dispatches WHERE id = new_dispatch_id) THEN
+				RAISE EXCEPTION 'snapshot at % has non-existent dispatch ID %', NEW.create_time, new_dispatch_id;
+			END IF;
+		END LOOP;
+
+        -- check planet snapshot refs
+		FOREACH new_planet_snapshot_id IN ARRAY NEW.planet_snapshot_ids LOOP
+			IF NOT EXISTS (SELECT 1 FROM planet_snapshots WHERE id = new_planet_snapshot_id) THEN
+				RAISE EXCEPTION 'snapshot at % has non-existent planet snapshot ID %', NEW.create_time, new_planet_snapshot_id;
+			END IF;
+		END LOOP;
+
+        RETURN NEW;
+    END;
+$validate_snapshot_refs$ LANGUAGE plpgsql;
+
+CREATE TRIGGER validate_snapshot_refs BEFORE INSERT OR UPDATE ON snapshots
+    FOR EACH ROW EXECUTE FUNCTION validate_snapshot_refs();
 
 COMMENT ON TABLE snapshots
     IS 'Contains the dynamic data of any metrics changing over time.';

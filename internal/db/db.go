@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"math/big"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -64,6 +65,7 @@ func (c *Client) Disconnect() error {
 	return nil
 }
 
+// TODO: implement hashing on non-PK to differentiate between simple updates and actual changes
 type EntityMerger interface {
 	Merge(ctx context.Context, tx *gen.Queries, stats tableMergeStats) error
 }
@@ -113,6 +115,10 @@ func (c *Client) Merge(ctx context.Context, mergers ...[]EntityMerger) (err erro
 
 func PGTimestamp(t time.Time) pgtype.Timestamp {
 	return pgtype.Timestamp{Time: t, Valid: true}
+}
+
+func PGUint64(x uint64) pgtype.Numeric {
+	return pgtype.Numeric{Int: new(big.Int).SetUint64(x), Valid: true}
 }
 
 func entityExistsByPK[PK comparable](pk PK, err error, expected PK) (bool, error) {
