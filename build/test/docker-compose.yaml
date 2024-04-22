@@ -14,12 +14,11 @@ services:
       - db
     volumes:
       - ./../../:/code
-      - $(go env GOMODCACHE):/go/pkg/mod/
     environment:
       POSTGRES_URI: postgresql://postgres:dev@db:5432/helldivers
       API_URL: http://api:8080
       API_RATE_LIMIT_INTERVAL: 10s
-      API_RATE_LIMIT_COUNT: 5
+      API_RATE_LIMIT_COUNT: 3
       WORKER_INTERVAL: 30s
     networks:
       - default
