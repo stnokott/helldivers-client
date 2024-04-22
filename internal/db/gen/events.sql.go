@@ -22,46 +22,18 @@ func (q *Queries) GetEvent(ctx context.Context, id int32) (int32, error) {
 	return id, err
 }
 
-const insertEvent = `-- name: InsertEvent :one
+const mergeEvent = `-- name: MergeEvent :one
 INSERT INTO events (
     id, type, faction, max_health, start_time, end_time
 ) VALUES (
     $1, $2, $3, $4, $5, $6
 )
-RETURNING id
-`
-
-type InsertEventParams struct {
-	ID        int32
-	Type      int32
-	Faction   string
-	MaxHealth int64
-	StartTime pgtype.Timestamp
-	EndTime   pgtype.Timestamp
-}
-
-func (q *Queries) InsertEvent(ctx context.Context, arg InsertEventParams) (int32, error) {
-	row := q.db.QueryRow(ctx, insertEvent,
-		arg.ID,
-		arg.Type,
-		arg.Faction,
-		arg.MaxHealth,
-		arg.StartTime,
-		arg.EndTime,
-	)
-	var id int32
-	err := row.Scan(&id)
-	return id, err
-}
-
-const updateEvent = `-- name: UpdateEvent :one
-UPDATE events
+ON CONFLICT (id) DO UPDATE
     SET type=$2, faction=$3, max_health=$4, start_time=$5, end_time=$6
-WHERE id = $1
 RETURNING id
 `
 
-type UpdateEventParams struct {
+type MergeEventParams struct {
 	ID        int32
 	Type      int32
 	Faction   string
@@ -70,8 +42,8 @@ type UpdateEventParams struct {
 	EndTime   pgtype.Timestamp
 }
 
-func (q *Queries) UpdateEvent(ctx context.Context, arg UpdateEventParams) (int32, error) {
-	row := q.db.QueryRow(ctx, updateEvent,
+func (q *Queries) MergeEvent(ctx context.Context, arg MergeEventParams) (int32, error) {
+	row := q.db.QueryRow(ctx, mergeEvent,
 		arg.ID,
 		arg.Type,
 		arg.Faction,

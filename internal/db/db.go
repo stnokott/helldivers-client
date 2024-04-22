@@ -3,7 +3,6 @@ package db
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 	"math/big"
@@ -119,14 +118,4 @@ func PGTimestamp(t time.Time) pgtype.Timestamp {
 
 func PGUint64(x uint64) pgtype.Numeric {
 	return pgtype.Numeric{Int: new(big.Int).SetUint64(x), Valid: true}
-}
-
-func entityExistsByPK[PK comparable](pk PK, err error, expected PK) (bool, error) {
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return false, nil
-		}
-		return false, err
-	}
-	return pk == expected, nil
 }

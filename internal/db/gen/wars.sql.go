@@ -22,50 +22,26 @@ func (q *Queries) GetWar(ctx context.Context, id int32) (int32, error) {
 	return id, err
 }
 
-const insertWar = `-- name: InsertWar :one
+const mergeWar = `-- name: MergeWar :one
 INSERT INTO wars (
     id, start_time, end_time, factions
 ) VALUES (
     $1, $2, $3, $4
 )
-RETURNING id
-`
-
-type InsertWarParams struct {
-	ID        int32
-	StartTime pgtype.Timestamp
-	EndTime   pgtype.Timestamp
-	Factions  []string
-}
-
-func (q *Queries) InsertWar(ctx context.Context, arg InsertWarParams) (int32, error) {
-	row := q.db.QueryRow(ctx, insertWar,
-		arg.ID,
-		arg.StartTime,
-		arg.EndTime,
-		arg.Factions,
-	)
-	var id int32
-	err := row.Scan(&id)
-	return id, err
-}
-
-const updateWar = `-- name: UpdateWar :one
-UPDATE wars
+ON CONFLICT (id) DO UPDATE
     SET start_time=$2, end_time=$3, factions=$4
-WHERE id = $1
 RETURNING id
 `
 
-type UpdateWarParams struct {
+type MergeWarParams struct {
 	ID        int32
 	StartTime pgtype.Timestamp
 	EndTime   pgtype.Timestamp
 	Factions  []string
 }
 
-func (q *Queries) UpdateWar(ctx context.Context, arg UpdateWarParams) (int32, error) {
-	row := q.db.QueryRow(ctx, updateWar,
+func (q *Queries) MergeWar(ctx context.Context, arg MergeWarParams) (int32, error) {
+	row := q.db.QueryRow(ctx, mergeWar,
 		arg.ID,
 		arg.StartTime,
 		arg.EndTime,

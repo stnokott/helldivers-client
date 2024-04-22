@@ -103,5 +103,3 @@ func TestTablesExist(t *testing.T) {
 		}
 	})
 }
-
-// TODO: remaining schemata

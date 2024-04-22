@@ -2,16 +2,12 @@
 SELECT id FROM campaigns
 WHERE id = $1;
 
--- name: InsertCampaign :one
+-- name: MergeCampaign :one
 INSERT INTO campaigns (
     id, planet_id, type, count
 ) VALUES (
     $1, $2, $3, $4
 )
-RETURNING id;
-
--- name: UpdateCampaign :one
-UPDATE campaigns
+ON CONFLICT (id) DO UPDATE
     SET planet_id=$2, type=$3, count=$4
-WHERE id = $1
 RETURNING id;

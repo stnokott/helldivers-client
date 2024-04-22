@@ -22,50 +22,26 @@ func (q *Queries) GetDispatch(ctx context.Context, id int32) (int32, error) {
 	return id, err
 }
 
-const insertDispatch = `-- name: InsertDispatch :one
+const mergeDispatch = `-- name: MergeDispatch :one
 INSERT INTO dispatches (
     id, create_time, type, message
 ) VALUES (
     $1, $2, $3, $4
 )
-RETURNING id
-`
-
-type InsertDispatchParams struct {
-	ID         int32
-	CreateTime pgtype.Timestamp
-	Type       int32
-	Message    string
-}
-
-func (q *Queries) InsertDispatch(ctx context.Context, arg InsertDispatchParams) (int32, error) {
-	row := q.db.QueryRow(ctx, insertDispatch,
-		arg.ID,
-		arg.CreateTime,
-		arg.Type,
-		arg.Message,
-	)
-	var id int32
-	err := row.Scan(&id)
-	return id, err
-}
-
-const updateDispatch = `-- name: UpdateDispatch :one
-UPDATE dispatches
+ON CONFLICT (id) DO UPDATE
     SET create_time=$2, type=$3, message=$4
-WHERE id = $1
 RETURNING id
 `
 
-type UpdateDispatchParams struct {
+type MergeDispatchParams struct {
 	ID         int32
 	CreateTime pgtype.Timestamp
 	Type       int32
 	Message    string
 }
 
-func (q *Queries) UpdateDispatch(ctx context.Context, arg UpdateDispatchParams) (int32, error) {
-	row := q.db.QueryRow(ctx, updateDispatch,
+func (q *Queries) MergeDispatch(ctx context.Context, arg MergeDispatchParams) (int32, error) {
+	row := q.db.QueryRow(ctx, mergeDispatch,
 		arg.ID,
 		arg.CreateTime,
 		arg.Type,

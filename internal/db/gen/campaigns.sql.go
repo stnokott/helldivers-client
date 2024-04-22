@@ -20,50 +20,26 @@ func (q *Queries) GetCampaign(ctx context.Context, id int32) (int32, error) {
 	return id, err
 }
 
-const insertCampaign = `-- name: InsertCampaign :one
+const mergeCampaign = `-- name: MergeCampaign :one
 INSERT INTO campaigns (
     id, planet_id, type, count
 ) VALUES (
     $1, $2, $3, $4
 )
-RETURNING id
-`
-
-type InsertCampaignParams struct {
-	ID       int32
-	PlanetID int32
-	Type     int32
-	Count    int32
-}
-
-func (q *Queries) InsertCampaign(ctx context.Context, arg InsertCampaignParams) (int32, error) {
-	row := q.db.QueryRow(ctx, insertCampaign,
-		arg.ID,
-		arg.PlanetID,
-		arg.Type,
-		arg.Count,
-	)
-	var id int32
-	err := row.Scan(&id)
-	return id, err
-}
-
-const updateCampaign = `-- name: UpdateCampaign :one
-UPDATE campaigns
+ON CONFLICT (id) DO UPDATE
     SET planet_id=$2, type=$3, count=$4
-WHERE id = $1
 RETURNING id
 `
 
-type UpdateCampaignParams struct {
+type MergeCampaignParams struct {
 	ID       int32
 	PlanetID int32
 	Type     int32
 	Count    int32
 }
 
-func (q *Queries) UpdateCampaign(ctx context.Context, arg UpdateCampaignParams) (int32, error) {
-	row := q.db.QueryRow(ctx, updateCampaign,
+func (q *Queries) MergeCampaign(ctx context.Context, arg MergeCampaignParams) (int32, error) {
+	row := q.db.QueryRow(ctx, mergeCampaign,
 		arg.ID,
 		arg.PlanetID,
 		arg.Type,

@@ -32,146 +32,74 @@ func (q *Queries) GetHazard(ctx context.Context, name string) (string, error) {
 }
 
 const getPlanet = `-- name: GetPlanet :one
-
 SELECT id FROM planets
 WHERE id = $1
 `
 
-// TODO: check if INSERT ... ON CONFLICT DO UPDATE is possible
 func (q *Queries) GetPlanet(ctx context.Context, id int32) (int32, error) {
 	row := q.db.QueryRow(ctx, getPlanet, id)
 	err := row.Scan(&id)
 	return id, err
 }
 
-const insertBiome = `-- name: InsertBiome :one
+const mergeBiome = `-- name: MergeBiome :one
 INSERT INTO biomes (
     name, description
 ) VALUES (
     $1, $2
 )
+ON CONFLICT (name) DO UPDATE
+    SET description=$2
 RETURNING name
 `
 
-type InsertBiomeParams struct {
+type MergeBiomeParams struct {
 	Name        string
 	Description string
 }
 
-func (q *Queries) InsertBiome(ctx context.Context, arg InsertBiomeParams) (string, error) {
-	row := q.db.QueryRow(ctx, insertBiome, arg.Name, arg.Description)
+func (q *Queries) MergeBiome(ctx context.Context, arg MergeBiomeParams) (string, error) {
+	row := q.db.QueryRow(ctx, mergeBiome, arg.Name, arg.Description)
 	var name string
 	err := row.Scan(&name)
 	return name, err
 }
 
-const insertHazard = `-- name: InsertHazard :one
+const mergeHazard = `-- name: MergeHazard :one
 INSERT INTO hazards (
     name, description
 ) VALUES (
     $1, $2
 )
+ON CONFLICT (name) DO UPDATE
+    SET description=$2
 RETURNING name
 `
 
-type InsertHazardParams struct {
+type MergeHazardParams struct {
 	Name        string
 	Description string
 }
 
-func (q *Queries) InsertHazard(ctx context.Context, arg InsertHazardParams) (string, error) {
-	row := q.db.QueryRow(ctx, insertHazard, arg.Name, arg.Description)
+func (q *Queries) MergeHazard(ctx context.Context, arg MergeHazardParams) (string, error) {
+	row := q.db.QueryRow(ctx, mergeHazard, arg.Name, arg.Description)
 	var name string
 	err := row.Scan(&name)
 	return name, err
 }
 
-const insertPlanet = `-- name: InsertPlanet :one
+const mergePlanet = `-- name: MergePlanet :one
 INSERT INTO planets (
     id, name, sector, position, waypoint_ids, disabled, biome_name, hazard_names, max_health, initial_owner
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
 )
-RETURNING id
-`
-
-type InsertPlanetParams struct {
-	ID           int32
-	Name         string
-	Sector       string
-	Position     []float64
-	WaypointIds  []int32
-	Disabled     bool
-	BiomeName    string
-	HazardNames  []string
-	MaxHealth    int64
-	InitialOwner string
-}
-
-func (q *Queries) InsertPlanet(ctx context.Context, arg InsertPlanetParams) (int32, error) {
-	row := q.db.QueryRow(ctx, insertPlanet,
-		arg.ID,
-		arg.Name,
-		arg.Sector,
-		arg.Position,
-		arg.WaypointIds,
-		arg.Disabled,
-		arg.BiomeName,
-		arg.HazardNames,
-		arg.MaxHealth,
-		arg.InitialOwner,
-	)
-	var id int32
-	err := row.Scan(&id)
-	return id, err
-}
-
-const updateBiome = `-- name: UpdateBiome :one
-UPDATE biomes
-    SET description=$2
-WHERE name=$1
-RETURNING name
-`
-
-type UpdateBiomeParams struct {
-	Name        string
-	Description string
-}
-
-func (q *Queries) UpdateBiome(ctx context.Context, arg UpdateBiomeParams) (string, error) {
-	row := q.db.QueryRow(ctx, updateBiome, arg.Name, arg.Description)
-	var name string
-	err := row.Scan(&name)
-	return name, err
-}
-
-const updateHazard = `-- name: UpdateHazard :one
-UPDATE hazards
-    SET description=$2
-WHERE name=$1
-RETURNING name
-`
-
-type UpdateHazardParams struct {
-	Name        string
-	Description string
-}
-
-func (q *Queries) UpdateHazard(ctx context.Context, arg UpdateHazardParams) (string, error) {
-	row := q.db.QueryRow(ctx, updateHazard, arg.Name, arg.Description)
-	var name string
-	err := row.Scan(&name)
-	return name, err
-}
-
-const updatePlanet = `-- name: UpdatePlanet :one
-UPDATE planets
+ON CONFLICT (id) DO UPDATE
     SET name=$2, sector=$3, position=$4, waypoint_ids=$5, disabled=$6, biome_name=$7, hazard_names=$8, max_health=$9, initial_owner=$10
-WHERE id = $1
 RETURNING id
 `
 
-type UpdatePlanetParams struct {
+type MergePlanetParams struct {
 	ID           int32
 	Name         string
 	Sector       string
@@ -184,8 +112,8 @@ type UpdatePlanetParams struct {
 	InitialOwner string
 }
 
-func (q *Queries) UpdatePlanet(ctx context.Context, arg UpdatePlanetParams) (int32, error) {
-	row := q.db.QueryRow(ctx, updatePlanet,
+func (q *Queries) MergePlanet(ctx context.Context, arg MergePlanetParams) (int32, error) {
+	row := q.db.QueryRow(ctx, mergePlanet,
 		arg.ID,
 		arg.Name,
 		arg.Sector,
