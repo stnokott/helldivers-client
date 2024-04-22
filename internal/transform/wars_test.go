@@ -9,11 +9,11 @@ import (
 	"github.com/stnokott/helldivers-client/internal/db"
 )
 
-var warIDValid = api.WarId{
+var validWarID = api.WarId{
 	Id: ptr(int32(999)),
 }
 
-var warValid = api.War{
+var validWar = api.War{
 	Started:          ptr(time.Date(2024, 1, 1, 1, 1, 1, 1, time.Local)),
 	Ended:            ptr(time.Date(2025, 1, 1, 1, 1, 1, 1, time.Local)),
 	ImpactMultiplier: ptr(float64(0.0004)),
@@ -95,8 +95,8 @@ func TestWar(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			warID := warIDValid
-			war := warValid
+			warID := validWarID
+			war := validWar
 			// call modifiers on valid copies
 			tt.warIDModifier(&warID)
 			tt.warModifier(&war)

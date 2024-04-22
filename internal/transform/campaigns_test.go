@@ -16,7 +16,7 @@ func mustCampaignPlanet(from api.Planet) *api.Campaign2_Planet {
 	return campaignPlanet
 }
 
-var campaignValid = api.Campaign2{
+var validCampaign = api.Campaign2{
 	Id:    ptr(int32(987)),
 	Count: ptr(int32(123)),
 	Type:  ptr(int32(7)),
@@ -70,7 +70,7 @@ func TestCampaigns(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			campaign := campaignValid
+			campaign := validCampaign
 			// call modifier on valid assignment copy
 			tt.modifier(&campaign)
 			data := APIData{

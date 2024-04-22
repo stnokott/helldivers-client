@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"math"
 	"testing"
 
 	"github.com/golang-migrate/migrate/v4"
@@ -52,6 +53,20 @@ func TestPlanetsSchema(t *testing.T) {
 				p.Sector = ""
 			},
 			wantErr: true,
+		},
+		{
+			name: "negative max health",
+			modifier: func(p *Planet) {
+				p.MaxHealth = -1
+			},
+			wantErr: true,
+		},
+		{
+			name: "high max health",
+			modifier: func(p *Planet) {
+				p.MaxHealth = math.MaxInt64
+			},
+			wantErr: false,
 		},
 		{
 			name: "position Y coordinate missing",

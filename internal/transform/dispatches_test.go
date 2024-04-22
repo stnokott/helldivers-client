@@ -9,7 +9,7 @@ import (
 	"github.com/stnokott/helldivers-client/internal/db"
 )
 
-var dispatchValid = api.Dispatch{
+var validDispatch = api.Dispatch{
 	Id:        ptr(int32(678)),
 	Message:   ptr("A dispatch message"),
 	Published: ptr(time.Date(2025, 1, 2, 3, 4, 5, 6, time.Local)),
@@ -66,7 +66,7 @@ func TestDispatch(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			dispatch := dispatchValid
+			dispatch := validDispatch
 			// call modifiers on valid copies
 			tt.modifier(&dispatch)
 			data := APIData{

@@ -18,7 +18,7 @@ func mustAssignment2Reward(from api.Reward2) *api.Assignment2_Reward {
 	return assignmentReward
 }
 
-var assignmentValid = api.Assignment2{
+var validAssignment = api.Assignment2{
 	Id:          ptr(int64(7)),
 	Title:       ptr("Foo"),
 	Briefing:    ptr("Foo briefing"),
@@ -106,7 +106,7 @@ func TestAssignments(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assignment := assignmentValid
+			assignment := validAssignment
 			// call modifier on valid assignment copy
 			tt.modifier(&assignment)
 			data := APIData{

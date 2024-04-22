@@ -33,7 +33,7 @@ func mustPlanetStatistics(from api.Statistics) *api.Planet_Statistics {
 	return planetStats
 }
 
-var planetValid = api.Planet{
+var validPlanet = api.Planet{
 	Index: ptr(int32(3)),
 	Name:  ptr("A planet"),
 	Biome: mustPlanetBiome(api.Biome{
@@ -168,7 +168,7 @@ func TestPlanets(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			planet := planetValid
+			planet := validPlanet
 			// call modifier on valid planet copy
 			tt.modifier(&planet)
 			data := APIData{
