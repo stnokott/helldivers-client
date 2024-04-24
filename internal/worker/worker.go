@@ -131,7 +131,6 @@ func (w *Worker) mergeData(ctx context.Context, data transform.APIData) (err err
 	}
 
 	// TODO: sort table insert order everywhere sensibly
-	// TODO: write tests for this function
 
 	w.log.Println("merging transformed entities into database")
 	err = w.db.Merge(ctx, wars, events, planets, campaigns, assignments, dispatches, snapshots)

@@ -65,7 +65,6 @@ func (c *Client) Disconnect() error {
 	return nil
 }
 
-// TODO: implement hashing on non-PK to differentiate between simple updates and actual changes
 type EntityMerger interface {
 	Merge(ctx context.Context, tx *gen.Queries, stats tableMergeStats) error
 }

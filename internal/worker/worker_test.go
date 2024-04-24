@@ -44,5 +44,3 @@ func TestWorkerQueryData(t *testing.T) {
 		return
 	}
 }
-
-// TODO: tests for merge
