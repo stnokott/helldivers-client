@@ -23,7 +23,7 @@ func (c *Campaign) Merge(ctx context.Context, tx *gen.Queries, stats tableMergeS
 
 	rows, err := tx.MergeCampaign(ctx, gen.MergeCampaignParams(*c))
 	if err != nil {
-		return fmt.Errorf("failed to merge assignment (ID=%d): %v", c.ID, err)
+		return fmt.Errorf("failed to merge campaign (ID=%d): %v", c.ID, err)
 	}
 
 	stats.Incr("Campaigns", exists, rows)

@@ -2,8 +2,12 @@ package db
 
 import (
 	"context"
+	"errors"
+	"math"
 	"testing"
 	"time"
+
+	"github.com/jinzhu/copier"
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/stnokott/helldivers-client/internal/db/gen"
@@ -13,8 +17,8 @@ import (
 
 var validWarSnapshot = War{
 	ID:        999,
-	StartTime: PGTimestamp(time.Date(2024, 1, 1, 1, 1, 1, 1, time.Local)),
-	EndTime:   PGTimestamp(time.Date(2025, 1, 1, 1, 1, 1, 1, time.Local)),
+	StartTime: PGTimestamp(time.Date(2024, 1, 1, 1, 1, 1, 1, time.UTC)),
+	EndTime:   PGTimestamp(time.Date(2025, 1, 1, 1, 1, 1, 1, time.UTC)),
 	Factions:  []string{"Humans", "Automatons"},
 }
 
@@ -24,7 +28,7 @@ var validAssignmentSnapshot = Assignment{
 		Title:        "Footitle",
 		Briefing:     "Foobriefing",
 		Description:  "Bardescription",
-		Expiration:   PGTimestamp(time.Date(2024, 1, 2, 3, 4, 5, 6, time.Local)),
+		Expiration:   PGTimestamp(time.Date(2024, 1, 2, 3, 4, 5, 6, time.UTC)),
 		RewardType:   8,
 		RewardAmount: 100,
 	},
@@ -42,13 +46,13 @@ var validEventSnapshot = Event{
 	Type:      7,
 	Faction:   "Automatons",
 	MaxHealth: 55667788,
-	StartTime: PGTimestamp(time.Date(2024, 1, 1, 1, 1, 1, 1, time.Local)),
-	EndTime:   PGTimestamp(time.Date(2025, 1, 1, 1, 1, 1, 1, time.Local)),
+	StartTime: PGTimestamp(time.Date(2024, 1, 1, 1, 1, 1, 1, time.UTC)),
+	EndTime:   PGTimestamp(time.Date(2025, 1, 1, 1, 1, 1, 1, time.UTC)),
 }
 
 var validPlanetSnapshot = Planet{
 	Planet: gen.Planet{
-		ID:           1,
+		ID:           456,
 		Name:         "Foo",
 		Sector:       "Bar",
 		Position:     []float64{1, 2},
@@ -73,14 +77,14 @@ var validPlanetSnapshot = Planet{
 
 var validCampaignSnapshot = Campaign{
 	ID:       5,
-	PlanetID: 1,
+	PlanetID: 456,
 	Type:     8,
 	Count:    100,
 }
 
 var validDispatchSnapshot = Dispatch{
 	ID:         123,
-	CreateTime: PGTimestamp(time.Date(2024, 1, 2, 3, 4, 5, 6, time.Local)),
+	CreateTime: PGTimestamp(time.Date(2024, 1, 2, 3, 4, 5, 6, time.UTC)),
 	Type:       5,
 	Message:    "A valid dispatch",
 }
@@ -111,10 +115,10 @@ var validSnapshot = Snapshot{
 				Health:             556677,
 				CurrentOwner:       "Automatons",
 				RegenPerSecond:     0.06,
-				AttackingPlanetIds: []int32{1},
+				AttackingPlanetIds: []int32{456},
 			},
 			Event: &gen.EventSnapshot{
-				EventID: 789,
+				EventID: 555,
 				Health:  999999,
 			},
 			Statistics: gen.SnapshotStatistic{
@@ -164,7 +168,91 @@ func TestSnapshotsSchema(t *testing.T) {
 			modifier: func(p *Snapshot) {},
 			wantErr:  false,
 		},
-		// TODO: more tests
+		{
+			name: "campaign FK violation",
+			modifier: func(s *Snapshot) {
+				s.CampaignIds = []int32{999}
+			},
+			wantErr: true,
+		},
+		{
+			name: "dispatch FK violation",
+			modifier: func(s *Snapshot) {
+				s.DispatchIds = append(s.DispatchIds, 999)
+			},
+			wantErr: true,
+		},
+		{
+			name: "negative war impact multiplier",
+			modifier: func(s *Snapshot) {
+				s.WarSnapshot.ImpactMultiplier *= -1
+			},
+			wantErr: true,
+		},
+		{
+			name: "assignment FK violation",
+			modifier: func(s *Snapshot) {
+				s.AssignmentSnapshots[0].AssignmentID++
+			},
+			wantErr: true,
+		},
+		{
+			name: "planet FK violation",
+			modifier: func(s *Snapshot) {
+				s.PlanetSnapshots[0].PlanetID++
+			},
+			wantErr: true,
+		},
+		{
+			name: "negative planet health",
+			modifier: func(s *Snapshot) {
+				s.PlanetSnapshots[0].Health *= -1
+			},
+			wantErr: true,
+		},
+		{
+			name: "empty planet owner",
+			modifier: func(s *Snapshot) {
+				s.PlanetSnapshots[0].CurrentOwner = ""
+			},
+			wantErr: true,
+		},
+		{
+			name: "nil planet attack IDs",
+			modifier: func(s *Snapshot) {
+				s.PlanetSnapshots[0].AttackingPlanetIds = nil
+			},
+			wantErr: true,
+		},
+		{
+			name: "event FK violation",
+			modifier: func(s *Snapshot) {
+				s.PlanetSnapshots[0].Event.EventID++
+			},
+			wantErr: true,
+		},
+		{
+			name: "event negative health",
+			modifier: func(s *Snapshot) {
+				s.PlanetSnapshots[0].Event.Health *= -1
+			},
+			wantErr: true,
+		},
+		{
+			name: "max float64",
+			modifier: func(s *Snapshot) {
+				s.PlanetSnapshots[0].RegenPerSecond = math.MaxFloat64
+			},
+			wantErr: false,
+		},
+		{
+			name: "statistics max uint64",
+			modifier: func(s *Snapshot) {
+				s.Statistics.AutomatonKills = PGUint64(math.MaxUint64)
+				s.PlanetSnapshots[0].Statistics.BulletsFired = PGUint64(math.MaxUint64)
+			},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -173,43 +261,60 @@ func TestSnapshotsSchema(t *testing.T) {
 					t.Errorf("failed to migrate up: %v", err)
 					return
 				}
-				war := validWarSnapshot
-				assignment := validAssignmentSnapshot
-				event := validEventSnapshot
-				planet := validPlanetSnapshot
-				campaign := validCampaignSnapshot
-				dispatch := validDispatchSnapshot
-				snapshot := validSnapshot
 
-				// equalize IDs for FK constraints
-				snapshot.WarSnapshot.WarID = war.ID
-				snapshot.PlanetSnapshots[0].Event.EventID = event.ID
-				snapshot.PlanetSnapshots[0].PlanetID = planet.ID
+				var (
+					war        War
+					assignment Assignment
+					event      Event
+					planet     Planet
+					campaign   Campaign
+					dispatch   Dispatch
+					snapshot   Snapshot
+				)
+				// deep copy will copy values behind pointers instead of the pointers themselves
+				copyOption := copier.Option{DeepCopy: true}
+				err := errors.Join(
+					copier.CopyWithOption(&war, &validWarSnapshot, copyOption),
+					copier.CopyWithOption(&assignment, &validAssignmentSnapshot, copyOption),
+					copier.CopyWithOption(&event, &validEventSnapshot, copyOption),
+					copier.CopyWithOption(&planet, &validPlanetSnapshot, copyOption),
+					copier.CopyWithOption(&campaign, &validCampaignSnapshot, copyOption),
+					copier.CopyWithOption(&dispatch, &validDispatchSnapshot, copyOption),
+					copier.CopyWithOption(&snapshot, &validSnapshot, copyOption),
+				)
+				if err != nil {
+					t.Errorf("failed to create struct copies: %v", err)
+					return
+				}
 
 				tt.modifier(&snapshot)
 
-				if err := event.Merge(context.Background(), client.queries, tableMergeStats{}); err != nil {
+				if err = war.Merge(context.Background(), client.queries, tableMergeStats{}); err != nil {
+					t.Errorf("failed to insert war (required for snapshot): %v", err)
+					return
+				}
+				if err = event.Merge(context.Background(), client.queries, tableMergeStats{}); err != nil {
 					t.Errorf("failed to insert event (required for snapshot): %v", err)
 					return
 				}
-				if err := assignment.Merge(context.Background(), client.queries, tableMergeStats{}); err != nil {
+				if err = assignment.Merge(context.Background(), client.queries, tableMergeStats{}); err != nil {
 					t.Errorf("failed to insert assignment (required for snapshot): %v", err)
 					return
 				}
-				if err := planet.Merge(context.Background(), client.queries, tableMergeStats{}); err != nil {
+				if err = planet.Merge(context.Background(), client.queries, tableMergeStats{}); err != nil {
 					t.Errorf("failed to insert planet (required for snapshot): %v", err)
 					return
 				}
-				if err := campaign.Merge(context.Background(), client.queries, tableMergeStats{}); err != nil {
+				if err = campaign.Merge(context.Background(), client.queries, tableMergeStats{}); err != nil {
 					t.Errorf("failed to insert campaign (required for snapshot): %v", err)
 					return
 				}
-				if err := dispatch.Merge(context.Background(), client.queries, tableMergeStats{}); err != nil {
+				if err = dispatch.Merge(context.Background(), client.queries, tableMergeStats{}); err != nil {
 					t.Errorf("failed to insert dispatch (required for snapshot): %v", err)
 					return
 				}
 
-				err := snapshot.Merge(context.Background(), client.queries, tableMergeStats{})
+				err = snapshot.Merge(context.Background(), client.queries, tableMergeStats{})
 				if (err != nil) != tt.wantErr {
 					t.Errorf("Snapshot.Merge() error = %v, wantErr = %v", err, tt.wantErr)
 					return

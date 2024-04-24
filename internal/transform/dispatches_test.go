@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/jinzhu/copier"
 	"github.com/stnokott/helldivers-client/internal/api"
 	"github.com/stnokott/helldivers-client/internal/db"
 )
@@ -12,7 +13,7 @@ import (
 var validDispatch = api.Dispatch{
 	Id:        ptr(int32(678)),
 	Message:   ptr("A dispatch message"),
-	Published: ptr(time.Date(2025, 1, 2, 3, 4, 5, 6, time.Local)),
+	Published: ptr(time.Date(2025, 1, 2, 3, 4, 5, 6, time.UTC)),
 	Type:      ptr(int32(111)),
 }
 
@@ -33,7 +34,7 @@ func TestDispatch(t *testing.T) {
 				&db.Dispatch{
 					ID:         678,
 					Message:    "A dispatch message",
-					CreateTime: db.PGTimestamp(time.Date(2025, 1, 2, 3, 4, 5, 6, time.Local)),
+					CreateTime: db.PGTimestamp(time.Date(2025, 1, 2, 3, 4, 5, 6, time.UTC)),
 					Type:       111,
 				},
 			},
@@ -66,7 +67,13 @@ func TestDispatch(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			dispatch := validDispatch
+			var dispatch api.Dispatch
+			// deep copy will copy values behind pointers instead of the pointers themselves
+			copyOption := copier.Option{DeepCopy: true}
+			if err := copier.CopyWithOption(&dispatch, &validDispatch, copyOption); err != nil {
+				t.Errorf("failed to create dispatch struct copy: %v", err)
+				return
+			}
 			// call modifiers on valid copies
 			tt.modifier(&dispatch)
 			data := APIData{

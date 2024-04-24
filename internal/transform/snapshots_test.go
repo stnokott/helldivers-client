@@ -1,10 +1,12 @@
 package transform
 
 import (
+	"errors"
 	"reflect"
 	"testing"
 	"time"
 
+	"github.com/jinzhu/copier"
 	"github.com/stnokott/helldivers-client/internal/api"
 	"github.com/stnokott/helldivers-client/internal/db"
 	"github.com/stnokott/helldivers-client/internal/db/gen"
@@ -226,12 +228,28 @@ func TestSnapshots(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			warID := validWarIDSnapshot
-			war := validWarSnapshot
-			planet := validPlanetSnapshot
-			assignment := validAssignmentSnapshot
-			campaign := validCampaignSnapshot
-			dispatch := validDispatchSnapshot
+			var (
+				warID      api.WarId
+				war        api.War
+				assignment api.Assignment2
+				planet     api.Planet
+				campaign   api.Campaign2
+				dispatch   api.Dispatch
+			)
+			// deep copy will copy values behind pointers instead of the pointers themselves
+			copyOption := copier.Option{DeepCopy: true}
+			err := errors.Join(
+				copier.CopyWithOption(&warID, &validWarIDSnapshot, copyOption),
+				copier.CopyWithOption(&war, &validWarSnapshot, copyOption),
+				copier.CopyWithOption(&planet, &validPlanetSnapshot, copyOption),
+				copier.CopyWithOption(&assignment, &validAssignmentSnapshot, copyOption),
+				copier.CopyWithOption(&campaign, &validCampaignSnapshot, copyOption),
+				copier.CopyWithOption(&dispatch, &validDispatchSnapshot, copyOption),
+			)
+			if err != nil {
+				t.Errorf("failed to create struct copies: %v", err)
+				return
+			}
 
 			// call modifiers on valid assignment copies
 			tt.modifiers.WarID(&warID)

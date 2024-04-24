@@ -29,11 +29,11 @@ func Events(data APIData) ([]db.EntityMerger, error) {
 		// campaign relation (via CampaignId) is performed via Planet->Event / Planet->Campaign
 		events = append(events, &db.Event{
 			ID:        *event.Id,
+			StartTime: db.PGTimestamp(*event.StartTime),
+			EndTime:   db.PGTimestamp(*event.EndTime),
 			Type:      *event.EventType,
 			Faction:   *event.Faction,
 			MaxHealth: *event.MaxHealth,
-			StartTime: db.PGTimestamp(*event.StartTime),
-			EndTime:   db.PGTimestamp(*event.EndTime),
 		})
 	}
 	return events, nil

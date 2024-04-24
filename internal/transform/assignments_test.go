@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/jinzhu/copier"
 	"github.com/stnokott/helldivers-client/internal/api"
 	"github.com/stnokott/helldivers-client/internal/db"
 	"github.com/stnokott/helldivers-client/internal/db/gen"
@@ -23,7 +24,7 @@ var validAssignment = api.Assignment2{
 	Title:       ptr("Foo"),
 	Briefing:    ptr("Foo briefing"),
 	Description: ptr("Foo description"),
-	Expiration:  ptr(time.Date(2024, 1, 1, 0, 0, 0, 0, time.Local)),
+	Expiration:  ptr(time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)),
 	Progress:    &[]int32{1, 2, 3},
 	Reward: mustAssignment2Reward(api.Reward2{
 		Amount: ptr(int32(100)),
@@ -59,7 +60,7 @@ func TestAssignments(t *testing.T) {
 						Title:        "Foo",
 						Briefing:     "Foo briefing",
 						Description:  "Foo description",
-						Expiration:   db.PGTimestamp(time.Date(2024, 1, 1, 0, 0, 0, 0, time.Local)),
+						Expiration:   db.PGTimestamp(time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)),
 						RewardType:   3,
 						RewardAmount: 100,
 					},
@@ -104,7 +105,13 @@ func TestAssignments(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assignment := validAssignment
+			var assignment api.Assignment2
+			// deep copy will copy values behind pointers instead of the pointers themselves
+			copyOption := copier.Option{DeepCopy: true}
+			if err := copier.CopyWithOption(&assignment, &validAssignment, copyOption); err != nil {
+				t.Errorf("failed to create assignment struct copy: %v", err)
+				return
+			}
 			// call modifier on valid assignment copy
 			tt.modifier(&assignment)
 			data := APIData{

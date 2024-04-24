@@ -1,10 +1,12 @@
 package transform
 
 import (
+	"errors"
 	"reflect"
 	"testing"
 	"time"
 
+	"github.com/jinzhu/copier"
 	"github.com/stnokott/helldivers-client/internal/api"
 	"github.com/stnokott/helldivers-client/internal/db"
 )
@@ -14,8 +16,8 @@ var validWarID = api.WarId{
 }
 
 var validWar = api.War{
-	Started: ptr(time.Date(2024, 1, 1, 1, 1, 1, 1, time.Local)),
-	Ended:   ptr(time.Date(2025, 1, 1, 1, 1, 1, 1, time.Local)),
+	Started: ptr(time.Date(2024, 1, 1, 1, 1, 1, 1, time.UTC)),
+	Ended:   ptr(time.Date(2025, 1, 1, 1, 1, 1, 1, time.UTC)),
 	Factions: &[]string{
 		"Humans",
 		"Automatons",
@@ -44,8 +46,8 @@ func TestWar(t *testing.T) {
 			want: []db.EntityMerger{
 				&db.War{
 					ID:        999,
-					StartTime: db.PGTimestamp(time.Date(2024, 1, 1, 1, 1, 1, 1, time.Local)),
-					EndTime:   db.PGTimestamp(time.Date(2025, 1, 1, 1, 1, 1, 1, time.Local)),
+					StartTime: db.PGTimestamp(time.Date(2024, 1, 1, 1, 1, 1, 1, time.UTC)),
+					EndTime:   db.PGTimestamp(time.Date(2025, 1, 1, 1, 1, 1, 1, time.UTC)),
 					Factions:  []string{"Humans", "Automatons"},
 				},
 			},
@@ -62,8 +64,8 @@ func TestWar(t *testing.T) {
 			want: []db.EntityMerger{
 				&db.War{
 					ID:        999,
-					StartTime: db.PGTimestamp(time.Date(2024, 1, 1, 1, 1, 1, 1, time.Local)),
-					EndTime:   db.PGTimestamp(time.Date(2025, 1, 1, 1, 1, 1, 1, time.Local)),
+					StartTime: db.PGTimestamp(time.Date(2024, 1, 1, 1, 1, 1, 1, time.UTC)),
+					EndTime:   db.PGTimestamp(time.Date(2025, 1, 1, 1, 1, 1, 1, time.UTC)),
 					Factions:  []string{},
 				},
 			},
@@ -94,8 +96,20 @@ func TestWar(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			warID := validWarID
-			war := validWar
+			var (
+				warID api.WarId
+				war   api.War
+			)
+			// deep copy will copy values behind pointers instead of the pointers themselves
+			copyOption := copier.Option{DeepCopy: true}
+			err := errors.Join(
+				copier.CopyWithOption(&warID, &validWarID, copyOption),
+				copier.CopyWithOption(&war, &validWar, copyOption),
+			)
+			if err != nil {
+				t.Errorf("failed to create struct copies: %v", err)
+				return
+			}
 			// call modifiers on valid copies
 			tt.warIDModifier(&warID)
 			tt.warModifier(&war)

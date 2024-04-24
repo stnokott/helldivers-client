@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/jinzhu/copier"
 	"github.com/stnokott/helldivers-client/internal/api"
 	"github.com/stnokott/helldivers-client/internal/db"
 )
@@ -70,7 +71,13 @@ func TestCampaigns(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			campaign := validCampaign
+			var campaign api.Campaign2
+			// deep copy will copy values behind pointers instead of the pointers themselves
+			copyOption := copier.Option{DeepCopy: true}
+			if err := copier.CopyWithOption(&campaign, &validCampaign, copyOption); err != nil {
+				t.Errorf("failed to create campaign struct copy: %v", err)
+				return
+			}
 			// call modifier on valid assignment copy
 			tt.modifier(&campaign)
 			data := APIData{

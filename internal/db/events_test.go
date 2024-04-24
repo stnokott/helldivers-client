@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/golang-migrate/migrate/v4"
+	"github.com/jinzhu/copier"
 )
 
 var validEvent = Event{
@@ -14,8 +15,8 @@ var validEvent = Event{
 	Type:      7,
 	Faction:   "Automatons",
 	MaxHealth: 55667788,
-	StartTime: PGTimestamp(time.Date(2024, 1, 1, 1, 1, 1, 1, time.Local)),
-	EndTime:   PGTimestamp(time.Date(2025, 1, 1, 1, 1, 1, 1, time.Local)),
+	StartTime: PGTimestamp(time.Date(2024, 1, 1, 1, 1, 1, 1, time.UTC)),
+	EndTime:   PGTimestamp(time.Date(2025, 1, 1, 1, 1, 1, 1, time.UTC)),
 }
 
 func TestEventsSchema(t *testing.T) {
@@ -55,8 +56,8 @@ func TestEventsSchema(t *testing.T) {
 		{
 			name: "start time after end time",
 			modifier: func(e *Event) {
-				e.StartTime = PGTimestamp(time.Date(2024, 1, 1, 1, 1, 1, 2, time.Local))
-				e.EndTime = PGTimestamp(time.Date(2024, 1, 1, 1, 1, 1, 1, time.Local))
+				e.StartTime = PGTimestamp(time.Date(2024, 1, 1, 1, 1, 1, 2, time.UTC))
+				e.EndTime = PGTimestamp(time.Date(2024, 1, 1, 1, 1, 1, 1, time.UTC))
 			},
 			wantErr: true,
 		},
@@ -68,7 +69,15 @@ func TestEventsSchema(t *testing.T) {
 					t.Errorf("failed to migrate up: %v", err)
 					return
 				}
-				event := validEvent
+
+				var event Event
+				// deep copy will copy values behind pointers instead of the pointers themselves
+				copyOption := copier.Option{DeepCopy: true}
+				if err := copier.CopyWithOption(&event, &validEvent, copyOption); err != nil {
+					t.Errorf("failed to create event struct copy: %v", err)
+					return
+				}
+
 				tt.modifier(&event)
 
 				err := event.Merge(context.Background(), client.queries, tableMergeStats{})

@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/golang-migrate/migrate/v4"
+	"github.com/jinzhu/copier"
 )
 
 var validCampaign = Campaign{
@@ -59,7 +60,14 @@ func TestCampaignsSchema(t *testing.T) {
 					return
 				}
 
-				campaign := validCampaign
+				var campaign Campaign
+				// deep copy will copy values behind pointers instead of the pointers themselves
+				copyOption := copier.Option{DeepCopy: true}
+				if err := copier.CopyWithOption(&campaign, &validCampaign, copyOption); err != nil {
+					t.Errorf("failed to create campaign struct copy: %v", err)
+					return
+				}
+
 				tt.modifier(&campaign)
 
 				err := campaign.Merge(context.Background(), client.queries, tableMergeStats{})

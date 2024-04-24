@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/jinzhu/copier"
 	"github.com/stnokott/helldivers-client/internal/api"
 	"github.com/stnokott/helldivers-client/internal/db"
 	"github.com/stnokott/helldivers-client/internal/db/gen"
@@ -168,7 +169,13 @@ func TestPlanets(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			planet := validPlanet
+			var planet api.Planet
+			// deep copy will copy values behind pointers instead of the pointers themselves
+			copyOption := copier.Option{DeepCopy: true}
+			if err := copier.CopyWithOption(&planet, &validPlanet, copyOption); err != nil {
+				t.Errorf("failed to create planet struct copy: %v", err)
+				return
+			}
 			// call modifier on valid planet copy
 			tt.modifier(&planet)
 			data := APIData{

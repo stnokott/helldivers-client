@@ -6,12 +6,13 @@ import (
 	"time"
 
 	"github.com/golang-migrate/migrate/v4"
+	"github.com/jinzhu/copier"
 )
 
 var validWar = War{
 	ID:        999,
-	StartTime: PGTimestamp(time.Date(2024, 1, 1, 1, 1, 1, 1, time.Local)),
-	EndTime:   PGTimestamp(time.Date(2025, 1, 1, 1, 1, 1, 1, time.Local)),
+	StartTime: PGTimestamp(time.Date(2024, 1, 1, 1, 1, 1, 1, time.UTC)),
+	EndTime:   PGTimestamp(time.Date(2025, 1, 1, 1, 1, 1, 1, time.UTC)),
 	Factions:  []string{"Humans", "Automatons"},
 }
 
@@ -31,8 +32,8 @@ func TestWarsSchema(t *testing.T) {
 		{
 			name: "start time after end time",
 			modifier: func(w *War) {
-				w.StartTime = PGTimestamp(time.Date(2024, 1, 1, 1, 1, 1, 2, time.Local))
-				w.EndTime = PGTimestamp(time.Date(2024, 1, 1, 1, 1, 1, 1, time.Local))
+				w.StartTime = PGTimestamp(time.Date(2024, 1, 1, 1, 1, 1, 2, time.UTC))
+				w.EndTime = PGTimestamp(time.Date(2024, 1, 1, 1, 1, 1, 1, time.UTC))
 			},
 			wantErr: true,
 		},
@@ -51,7 +52,14 @@ func TestWarsSchema(t *testing.T) {
 					t.Errorf("failed to migrate up: %v", err)
 					return
 				}
-				war := validWar
+
+				var war War
+				// deep copy will copy values behind pointers instead of the pointers themselves
+				copyOption := copier.Option{DeepCopy: true}
+				if err := copier.CopyWithOption(&war, &validWar, copyOption); err != nil {
+					t.Errorf("failed to create war struct copy: %v", err)
+					return
+				}
 				tt.modifier(&war)
 
 				err := war.Merge(context.Background(), client.queries, tableMergeStats{})

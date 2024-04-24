@@ -7,6 +7,7 @@ import (
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/jinzhu/copier"
 	"github.com/stnokott/helldivers-client/internal/db/gen"
 )
 
@@ -16,7 +17,7 @@ var validAssignment = Assignment{
 		Title:        "Footitle",
 		Briefing:     "Foobriefing",
 		Description:  "Bardescription",
-		Expiration:   PGTimestamp(time.Date(2024, 1, 2, 3, 4, 5, 6, time.Local)),
+		Expiration:   PGTimestamp(time.Date(2024, 1, 2, 3, 4, 5, 6, time.UTC)),
 		RewardType:   8,
 		RewardAmount: 100,
 	},
@@ -72,7 +73,15 @@ func TestAssignmentsSchema(t *testing.T) {
 					t.Errorf("failed to migrate up: %v", err)
 					return
 				}
-				assignment := validAssignment
+
+				var assignment Assignment
+				// deep copy will copy values behind pointers instead of the pointers themselves
+				copyOption := copier.Option{DeepCopy: true}
+				if err := copier.CopyWithOption(&assignment, &validAssignment, copyOption); err != nil {
+					t.Errorf("failed to create assignment struct copy: %v", err)
+					return
+				}
+
 				tt.modifier(&assignment)
 
 				err := assignment.Merge(context.Background(), client.queries, tableMergeStats{})

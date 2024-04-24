@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/jinzhu/copier"
 	"github.com/stnokott/helldivers-client/internal/api"
 	"github.com/stnokott/helldivers-client/internal/db"
 )
@@ -19,8 +20,8 @@ func mustPlanetEvent(from api.Event) *api.Planet_Event {
 
 var validEvent = api.Event{
 	Id:                ptr(int32(997)),
-	StartTime:         ptr(time.Date(2024, 4, 5, 6, 7, 8, 9, time.Local)),
-	EndTime:           ptr(time.Date(2025, 4, 5, 6, 7, 8, 9, time.Local)),
+	StartTime:         ptr(time.Date(2024, 4, 5, 6, 7, 8, 9, time.UTC)),
+	EndTime:           ptr(time.Date(2025, 4, 5, 6, 7, 8, 9, time.UTC)),
 	EventType:         ptr(int32(667)),
 	Faction:           ptr("Terminids"),
 	MaxHealth:         ptr(int64(4455667788)),
@@ -46,8 +47,8 @@ func TestEvent(t *testing.T) {
 			want: []db.EntityMerger{
 				&db.Event{
 					ID:        997,
-					StartTime: db.PGTimestamp(time.Date(2024, 4, 5, 6, 7, 8, 9, time.Local)),
-					EndTime:   db.PGTimestamp(time.Date(2025, 4, 5, 6, 7, 8, 9, time.Local)),
+					StartTime: db.PGTimestamp(time.Date(2024, 4, 5, 6, 7, 8, 9, time.UTC)),
+					EndTime:   db.PGTimestamp(time.Date(2025, 4, 5, 6, 7, 8, 9, time.UTC)),
 					Type:      667,
 					Faction:   "Terminids",
 					MaxHealth: 4455667788,
@@ -76,7 +77,14 @@ func TestEvent(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			event := validEvent
+			var event api.Event
+			// deep copy will copy values behind pointers instead of the pointers themselves
+			copyOption := copier.Option{DeepCopy: true}
+			if err := copier.CopyWithOption(&event, &validEvent, copyOption); err != nil {
+				t.Errorf("failed to create event struct copy: %v", err)
+				return
+			}
+
 			planets := []api.Planet{
 				{
 					Event: mustPlanetEvent(event),

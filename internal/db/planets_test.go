@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/golang-migrate/migrate/v4"
+	"github.com/jinzhu/copier"
 	"github.com/stnokott/helldivers-client/internal/db/gen"
 )
 
@@ -142,7 +143,15 @@ func TestPlanetsSchema(t *testing.T) {
 					t.Errorf("failed to migrate up: %v", err)
 					return
 				}
-				planet := validPlanet
+
+				var planet Planet
+				// deep copy will copy values behind pointers instead of the pointers themselves
+				copyOption := copier.Option{DeepCopy: true}
+				if err := copier.CopyWithOption(&planet, &validPlanet, copyOption); err != nil {
+					t.Errorf("failed to create planet struct copy: %v", err)
+					return
+				}
+
 				tt.modifier(&planet)
 
 				err := planet.Merge(context.Background(), client.queries, tableMergeStats{})

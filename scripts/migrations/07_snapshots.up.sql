@@ -94,7 +94,7 @@ COMMENT ON COLUMN snapshot_statistics.player_count
 CREATE TABLE IF NOT EXISTS planet_snapshots
 (
     id bigint NOT NULL UNIQUE GENERATED ALWAYS AS IDENTITY,
-    planet_id integer NOT NULL,
+    planet_id integer NOT NULL REFERENCES planets,
     health bigint NOT NULL CHECK (health >= 0),
     current_owner text NOT NULL CHECK (current_owner <> ''),
     event_snapshot_id bigint REFERENCES event_snapshots,

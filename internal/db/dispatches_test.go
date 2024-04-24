@@ -6,11 +6,12 @@ import (
 	"time"
 
 	"github.com/golang-migrate/migrate/v4"
+	"github.com/jinzhu/copier"
 )
 
 var validDispatch = Dispatch{
 	ID:         123,
-	CreateTime: PGTimestamp(time.Date(2024, 1, 2, 3, 4, 5, 6, time.Local)),
+	CreateTime: PGTimestamp(time.Date(2024, 1, 2, 3, 4, 5, 6, time.UTC)),
 	Type:       5,
 	Message:    "A valid dispatch",
 }
@@ -43,7 +44,15 @@ func TestDispatchesSchema(t *testing.T) {
 					t.Errorf("failed to migrate up: %v", err)
 					return
 				}
-				dispatch := validDispatch
+
+				var dispatch Dispatch
+				// deep copy will copy values behind pointers instead of the pointers themselves
+				copyOption := copier.Option{DeepCopy: true}
+				if err := copier.CopyWithOption(&dispatch, &validDispatch, copyOption); err != nil {
+					t.Errorf("failed to create dispatch struct copy: %v", err)
+					return
+				}
+
 				tt.modifier(&dispatch)
 
 				err := dispatch.Merge(context.Background(), client.queries, tableMergeStats{})
