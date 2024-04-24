@@ -4,9 +4,10 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/jinzhu/copier"
 	"github.com/stnokott/helldivers-client/internal/api"
 	"github.com/stnokott/helldivers-client/internal/db"
-	"github.com/stnokott/helldivers-client/internal/db/structs"
+	"github.com/stnokott/helldivers-client/internal/db/gen"
 )
 
 func mustPlanetPosition(from api.Position) *api.Planet_Position {
@@ -25,74 +26,73 @@ func mustPlanetBiome(from api.Biome) *api.Planet_Biome {
 	return planetBiome
 }
 
-func TestPlanetsTransform(t *testing.T) {
-	type args struct {
-		data APIData
+func mustPlanetStatistics(from api.Statistics) *api.Planet_Statistics {
+	planetStats := new(api.Planet_Statistics)
+	if err := planetStats.FromStatistics(from); err != nil {
+		panic(err)
 	}
+	return planetStats
+}
+
+var validPlanet = api.Planet{
+	Index: ptr(int32(3)),
+	Name:  ptr("A planet"),
+	Biome: mustPlanetBiome(api.Biome{
+		Name:        ptr("Foobiome"),
+		Description: ptr("Foodescription"),
+	}),
+	Hazards: &[]api.Hazard{
+		{
+			Name:        ptr("Barhazard"),
+			Description: ptr("Bardescription"),
+		},
+	},
+	Disabled:     ptr(false),
+	InitialOwner: ptr("Humans"),
+	MaxHealth:    ptr(int64(112233445566)),
+	Position: mustPlanetPosition(api.Position{
+		X: ptr(float64(38)), Y: ptr(float64(6)),
+	}),
+	Sector:    ptr("A sector"),
+	Waypoints: &[]int32{3, 4, 5},
+}
+
+func TestPlanets(t *testing.T) {
+	// modifier changes the valid assignment to one that is suited for the test
+	type modifier func(*api.Planet)
 	tests := []struct {
-		name    string
-		p       Planets
-		args    args
-		want    *db.DocsProvider[structs.Planet]
-		wantErr bool
+		name     string
+		modifier modifier
+		want     []db.EntityMerger
+		wantErr  bool
 	}{
 		{
-			name: "complete",
-			args: args{
-				data: APIData{
-					Planets: &[]api.Planet{
-						{
-							Index:  ptr(int32(5)),
-							Name:   ptr("Foo"),
-							Sector: ptr("Bar"),
-							Position: mustPlanetPosition(api.Position{
-								X: ptr(float64(3)),
-								Y: ptr(float64(5)),
-							}),
-							Waypoints: &[]int32{4, 5, 6},
-							Disabled:  ptr(false),
-							Biome: mustPlanetBiome(api.Biome{
-								Name:        ptr("Foobiome"),
-								Description: ptr("Bardescription"),
-							}),
-							Hazards: &[]api.Hazard{
-								{
-									Name:        ptr("Foohazard"),
-									Description: ptr("Barhazard"),
-								},
-							},
-							MaxHealth:      ptr(int64(1000)),
-							InitialOwner:   ptr("Automatons"),
-							RegenPerSecond: ptr(float64(0.6)),
-						},
-					},
-				},
+			name: "valid",
+			modifier: func(a *api.Planet) {
+				// keep valid
 			},
-			want: &db.DocsProvider[structs.Planet]{
-				CollectionName: "planets",
-				Docs: []db.DocWrapper[structs.Planet]{
-					{
-						DocID: int32(5),
-						Document: structs.Planet{
-							ID:        5,
-							Name:      "Foo",
-							Sector:    "Bar",
-							Position:  structs.PlanetPosition{X: 3, Y: 5},
-							Waypoints: []int32{4, 5, 6},
-							Disabled:  false,
-							Biome: structs.Biome{
-								Name:        "Foobiome",
-								Description: "Bardescription",
-							},
-							Hazards: []structs.Hazard{
-								{
-									Name:        "Foohazard",
-									Description: "Barhazard",
-								},
-							},
-							MaxHealth:      1000,
-							InitialOwner:   "Automatons",
-							RegenPerSecond: 0.6,
+			want: []db.EntityMerger{
+				&db.Planet{
+					Planet: gen.Planet{
+						ID:           3,
+						Name:         "A planet",
+						BiomeName:    "Foobiome",
+						HazardNames:  []string{"Barhazard"},
+						Disabled:     false,
+						InitialOwner: "Humans",
+						MaxHealth:    112233445566,
+						Position:     []float64{38, 6},
+						Sector:       "A sector",
+						WaypointIds:  []int32{3, 4, 5},
+					},
+					Biome: gen.Biome{
+						Name:        "Foobiome",
+						Description: "Foodescription",
+					},
+					Hazards: []gen.Hazard{
+						{
+							Name:        "Barhazard",
+							Description: "Bardescription",
 						},
 					},
 				},
@@ -100,98 +100,96 @@ func TestPlanetsTransform(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "nil disabled",
-			args: args{
-				data: APIData{
-					Planets: &[]api.Planet{
+			name: "empty waypoints",
+			modifier: func(p *api.Planet) {
+				p.Waypoints = &[]int32{}
+			},
+			want: []db.EntityMerger{
+				&db.Planet{
+					Planet: gen.Planet{
+						ID:           3,
+						Name:         "A planet",
+						BiomeName:    "Foobiome",
+						HazardNames:  []string{"Barhazard"},
+						Disabled:     false,
+						InitialOwner: "Humans",
+						MaxHealth:    112233445566,
+						Position:     []float64{38, 6},
+						Sector:       "A sector",
+						WaypointIds:  []int32{},
+					},
+					Biome: gen.Biome{
+						Name:        "Foobiome",
+						Description: "Foodescription",
+					},
+					Hazards: []gen.Hazard{
 						{
-							Index:  ptr(int32(5)),
-							Name:   ptr("Foo"),
-							Sector: ptr("Bar"),
-							Position: mustPlanetPosition(api.Position{
-								X: ptr(float64(3)),
-								Y: ptr(float64(5)),
-							}),
-							Biome: mustPlanetBiome(api.Biome{
-								Name:        ptr("Foobiome"),
-								Description: ptr("Bardescription"),
-							}),
-							Hazards: &[]api.Hazard{
-								{
-									Name:        ptr("Foohazard"),
-									Description: ptr("Barhazard"),
-								},
-							},
-							Waypoints:      &[]int32{4, 5, 6},
-							Disabled:       nil,
-							MaxHealth:      ptr(int64(1000)),
-							InitialOwner:   ptr("Automatons"),
-							RegenPerSecond: ptr(float64(0.6)),
+							Name:        "Barhazard",
+							Description: "Bardescription",
 						},
 					},
 				},
 			},
-			want:    &db.DocsProvider[structs.Planet]{
-				CollectionName: db.CollPlanets,
-				Docs: []db.DocWrapper[structs.Planet]{},
+			wantErr: false,
+		},
+		{
+			name: "empty required name",
+			modifier: func(p *api.Planet) {
+				p.Name = nil
 			},
+			want:    nil,
 			wantErr: true,
 		},
 		{
-			name: "nil embedded",
-			args: args{
-				data: APIData{
-					Planets: &[]api.Planet{
-						{
-							Index:  ptr(int32(5)),
-							Name:   ptr("Foo"),
-							Sector: ptr("Bar"),
-							Position: mustPlanetPosition(api.Position{
-								X: nil,
-								Y: ptr(float64(5)),
-							}),
-							Biome: mustPlanetBiome(api.Biome{
-								Name:        ptr("Foobiome"),
-								Description: ptr("Bardescription"),
-							}),
-							Hazards: &[]api.Hazard{
-								{
-									Name:        ptr("Foohazard"),
-									Description: ptr("Barhazard"),
-								},
-							},
-							Waypoints:      &[]int32{4, 5, 6},
-							Disabled:       ptr(false),
-							MaxHealth:      ptr(int64(1000)),
-							InitialOwner:   ptr("Automatons"),
-							RegenPerSecond: ptr(float64(0.6)),
-						},
-					},
-				},
+			name: "empty required biome",
+			modifier: func(p *api.Planet) {
+				p.Biome = nil
 			},
-			want:    &db.DocsProvider[structs.Planet]{
-				CollectionName: db.CollPlanets,
-				Docs: []db.DocWrapper[structs.Planet]{},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "empty required hazards",
+			modifier: func(p *api.Planet) {
+				p.Hazards = nil
 			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "empty embedded position coordinate",
+			modifier: func(p *api.Planet) {
+				p.Position = mustPlanetPosition(api.Position{
+					X: ptr(float64(7)), Y: nil,
+				})
+			},
+			want:    nil,
 			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotErr := false
-			errFunc := func(err error) {
-				if !tt.wantErr {
-					t.Logf("Planets.Transform() error: %v", err)
-				}
-				gotErr = true
+			var planet api.Planet
+			// deep copy will copy values behind pointers instead of the pointers themselves
+			copyOption := copier.Option{DeepCopy: true}
+			if err := copier.CopyWithOption(&planet, &validPlanet, copyOption); err != nil {
+				t.Errorf("failed to create planet struct copy: %v", err)
+				return
 			}
-			got := tt.p.Transform(tt.args.data, errFunc)
-			if gotErr != tt.wantErr {
-				t.Errorf("Planets.Transform() returned error, wantErr %v", tt.wantErr)
+			// call modifier on valid planet copy
+			tt.modifier(&planet)
+			data := APIData{
+				Planets: &[]api.Planet{
+					planet,
+				},
+			}
+			got, err := Planets(data)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Planets() err = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Planets.Transform() = %v, want %v", got, tt.want)
+				t.Errorf("Planets() = %v, want %v", got, tt.want)
 			}
 		})
 	}

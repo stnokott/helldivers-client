@@ -15,7 +15,6 @@
 			"args": [
 				"compose",
 				"up",
-				"--build",
 				"--exit-code-from=app",
 				"--attach=app",
 				"--force-recreate"
@@ -24,14 +23,15 @@
 			"problemMatcher": []
 		},
 		{
-			"type": "go",
-			"label": "Run DB unit tests locally",
-			"command": "test",
+			"type": "shell",
+			"label": "Run tests locally",
+			"command": "godotenv",
 			"args": [
-				"${workspaceFolder}/internal/db"
-			],
-			"problemMatcher": [
-				"$go"
+				"-f",
+				"${workspaceFolder}/.env.test",
+				"go",
+				"test",
+				"./..."
 			],
 			"group": "test",
 		},
@@ -41,6 +41,16 @@
 			"command": "goreleaser release --skip=publish --clean --snapshot --config=build/.goreleaser.yaml",
 			"problemMatcher": "$go",
 			"group": "build"
+		},
+		{
+			"label": "sqlc generate",
+			"type": "shell",
+			"command": "sqlc generate",
+			"problemMatcher": [],
+			"group": "none",
+			"icon": {
+				"id": "wand"
+			}
 		}
 	]
 }

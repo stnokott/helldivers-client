@@ -1,3 +1,4 @@
 {
-	"sonarlint.testFilePattern": "**/*_test.go"
+	"sonarlint.testFilePattern": "**/*_test.go",
+	"go.testEnvFile": "${workspaceFolder}/.env.test"
 }

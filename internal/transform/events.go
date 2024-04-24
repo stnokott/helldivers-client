@@ -6,50 +6,37 @@ import (
 
 	"github.com/stnokott/helldivers-client/internal/api"
 	"github.com/stnokott/helldivers-client/internal/db"
-	"github.com/stnokott/helldivers-client/internal/db/structs"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-// Events implements worker.DocTransformer
-type Events struct{}
-
-// Transform implements the worker.DocTransformer interface
-func (Events) Transform(data APIData, errFunc func(error)) *db.DocsProvider[structs.Event] {
-	provider := &db.DocsProvider[structs.Event]{
-		CollectionName: db.CollEvents,
-		Docs:           []db.DocWrapper[structs.Event]{},
-	}
-
+func Events(data APIData) ([]db.EntityMerger, error) {
 	if data.Planets == nil {
-		errFunc(errors.New("got nil planets slice (required for events)"))
-		return provider
+		return nil, errors.New(("got nil planets slice (required for events)"))
 	}
 
-	planets := *data.Planets
-
-	for _, planet := range planets {
+	src := *data.Planets
+	events := []db.EntityMerger{}
+	for _, planet := range src {
 		if planet.Event == nil {
+			// event is optional
 			continue
 		}
 		event, err := parsePlanetEvent(planet.Event)
 		if err != nil {
-			errFunc(err)
-			continue
+			return nil, err
 		}
 
-		provider.Docs = append(provider.Docs, db.DocWrapper[structs.Event]{
-			DocID: *event.Id,
-			Document: structs.Event{
-				ID:        *event.Id,
-				Type:      *event.EventType,
-				Faction:   *event.Faction,
-				MaxHealth: *event.MaxHealth,
-				StartTime: primitive.NewDateTimeFromTime(*event.StartTime),
-				EndTime:   primitive.NewDateTimeFromTime(*event.EndTime),
-			},
+		// TODO: change to Planet->Event->Campaign
+		// campaign relation (via CampaignId) is performed via Planet->Event / Planet->Campaign
+		events = append(events, &db.Event{
+			ID:        *event.Id,
+			StartTime: db.PGTimestamp(*event.StartTime),
+			EndTime:   db.PGTimestamp(*event.EndTime),
+			Type:      *event.EventType,
+			Faction:   *event.Faction,
+			MaxHealth: *event.MaxHealth,
 		})
 	}
-	return provider
+	return events, nil
 }
 
 func parsePlanetEvent(in *api.Planet_Event) (api.Event, error) {

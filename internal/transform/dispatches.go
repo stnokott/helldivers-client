@@ -4,45 +4,29 @@ import (
 	"errors"
 
 	"github.com/stnokott/helldivers-client/internal/db"
-	"github.com/stnokott/helldivers-client/internal/db/structs"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-// Dispatches implements worker.DocTransformer
-type Dispatches struct{}
-
-// Transform implements the worker.DocTransformer interface
-func (Dispatches) Transform(data APIData, errFunc func(error)) *db.DocsProvider[structs.Dispatch] {
-	provider := &db.DocsProvider[structs.Dispatch]{
-		CollectionName: db.CollDispatches,
-		Docs:           []db.DocWrapper[structs.Dispatch]{},
-	}
-
+func Dispatches(data APIData) ([]db.EntityMerger, error) {
 	if data.Dispatches == nil {
-		errFunc(errors.New("got nil dispatches slice"))
-		return provider
+		return nil, errors.New(("got nil dispatches slice"))
 	}
 
-	dispatches := *data.Dispatches
-
-	for _, dispatch := range dispatches {
+	src := *data.Dispatches
+	dispatches := make([]db.EntityMerger, len(src))
+	for i, dispatch := range src {
 		if dispatch.Id == nil ||
 			dispatch.Published == nil ||
 			dispatch.Type == nil ||
 			dispatch.Message == nil {
-			errFunc(errFromNils(&dispatch))
-			continue
+			return nil, errFromNils(&dispatch)
 		}
 
-		provider.Docs = append(provider.Docs, db.DocWrapper[structs.Dispatch]{
-			DocID: *dispatch.Id,
-			Document: structs.Dispatch{
-				ID:         *dispatch.Id,
-				CreateTime: primitive.NewDateTimeFromTime(*dispatch.Published),
-				Type:       *dispatch.Type,
-				Message:    *dispatch.Message,
-			},
-		})
+		dispatches[i] = &db.Dispatch{
+			ID:         *dispatch.Id,
+			CreateTime: db.PGTimestamp(*dispatch.Published),
+			Type:       *dispatch.Type,
+			Message:    *dispatch.Message,
+		}
 	}
-	return provider
+	return dispatches, nil
 }

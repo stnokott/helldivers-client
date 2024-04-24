@@ -6,52 +6,36 @@ import (
 
 	"github.com/stnokott/helldivers-client/internal/api"
 	"github.com/stnokott/helldivers-client/internal/db"
-	"github.com/stnokott/helldivers-client/internal/db/structs"
 )
 
-// Campaigns implements worker.DocTransformer
-type Campaigns struct{}
-
-// Transform implements the worker.DocTransformer interface
-func (Campaigns) Transform(data APIData, errFunc func(error)) *db.DocsProvider[structs.Campaign] {
-	provider := &db.DocsProvider[structs.Campaign]{
-		CollectionName: db.CollCampaigns,
-		Docs:           []db.DocWrapper[structs.Campaign]{},
-	}
-
+func Campaigns(data APIData) ([]db.EntityMerger, error) {
 	if data.Campaigns == nil {
-		errFunc(errors.New("got nil campaigns slice"))
-		return provider
+		return nil, errors.New("got nil campaigns slice")
 	}
 
-	campaigns := *data.Campaigns
-
-	for _, campaign := range campaigns {
+	src := *data.Campaigns
+	mergers := make([]db.EntityMerger, len(src))
+	for i, campaign := range src {
 		if campaign.Id == nil ||
 			campaign.Planet == nil ||
 			campaign.Type == nil ||
 			campaign.Count == nil {
-			errFunc(errFromNils(&campaign))
-			continue
+			return nil, errFromNils(&campaign)
 		}
 
 		planetRef, err := parseCampaignPlanet(campaign.Planet)
 		if err != nil {
-			errFunc(err)
-			continue
+			return nil, err
 		}
 
-		provider.Docs = append(provider.Docs, db.DocWrapper[structs.Campaign]{
-			DocID: *campaign.Id,
-			Document: structs.Campaign{
-				ID:       *campaign.Id,
-				PlanetID: *planetRef.Index,
-				Type:     *campaign.Type,
-				Count:    *campaign.Count,
-			},
-		})
+		mergers[i] = &db.Campaign{
+			ID:       *campaign.Id,
+			PlanetID: *planetRef.Index,
+			Type:     *campaign.Type,
+			Count:    *campaign.Count,
+		}
 	}
-	return provider
+	return mergers, nil
 }
 
 func parseCampaignPlanet(in *api.Campaign2_Planet) (api.Planet, error) {

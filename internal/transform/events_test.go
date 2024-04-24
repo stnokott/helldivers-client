@@ -5,10 +5,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/jinzhu/copier"
 	"github.com/stnokott/helldivers-client/internal/api"
 	"github.com/stnokott/helldivers-client/internal/db"
-	"github.com/stnokott/helldivers-client/internal/db/structs"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func mustPlanetEvent(from api.Event) *api.Planet_Event {
@@ -19,121 +18,92 @@ func mustPlanetEvent(from api.Event) *api.Planet_Event {
 	return planetEvent
 }
 
-func TestEventsTransform(t *testing.T) {
-	type args struct {
-		data APIData
-	}
+var validEvent = api.Event{
+	Id:                ptr(int32(997)),
+	StartTime:         ptr(time.Date(2024, 4, 5, 6, 7, 8, 9, time.UTC)),
+	EndTime:           ptr(time.Date(2025, 4, 5, 6, 7, 8, 9, time.UTC)),
+	EventType:         ptr(int32(667)),
+	Faction:           ptr("Terminids"),
+	MaxHealth:         ptr(int64(4455667788)),
+	CampaignId:        nil, // not required, linked through Planet
+	Health:            nil, // not required, persisted in dynamic snapshots
+	JointOperationIds: nil, // not required
+}
+
+func TestEvent(t *testing.T) {
+	// modifier for planet to allow nulling event
+	type modifier func(*api.Planet)
 	tests := []struct {
-		name    string
-		e       Events
-		args    args
-		want    *db.DocsProvider[structs.Event]
-		wantErr bool
+		name     string
+		modifier modifier
+		want     []db.EntityMerger
+		wantErr  bool
 	}{
 		{
-			name: "complete",
-			args: args{
-				data: APIData{
-					Planets: &[]api.Planet{
-						{
-							Event: mustPlanetEvent(
-								api.Event{
-									Id:        ptr(int32(5)),
-									EventType: ptr(int32(6)),
-									Faction:   ptr("Foo"),
-									MaxHealth: ptr(int64(10000)),
-									StartTime: ptr(time.Date(2024, 12, 31, 23, 59, 59, 0, time.Local)),
-									EndTime:   ptr(time.Date(2025, 12, 31, 23, 59, 59, 0, time.Local)),
-								},
-							),
-						},
-						{
-							Event: mustPlanetEvent(
-								api.Event{
-									Id:        ptr(int32(6)),
-									EventType: ptr(int32(7)),
-									Faction:   ptr("Bar"),
-									MaxHealth: ptr(int64(10000)),
-									StartTime: ptr(time.Date(2026, 1, 1, 0, 0, 0, 0, time.Local)),
-									EndTime:   ptr(time.Date(2027, 1, 1, 0, 0, 0, 0, time.Local)),
-								},
-							),
-						},
-					},
-				},
+			name: "valid",
+			modifier: func(p *api.Planet) {
+				// keep valid
 			},
-			want: &db.DocsProvider[structs.Event]{
-				CollectionName: "events",
-				Docs: []db.DocWrapper[structs.Event]{
-					{
-						DocID: int32(5),
-						Document: structs.Event{
-							ID:        5,
-							Type:      6,
-							Faction:   "Foo",
-							MaxHealth: 10000,
-							StartTime: primitive.NewDateTimeFromTime(time.Date(2024, 12, 31, 23, 59, 59, 0, time.Local)),
-							EndTime:   primitive.NewDateTimeFromTime(time.Date(2025, 12, 31, 23, 59, 59, 0, time.Local)),
-						},
-					},
-					{
-						DocID: int32(6),
-						Document: structs.Event{
-							ID:        6,
-							Type:      7,
-							Faction:   "Bar",
-							MaxHealth: 10000,
-							StartTime: primitive.NewDateTimeFromTime(time.Date(2026, 1, 1, 0, 0, 0, 0, time.Local)),
-							EndTime:   primitive.NewDateTimeFromTime(time.Date(2027, 1, 1, 0, 0, 0, 0, time.Local)),
-						},
-					},
+			want: []db.EntityMerger{
+				&db.Event{
+					ID:        997,
+					StartTime: db.PGTimestamp(time.Date(2024, 4, 5, 6, 7, 8, 9, time.UTC)),
+					EndTime:   db.PGTimestamp(time.Date(2025, 4, 5, 6, 7, 8, 9, time.UTC)),
+					Type:      667,
+					Faction:   "Terminids",
+					MaxHealth: 4455667788,
 				},
 			},
 			wantErr: false,
 		},
 		{
-			name: "nil faction",
-			args: args{
-				data: APIData{
-					Planets: &[]api.Planet{
-						{
-							Event: mustPlanetEvent(
-								api.Event{
-									Id:        ptr(int32(5)),
-									EventType: ptr(int32(6)),
-									Faction:   nil,
-									MaxHealth: ptr(int64(10000)),
-									StartTime: ptr(time.Date(2024, 12, 31, 23, 59, 59, 0, time.Local)),
-									EndTime:   ptr(time.Date(2025, 12, 31, 23, 59, 59, 0, time.Local)),
-								},
-							),
-						},
-					},
-				},
+			name: "nil event",
+			modifier: func(p *api.Planet) {
+				p.Event = nil
 			},
-			want: &db.DocsProvider[structs.Event]{
-				CollectionName: db.CollEvents,
-				Docs:           []db.DocWrapper[structs.Event]{},
+			want:    []db.EntityMerger{},
+			wantErr: false,
+		},
+		{
+			name: "empty ID",
+			modifier: func(p *api.Planet) {
+				event := validEvent
+				event.Id = nil
+				p.Event = mustPlanetEvent(event)
 			},
+			want:    nil,
 			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotErr := false
-			errFunc := func(err error) {
-				if !tt.wantErr {
-					t.Logf("Events.Transform() error: %v", err)
-				}
-				gotErr = true
+			var event api.Event
+			// deep copy will copy values behind pointers instead of the pointers themselves
+			copyOption := copier.Option{DeepCopy: true}
+			if err := copier.CopyWithOption(&event, &validEvent, copyOption); err != nil {
+				t.Errorf("failed to create event struct copy: %v", err)
+				return
 			}
-			got := tt.e.Transform(tt.args.data, errFunc)
-			if gotErr != tt.wantErr {
-				t.Errorf("Events.Transform() returned error, wantErr %v", tt.wantErr)
+
+			planets := []api.Planet{
+				{
+					Event: mustPlanetEvent(event),
+				},
+			}
+
+			tt.modifier(&planets[0])
+
+			data := APIData{
+				Planets: &planets,
+			}
+			got, err := Events(data)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Events() err = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Events.Transform() = %v, want %v", got, tt.want)
+				t.Errorf("Events() = %v, want %v", got, tt.want)
+				return
 			}
 		})
 	}

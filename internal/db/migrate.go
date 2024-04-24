@@ -2,25 +2,21 @@ package db
 
 import (
 	"errors"
+	"fmt"
 	"log"
 
 	"github.com/golang-migrate/migrate/v4"
-	"github.com/golang-migrate/migrate/v4/database/mongodb"
-	_ "github.com/golang-migrate/migrate/v4/source/file" // load migrations from file
+	_ "github.com/golang-migrate/migrate/v4/database/pgx/v5" // use pgx as driver
+	_ "github.com/golang-migrate/migrate/v4/source/file"     // load migrations from file
 )
 
 func (c *Client) newMigration(scriptFolder string) (*migrate.Migrate, error) {
-	// create new migration instance from existing connection
-	driver, err := mongodb.WithInstance(c.mongo, &mongodb.Config{
-		DatabaseName: c.db.Name(),
-	})
-	if err != nil {
-		return nil, err
-	}
-	migration, err := migrate.NewWithDatabaseInstance(
+	cfg := c.conn.Config()
+	uri := fmt.Sprintf("pgx5://%s:%s@%s:%d/%s", cfg.User, cfg.Password, cfg.Host, cfg.Port, cfg.Database)
+
+	migration, err := migrate.New(
 		"file://"+scriptFolder,
-		c.db.Name(),
-		driver,
+		uri,
 	)
 	if err != nil {
 		return nil, err
@@ -40,6 +36,7 @@ func (c *Client) MigrateUp(migrationsFolder string) error {
 	if err = migration.Up(); !errors.Is(err, migrate.ErrNoChange) {
 		return err
 	}
+
 	return nil
 }
 

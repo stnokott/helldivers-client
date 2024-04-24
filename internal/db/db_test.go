@@ -2,29 +2,15 @@
 package db
 
 import (
+	"errors"
+	"io"
 	"log"
-	"os"
 	"testing"
 
-	"github.com/joho/godotenv"
+	"github.com/golang-migrate/migrate/v4"
+	"github.com/jinzhu/copier"
 	"github.com/stnokott/helldivers-client/internal/config"
 )
-
-func TestMain(m *testing.M) {
-	envFile := "../../.env.test"
-	// we only try to load .env.test if it is present.
-	// The usecase for this is local development when running through Docker is not available.
-	// Env variables will then be supplied through the env file instead of the Docker container.
-	// This is required because VSCode tasks.json doesn't allow loading from a .env file.
-	if _, err := os.Stat(envFile); err == nil {
-		log.Printf("using env file for tests: %s", envFile)
-		if err = godotenv.Load(envFile); err != nil {
-			log.Fatalf("could not load env file for tests: %v", err)
-		}
-	}
-	code := m.Run()
-	os.Exit(code)
-}
 
 func TestNew(t *testing.T) {
 	logger := log.Default()
@@ -37,11 +23,11 @@ func TestNew(t *testing.T) {
 		wantErr bool
 	}{
 		{name: "valid", args: args{config.Get()}, wantErr: false},
-		{name: "invalid", args: args{&config.Config{MongoURI: "http://localhost"}}, wantErr: true},
+		{name: "invalid", args: args{&config.Config{PostgresURI: "http://localhost"}}, wantErr: true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			client, err := New(tt.args.cfg, tt.name+" db", logger)
+			client, err := New(tt.args.cfg, logger)
 			defer func() {
 				if client != nil {
 					client.Disconnect()
@@ -57,14 +43,56 @@ func TestNew(t *testing.T) {
 
 func TestClientDisconnect(t *testing.T) {
 	cfg := config.Get()
-	client, err := New(cfg, "test_client_disconnect", log.Default())
+	client, err := New(cfg, log.Default())
 	if err != nil {
 		t.Fatalf("could not initialize DB connection: %v", err)
 	}
 	if err := client.Disconnect(); err != nil {
 		t.Fatalf("Disconnect() error = %v, want nil", err)
 	}
-	if err := client.Disconnect(); err == nil {
-		t.Fatalf("Disconnect() (while not connected) error = nil, want err")
+	if err := client.Disconnect(); err != nil {
+		t.Fatalf("Disconnect() (while not connected) error = %v, want nil", err)
 	}
+}
+
+// TODO: add variation/option to directly execute migration
+func withClient(t *testing.T, do func(client *Client, migration *migrate.Migrate)) {
+	cfg := config.Get()
+
+	client, err := New(cfg, log.New(io.Discard, "", 0))
+	if err != nil {
+		t.Fatalf("could not initialize DB connection: %v", err)
+	}
+	defer func() {
+		if err = client.Disconnect(); err != nil {
+			t.Logf("failed to disconnect: %v", err)
+		}
+	}()
+	migration, err := client.newMigration("../../scripts/migrations")
+	if err != nil {
+		t.Fatalf("client.newMigration() error = %v, want nil", err)
+	}
+	defer func() {
+		if err = migration.Down(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
+			t.Fatalf("failed to migrate down: %v", err)
+		}
+	}()
+	do(client, migration)
+}
+
+// deepCopy creates deep copies of structs.
+// Pass struct pointers in the form <&out1>, <&in1>, <&out2>, <&in2>, ...
+func deepCopy(outIn ...any) (err error) {
+	if len(outIn)%2 != 0 {
+		panic("need even number of arguments in deepCopy")
+	}
+	// deep copy will copy values behind pointers instead of the pointers themselves
+	copyOption := copier.Option{DeepCopy: true}
+
+	for i := 0; i < len(outIn); i += 2 {
+		if err = copier.CopyWithOption(outIn[i], outIn[i+1], copyOption); err != nil {
+			return
+		}
+	}
+	return
 }

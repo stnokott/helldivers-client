@@ -5,67 +5,52 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"math/big"
 	"time"
 
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/stnokott/helldivers-client/internal/config"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"github.com/stnokott/helldivers-client/internal/db/gen"
 )
 
 const appName = "HELLDIVERS_2_CLIENT"
 
-// CollectionName is the name of a collection in the MongoDB database.
-type CollectionName string
-
-const (
-	// CollPlanets is the collection name for Planets
-	CollPlanets CollectionName = "planets"
-	// CollCampaigns is the collection name for Campaigns
-	CollCampaigns CollectionName = "campaigns"
-	// CollDispatches is the collection name for Dispatches
-	CollDispatches CollectionName = "dispatches"
-	// CollEvents is the collection name for Events
-	CollEvents CollectionName = "events"
-	// CollAssignments is the collection name for Assignments
-	CollAssignments CollectionName = "assignments"
-	// CollWars is the collection name for Wars
-	CollWars CollectionName = "wars"
-	// CollSnapshots is the collection name for Snapshots
-	CollSnapshots CollectionName = "snapshots"
-)
-
 // Client is the abstraction layer for the MongoDB connector
 type Client struct {
-	mongo *mongo.Client
-	db    *mongo.Database
-	log   *log.Logger
+	conn    *pgx.Conn
+	queries *gen.Queries
+	log     *log.Logger
 }
 
 // New creates a new client and connects it to the DB
-func New(cfg *config.Config, database string, logger *log.Logger) (*Client, error) {
+func New(cfg *config.Config, logger *log.Logger) (*Client, error) {
+	pgxConfig, err := pgx.ParseConfig(cfg.PostgresURI)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse PostgreSQL config from ENV: %w", err)
+	}
+	pgxConfig.RuntimeParams["application_name"] = appName
+
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	clientOptions := options.Client().
-		ApplyURI(cfg.MongoURI).
-		SetAppName(appName).
-		SetDirect(true)
 
-	logger.Printf("connecting to MongoDB instance at %v", clientOptions.Hosts)
-	client, err := mongo.Connect(ctx, clientOptions)
+	logger.Printf("connecting to PostgreSQL instance at %s:%d/%s", pgxConfig.Host, pgxConfig.Port, pgxConfig.Database)
+	conn, err := pgx.ConnectConfig(ctx, pgxConfig)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to connect to PostgreSQL: %w", err)
 	}
+
+	queries := gen.New(conn)
+
 	// ensure connection is stable
-	if err = client.Ping(ctx, nil); err != nil {
-		return nil, fmt.Errorf("could not connect to MongoDB instance: %w", err)
+	if err = conn.Ping(ctx); err != nil {
+		return nil, fmt.Errorf("could not connect to PostgreSQL instance: %w", err)
 	}
 	logger.Println("connected")
-	db := client.Database(database)
 	return &Client{
-		mongo: client,
-		db:    db,
-		log:   logger,
+		conn:    conn,
+		queries: queries,
+		log:     logger,
 	}, nil
 }
 
@@ -73,64 +58,65 @@ func New(cfg *config.Config, database string, logger *log.Logger) (*Client, erro
 func (c *Client) Disconnect() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	if err := c.mongo.Disconnect(ctx); err != nil {
-		return fmt.Errorf("could not disconnect from MongoDB: %w", err)
+	if err := c.conn.Close(ctx); err != nil {
+		return fmt.Errorf("could not disconnect from PostgreSQL: %w", err)
 	}
-	c.log.Println("disconnected from MongoDB")
+	c.log.Println("disconnected from PostgreSQL")
 	return nil
 }
 
-// DocsProvider wraps collection name and document slice for further processing.
-//
-// T should be the Document type.
-type DocsProvider[T any] struct {
-	CollectionName CollectionName
-	Docs           []DocWrapper[T]
+type EntityMerger interface {
+	Merge(ctx context.Context, tx *gen.Queries, stats tableMergeStats) error
 }
 
-// DocWrapper holds the document to be processed plus its document ID.
-//
-// T should be the Document type.
-type DocWrapper[T any] struct {
-	DocID    any
-	Document T
-}
-
-// UpsertDocs inserts or updates a list of documents based on their IDs.
-//
-// Documents are matched by ID ("_id"). If a document with that ID already exists, it is updated.
-// If it doesn't exist, it is inserted.
-//
-// If an error occurs during upsert of one of the documents, processing continues.
-// Thus, no error is returned.
-func UpsertDocs[T any](ctx context.Context, c *Client, provider *DocsProvider[T]) {
-	if provider.Docs == nil || len(provider.Docs) == 0 {
-		c.log.Printf("upsert into '%s' aborted, no documents to process", provider.CollectionName)
-		return
-	}
-
-	coll := c.db.Collection(string(provider.CollectionName))
-
-	models := make([]mongo.WriteModel, len(provider.Docs))
-	for i, doc := range provider.Docs {
-		models[i] = mongo.NewUpdateOneModel().
-			SetFilter(bson.D{{Key: "_id", Value: doc.DocID}}).
-			SetUpdate(bson.D{{Key: "$set", Value: doc.Document}}).
-			SetUpsert(true)
-	}
-	result, err := coll.BulkWrite(
-		ctx,
-		models,
-		options.BulkWrite().SetOrdered(false), // prevents from stopping on error
-	)
-	if result != nil {
-		c.log.Printf(
-			"upsert into '%s' finished, %d inserted, %d matched, %d updated",
-			provider.CollectionName,
-			result.UpsertedCount, result.MatchedCount, result.ModifiedCount,
-		)
-	}
+func (c *Client) Merge(ctx context.Context, mergers ...[]EntityMerger) (err error) {
+	tx, err := c.conn.BeginTx(ctx, pgx.TxOptions{})
 	if err != nil {
-		c.log.Printf("error(s) occured during upsert into '%s': %v", coll.Name(), err)
+		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
+
+	qtx := c.queries.WithTx(tx)
+
+	// defer commit/rollback depending on error
+	defer func() {
+		if err != nil {
+			// roll back on error
+			c.log.Println("error occured during merge, rolling back changes")
+			if errRb := tx.Rollback(ctx); errRb != nil {
+				c.log.Printf("failed to rollback: %v", errRb)
+			}
+		} else {
+			// commit when no error
+			if errComm := tx.Commit(ctx); errComm != nil {
+				c.log.Printf("failed to commit: %v", errComm)
+			} else {
+				c.log.Println("changes committed")
+			}
+		}
+	}()
+
+	// prepare insert/update statistics
+	stats := tableMergeStats{}
+
+	// run merges
+	for _, mSlice := range mergers {
+		if len(mSlice) == 0 {
+			c.log.Println("WARN: got 0 entities to merge")
+		}
+		for _, merger := range mSlice {
+			if err = merger.Merge(ctx, qtx, stats); err != nil {
+				return
+			}
+		}
+	}
+	stats.Print(c.log)
+	return
+}
+
+func PGTimestamp(t time.Time) pgtype.Timestamp {
+	return pgtype.Timestamp{Time: t, Valid: true}
+}
+
+func PGUint64(x uint64) pgtype.Numeric {
+	return pgtype.Numeric{Int: new(big.Int).SetUint64(x), Valid: true}
 }

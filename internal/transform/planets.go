@@ -6,27 +6,17 @@ import (
 
 	"github.com/stnokott/helldivers-client/internal/api"
 	"github.com/stnokott/helldivers-client/internal/db"
-	"github.com/stnokott/helldivers-client/internal/db/structs"
+	"github.com/stnokott/helldivers-client/internal/db/gen"
 )
 
-// Planets implements worker.DocTransformer
-type Planets struct{}
-
-// Transform implements the worker.DocTransformer interface
-func (Planets) Transform(data APIData, errFunc func(error)) *db.DocsProvider[structs.Planet] {
-	provider := &db.DocsProvider[structs.Planet]{
-		CollectionName: db.CollPlanets,
-		Docs:           []db.DocWrapper[structs.Planet]{},
-	}
-
+func Planets(data APIData) ([]db.EntityMerger, error) {
 	if data.Planets == nil {
-		errFunc(errors.New("got nil planets slice"))
-		return provider
+		return nil, errors.New("got nil planets slice")
 	}
 
-	planets := *data.Planets
-
-	for _, planet := range planets {
+	src := *data.Planets
+	planets := make([]db.EntityMerger, len(src))
+	for i, planet := range src {
 		if planet.Index == nil ||
 			planet.Name == nil ||
 			planet.Sector == nil ||
@@ -36,50 +26,50 @@ func (Planets) Transform(data APIData, errFunc func(error)) *db.DocsProvider[str
 			planet.Biome == nil ||
 			planet.Hazards == nil ||
 			planet.MaxHealth == nil ||
-			planet.InitialOwner == nil ||
-			planet.RegenPerSecond == nil {
-			errFunc(errFromNils(&planet))
-			continue
+			planet.InitialOwner == nil {
+			return nil, errFromNils(&planet)
 		}
 
 		pos, err := parsePlanetPosition(planet.Position)
 		if err != nil {
-			errFunc(err)
-			continue
+			return nil, err
 		}
 
 		biome, err := parsePlanetBiome(planet.Biome)
 		if err != nil {
-			errFunc(err)
-			continue
+			return nil, err
 		}
 
 		hazards, err := convertPlanetHazards(planet.Hazards)
 		if err != nil {
-			errFunc(err)
-			continue
+			return nil, err
 		}
-		provider.Docs = append(provider.Docs, db.DocWrapper[structs.Planet]{
-			DocID: *planet.Index,
-			Document: structs.Planet{
-				ID:        *planet.Index,
-				Name:      *planet.Name,
-				Sector:    *planet.Sector,
-				Position:  structs.PlanetPosition{X: *pos.X, Y: *pos.Y},
-				Waypoints: *planet.Waypoints,
-				Disabled:  *planet.Disabled,
-				Biome: structs.Biome{
-					Name:        *biome.Name,
-					Description: *biome.Description,
-				},
-				Hazards:        hazards,
-				MaxHealth:      *planet.MaxHealth,
-				InitialOwner:   *planet.InitialOwner,
-				RegenPerSecond: *planet.RegenPerSecond,
+		hazardNames := make([]string, len(hazards))
+		for i, hazard := range hazards {
+			hazardNames[i] = hazard.Name
+		}
+
+		planets[i] = &db.Planet{
+			Planet: gen.Planet{
+				ID:           *planet.Index,
+				Name:         *planet.Name,
+				Sector:       *planet.Sector,
+				Position:     []float64{*pos.X, *pos.Y},
+				WaypointIds:  *planet.Waypoints,
+				Disabled:     *planet.Disabled,
+				BiomeName:    *biome.Name,
+				HazardNames:  hazardNames,
+				MaxHealth:    *planet.MaxHealth,
+				InitialOwner: *planet.InitialOwner,
 			},
-		})
+			Biome: gen.Biome{
+				Name:        *biome.Name,
+				Description: *biome.Description,
+			},
+			Hazards: hazards,
+		}
 	}
-	return provider
+	return planets, nil
 }
 
 func parsePlanetPosition(in *api.Planet_Position) (api.Position, error) {
@@ -104,13 +94,13 @@ func parsePlanetBiome(in *api.Planet_Biome) (api.Biome, error) {
 	return biome, nil
 }
 
-func convertPlanetHazards(in *[]api.Hazard) ([]structs.Hazard, error) {
-	hazards := make([]structs.Hazard, len(*in))
+func convertPlanetHazards(in *[]api.Hazard) ([]gen.Hazard, error) {
+	hazards := make([]gen.Hazard, len(*in))
 	for i, hazard := range *in {
 		if hazard.Name == nil || hazard.Description == nil {
 			return nil, errFromNils(&hazard)
 		}
-		hazards[i] = structs.Hazard{
+		hazards[i] = gen.Hazard{
 			Name:        *hazard.Name,
 			Description: *hazard.Description,
 		}

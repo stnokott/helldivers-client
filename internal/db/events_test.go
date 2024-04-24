@@ -1,0 +1,101 @@
+package db
+
+import (
+	"context"
+	"math"
+	"testing"
+	"time"
+
+	"github.com/golang-migrate/migrate/v4"
+)
+
+var validEvent = Event{
+	ID:        555,
+	Type:      7,
+	Faction:   "Automatons",
+	MaxHealth: 55667788,
+	StartTime: PGTimestamp(time.Date(2024, 1, 1, 1, 1, 1, 1, time.UTC)),
+	EndTime:   PGTimestamp(time.Date(2025, 1, 1, 1, 1, 1, 1, time.UTC)),
+}
+
+func TestEventsSchema(t *testing.T) {
+	// modifier applies a change to the valid struct, based on the test
+	type modifier func(*Event)
+	tests := []struct {
+		name     string
+		modifier modifier
+		wantErr  bool
+	}{
+		{
+			name:     "valid",
+			modifier: func(*Event) {},
+			wantErr:  false,
+		},
+		{
+			name: "max health high number",
+			modifier: func(e *Event) {
+				e.MaxHealth = math.MaxInt64
+			},
+			wantErr: false,
+		},
+		{
+			name: "negative max health",
+			modifier: func(e *Event) {
+				e.MaxHealth = -1
+			},
+			wantErr: true,
+		},
+		{
+			name: "empty faction",
+			modifier: func(e *Event) {
+				e.Faction = ""
+			},
+			wantErr: true,
+		},
+		{
+			name: "start time after end time",
+			modifier: func(e *Event) {
+				e.StartTime = PGTimestamp(time.Date(2024, 1, 1, 1, 1, 1, 2, time.UTC))
+				e.EndTime = PGTimestamp(time.Date(2024, 1, 1, 1, 1, 1, 1, time.UTC))
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			withClient(t, func(client *Client, migration *migrate.Migrate) {
+				if err := migration.Up(); err != nil {
+					t.Errorf("failed to migrate up: %v", err)
+					return
+				}
+
+				var event Event
+				if err := deepCopy(&event, &validEvent); err != nil {
+					t.Errorf("failed to create event struct copy: %v", err)
+					return
+				}
+
+				tt.modifier(&event)
+
+				err := event.Merge(context.Background(), client.queries, tableMergeStats{})
+				if (err != nil) != tt.wantErr {
+					t.Errorf("Event.Merge() error = %v, wantErr = %v", err, tt.wantErr)
+					return
+				}
+				if err != nil {
+					// any subsequent tests don't make sense if error encountered
+					return
+				}
+
+				fetchedResult, err := client.queries.GetEvent(context.Background(), event.ID)
+				if err != nil {
+					t.Errorf("failed to fetch inserted event: %v", err)
+					return
+				}
+				if fetchedResult != event.ID {
+					t.Errorf("failed to validate INSERT: inserted data has ID %d, DB returned %d", event.ID, fetchedResult)
+				}
+			})
+		})
+	}
+}
