@@ -30,7 +30,7 @@ services:
       - api
       - db
     environment:
-      MONGO_URI: mongodb://root:REPLACEME@db:27017  # IMPORTANT: use same credentials as in the <db> container.
+      MONGO_URI: postgresql://root:REPLACEME@db:5432/helldivers  # IMPORTANT: use same credentials as in the <db> container.
       API_URL: http://api:8080
       API_RATE_LIMIT_INTERVAL: 10s
       API_RATE_LIMIT_COUNT: 3
@@ -50,12 +50,13 @@ services:
       Helldivers__Synchronization__DefaultLanguage: en-US  # Language of strings such as Major Order text.
 
   db:
-    image: mongo:7.0.7
+    image: postgres:16.2
     environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: REPLACEME
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: REPLACEME
+      POSTGRES_DB: helldivers
     volumes:
-      - /path/to/persistent/storage:/data/db  # Persist your DB data
+      - /path/to/persistent/storage:/var/lib/postgresql/data  # Persist your DB data
     networks:
       - default
 ```
