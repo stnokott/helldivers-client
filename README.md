@@ -60,3 +60,14 @@ services:
     networks:
       - default
 ```
+
+## Development
+
+### Install required tools
+
+```shell
+go install github.com/deepmap/oapi-codegen/v2/cmd/oapi-codegen@v2.1.0
+go install github.com/joho/godotenv/cmd/godotenv@v1.5.1
+go install github.com/goreleaser/goreleaser@v1.25.1
+go install github.com/sqlc-dev/sqlc/cmd/sqlc@v1.26.0
+```
