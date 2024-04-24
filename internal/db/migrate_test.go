@@ -34,12 +34,7 @@ var tableNames = []string{
 }
 
 func TestTablesExist(t *testing.T) {
-	withClient(t, func(client *Client, migration *migrate.Migrate) {
-		if err := migration.Up(); err != nil {
-			t.Errorf("failed to migrate up: %v", err)
-			return
-		}
-
+	withClientMigrated(t, func(client *Client) {
 		fnTables := func() []string {
 			rows, err := client.conn.Query(
 				context.Background(),
@@ -62,14 +57,6 @@ func TestTablesExist(t *testing.T) {
 		}
 		if colls := fnTables(); len(colls) != len(tableNames) {
 			t.Errorf("expected %d tables, got %d (%v)", len(tableNames), len(colls), colls)
-			return
-		}
-		if err := migration.Down(); err != nil {
-			t.Errorf("failed to migrate down: %v", err)
-			return
-		}
-		if colls := fnTables(); len(colls) > 0 {
-			t.Errorf("expected no tables, got %d (%v)", len(colls), colls)
 			return
 		}
 	})

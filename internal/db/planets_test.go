@@ -5,7 +5,6 @@ import (
 	"math"
 	"testing"
 
-	"github.com/golang-migrate/migrate/v4"
 	"github.com/stnokott/helldivers-client/internal/copytest"
 	"github.com/stnokott/helldivers-client/internal/db/gen"
 )
@@ -138,12 +137,7 @@ func TestPlanetsSchema(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			withClient(t, func(client *Client, migration *migrate.Migrate) {
-				if err := migration.Up(); err != nil {
-					t.Errorf("failed to migrate up: %v", err)
-					return
-				}
-
+			withClientMigrated(t, func(client *Client) {
 				var planet Planet
 				if err := copytest.DeepCopy(&planet, &validPlanet); err != nil {
 					t.Errorf("failed to create planet struct copy: %v", err)

@@ -6,7 +6,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/golang-migrate/migrate/v4"
 	"github.com/stnokott/helldivers-client/internal/copytest"
 	"github.com/stnokott/helldivers-client/internal/db/gen"
 )
@@ -252,12 +251,7 @@ func TestSnapshotsSchema(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			withClient(t, func(client *Client, migration *migrate.Migrate) {
-				if err := migration.Up(); err != nil {
-					t.Errorf("failed to migrate up: %v", err)
-					return
-				}
-
+			withClientMigrated(t, func(client *Client) {
 				var (
 					war        War
 					assignment Assignment

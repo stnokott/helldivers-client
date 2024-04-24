@@ -4,7 +4,6 @@ import (
 	"context"
 	"testing"
 
-	"github.com/golang-migrate/migrate/v4"
 	"github.com/stnokott/helldivers-client/internal/copytest"
 )
 
@@ -37,12 +36,7 @@ func TestCampaignsSchema(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			withClient(t, func(client *Client, migration *migrate.Migrate) {
-				if err := migration.Up(); err != nil {
-					t.Errorf("failed to migrate up: %v", err)
-					return
-				}
-
+			withClientMigrated(t, func(client *Client) {
 				var campaign Campaign
 				if err := copytest.DeepCopy(&campaign, &validCampaign); err != nil {
 					t.Errorf("failed to create campaign struct copy: %v", err)

@@ -54,7 +54,6 @@ func TestClientDisconnect(t *testing.T) {
 	}
 }
 
-// TODO: add variation/option to directly execute migration
 func withClient(t *testing.T, do func(client *Client, migration *migrate.Migrate)) {
 	cfg := config.Get()
 
@@ -70,11 +69,23 @@ func withClient(t *testing.T, do func(client *Client, migration *migrate.Migrate
 	migration, err := client.newMigration("../../scripts/migrations")
 	if err != nil {
 		t.Fatalf("client.newMigration() error = %v, want nil", err)
+		return
 	}
 	defer func() {
 		if err = migration.Down(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
 			t.Fatalf("failed to migrate down: %v", err)
+			return
 		}
 	}()
 	do(client, migration)
+}
+
+func withClientMigrated(t *testing.T, do func(client *Client)) {
+	withClient(t, func(client *Client, migration *migrate.Migrate) {
+		if err := migration.Up(); err != nil {
+			t.Errorf("failed to migrate up: %v", err)
+			return
+		}
+		do(client)
+	})
 }
