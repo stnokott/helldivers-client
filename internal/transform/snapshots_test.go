@@ -1,4 +1,3 @@
-// Package transform converts API structs to DB structs
 package transform
 
 import (
@@ -7,18 +6,10 @@ import (
 	"time"
 
 	"github.com/stnokott/helldivers-client/internal/api"
+	"github.com/stnokott/helldivers-client/internal/copytest"
 	"github.com/stnokott/helldivers-client/internal/db"
-	"github.com/stnokott/helldivers-client/internal/db/structs"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"github.com/stnokott/helldivers-client/internal/db/gen"
 )
-
-func mustPlanetStatistics(from api.Statistics) *api.Planet_Statistics {
-	planetStats := new(api.Planet_Statistics)
-	if err := planetStats.FromStatistics(from); err != nil {
-		panic(err)
-	}
-	return planetStats
-}
 
 func mustWarStatistics(from api.Statistics) *api.War_Statistics {
 	warStats := new(api.War_Statistics)
@@ -28,424 +19,256 @@ func mustWarStatistics(from api.Statistics) *api.War_Statistics {
 	return warStats
 }
 
-func TestSnapshotsTransform(t *testing.T) {
-	type args struct {
-		data APIData
+var validWarIDSnapshot = api.WarId{
+	Id: ptr(int32(999)),
+}
+
+var validWarSnapshot = api.War{
+	ImpactMultiplier: ptr(float64(0.0004)),
+	Statistics: mustWarStatistics(api.Statistics{
+		MissionsWon:     ptr(uint64(564643344)),
+		MissionsLost:    ptr(uint64(4324332)),
+		MissionTime:     ptr(uint64(432432532552)),
+		TerminidKills:   ptr(uint64(66878822)),
+		AutomatonKills:  ptr(uint64(73737274)),
+		IlluminateKills: ptr(uint64(112212441)),
+		BulletsFired:    ptr(uint64(424444421112)),
+		BulletsHit:      ptr(uint64(33444465767)),
+		TimePlayed:      ptr(uint64(365 * 24 * 60 * time.Second)),
+		Deaths:          ptr(uint64(885545432)),
+		Revives:         ptr(uint64(8765333)),
+		Friendlies:      ptr(uint64(444432232)),
+		PlayerCount:     ptr(uint64(44899)),
+	}),
+}
+
+var validPlanetSnapshot = api.Planet{
+	Index:        ptr(int32(456)),
+	Health:       ptr(int64(2441141122)),
+	CurrentOwner: ptr("Humans"),
+	Event: mustPlanetEvent(api.Event{
+		Id:     ptr(int32(667)),
+		Health: ptr(int64(889999)),
+	}),
+	Attacking:      &[]int32{4, 5, 6},
+	RegenPerSecond: ptr(float64(0.003)),
+	Statistics: mustPlanetStatistics(api.Statistics{
+		MissionsWon:     ptr(uint64(654345432324)),
+		MissionsLost:    ptr(uint64(43234242355)),
+		MissionTime:     ptr(uint64(6558685)),
+		TerminidKills:   ptr(uint64(527838425)),
+		AutomatonKills:  ptr(uint64(2854382888)),
+		IlluminateKills: ptr(uint64(32845248882)),
+		BulletsFired:    ptr(uint64(823344447)),
+		BulletsHit:      ptr(uint64(885454545465645466)),
+		TimePlayed:      ptr(uint64(2 * 24 * 60 * time.Second)),
+		Deaths:          ptr(uint64(7574557545454)),
+		Revives:         ptr(uint64(2232342344223)),
+		Friendlies:      ptr(uint64(99976547755)),
+		PlayerCount:     ptr(uint64(4242442443)),
+	}),
+}
+
+var validAssignmentSnapshot = api.Assignment2{
+	Id:       ptr(int64(7)),
+	Progress: &[]int32{5, 6, 7},
+}
+
+var validCampaignSnapshot = api.Campaign2{
+	Id: ptr(int32(987)),
+}
+
+var validDispatchSnapshot = api.Dispatch{
+	Id: ptr(int32(678)),
+}
+
+func TestSnapshots(t *testing.T) {
+	// modifier changes the valid assignment to one that is suited for the test
+	type modifiers struct {
+		WarID      func(*api.WarId)
+		War        func(*api.War)
+		Assignment func(*api.Assignment2)
+		Campaign   func(*api.Campaign2)
+		Dispatch   func(*api.Dispatch)
+		Planet     func(*api.Planet)
 	}
 	tests := []struct {
-		name    string
-		s       Snapshots
-		args    args
-		want    *db.DocsProvider[structs.Snapshot]
-		wantErr bool
+		name      string
+		modifiers modifiers
+		want      []db.EntityMerger
+		wantErr   bool
 	}{
 		{
-			name: "complete",
-			args: args{
-				data: APIData{
-					WarID: &api.WarId{Id: ptr(int32(6))},
-					War: &api.War{
-						Now:              ptr(time.Date(2024, 2, 3, 4, 5, 6, 7, time.Local)),
-						ImpactMultiplier: ptr(float64(50.5)),
-						Statistics: mustWarStatistics(api.Statistics{
-							MissionsWon:     ptr(uint64(100)),
-							MissionsLost:    ptr(uint64(55)),
-							MissionTime:     ptr(uint64(12345)),
-							TerminidKills:   ptr(uint64(10000)),
-							AutomatonKills:  ptr(uint64(99999)),
-							IlluminateKills: ptr(uint64(333333)),
-							BulletsFired:    ptr(uint64(11111)),
-							BulletsHit:      ptr(uint64(1111)),
-							TimePlayed:      ptr(uint64(123456)),
-							Deaths:          ptr(uint64(32134)),
-							Revives:         ptr(uint64(94284)),
-							Friendlies:      ptr(uint64(12940)),
-							PlayerCount:     ptr(uint64(444442)),
-						}),
-					},
-					Assignments: &[]api.Assignment2{
-						{Id: ptr(int64(2))},
-						{Id: ptr(int64(3))},
-						{Id: ptr(int64(4))},
-					},
-					Campaigns: &[]api.Campaign2{
-						{Id: ptr(int32(7))},
-						{Id: ptr(int32(8))},
-						{Id: ptr(int32(9))},
-					},
-					Dispatches: &[]api.Dispatch{
-						{Id: ptr(int32(10))},
-					},
-					Planets: &[]api.Planet{
-						{
-							Index:        ptr(int32(6)),
-							Health:       ptr(int64(1234567)),
-							CurrentOwner: ptr("Humans"),
-							Event: mustPlanetEvent(api.Event{
-								Id:     ptr(int32(6)),
-								Health: ptr(int64(999)),
-							}),
-							Statistics: mustPlanetStatistics(api.Statistics{
-								MissionsWon:     ptr(uint64(100)),
-								MissionsLost:    ptr(uint64(55)),
-								MissionTime:     ptr(uint64(12345)),
-								TerminidKills:   ptr(uint64(10000)),
-								AutomatonKills:  ptr(uint64(99999)),
-								IlluminateKills: ptr(uint64(333333)),
-								BulletsFired:    ptr(uint64(11111)),
-								BulletsHit:      ptr(uint64(1111)),
-								TimePlayed:      ptr(uint64(123456)),
-								Deaths:          ptr(uint64(32134)),
-								Revives:         ptr(uint64(94284)),
-								Friendlies:      ptr(uint64(12940)),
-								PlayerCount:     ptr(uint64(444442)),
-							}),
-							Attacking: &[]int32{8, 9, 10},
-						},
-					},
-				},
+			name: "valid",
+			modifiers: modifiers{
+				WarID:      func(wi *api.WarId) {},
+				War:        func(w *api.War) {},
+				Assignment: func(a *api.Assignment2) {},
+				Campaign:   func(c *api.Campaign2) {},
+				Dispatch:   func(d *api.Dispatch) {},
+				Planet:     func(p *api.Planet) {},
 			},
-			want: &db.DocsProvider[structs.Snapshot]{
-				CollectionName: "snapshots",
-				Docs: []db.DocWrapper[structs.Snapshot]{
-					{
-						DocID: primitive.NewDateTimeFromTime(time.Date(2024, 2, 3, 4, 5, 6, 7, time.Local)),
-						Document: structs.Snapshot{
-							Timestamp: primitive.NewDateTimeFromTime(time.Date(2024, 2, 3, 4, 5, 6, 7, time.Local)),
-							WarSnapshot: structs.WarSnapshot{
-								WarID:            6,
-								ImpactMultiplier: 50.5,
+			want: []db.EntityMerger{
+				&db.Snapshot{
+					Snapshot: gen.Snapshot{
+						AssignmentSnapshotIds: nil,
+						CampaignIds:           []int32{987},
+						DispatchIds:           []int32{678},
+						StatisticsID:          -1,
+						WarSnapshotID:         -1,
+						PlanetSnapshotIds:     nil,
+					},
+					WarSnapshot: gen.WarSnapshot{
+						WarID:            999,
+						ImpactMultiplier: 0.0004,
+					},
+					AssignmentSnapshots: []gen.AssignmentSnapshot{
+						{
+							ID:           -1,
+							AssignmentID: 7,
+							Progress:     []int32{5, 6, 7},
+						},
+					},
+					PlanetSnapshots: []db.PlanetSnapshot{
+						{
+							PlanetSnapshot: gen.PlanetSnapshot{
+								PlanetID:           456,
+								Health:             2441141122,
+								CurrentOwner:       "Humans",
+								AttackingPlanetIds: []int32{4, 5, 6},
+								RegenPerSecond:     0.003,
+								StatisticsID:       -1,
 							},
-							AssignmentIDs: []int64{2, 3, 4},
-							CampaignIDs:   []int32{7, 8, 9},
-							DispatchIDs:   []int32{10},
-							Planets: []structs.PlanetSnapshot{
-								{
-									ID:           6,
-									Health:       1234567,
-									CurrentOwner: "Humans",
-									Event: &structs.EventSnapshot{
-										EventID: 6,
-										Health:  999,
-									},
-									Statistics: structs.Statistics{
-										MissionsWon:  100,
-										MissionsLost: 55,
-										MissionTime:  12345,
-										Kills: structs.StatisticsKills{
-											Terminid:   10000,
-											Automaton:  99999,
-											Illuminate: 333333,
-										},
-										BulletsFired: 11111,
-										BulletsHit:   1111,
-										TimePlayed:   123456,
-										Deaths:       32134,
-										Revives:      94284,
-										Friendlies:   12940,
-										PlayerCount:  444442,
-									},
-									Attacking: []int32{8, 9, 10},
-								},
+							Event: &gen.EventSnapshot{
+								EventID: 667,
+								Health:  889999,
 							},
-							Statistics: structs.Statistics{
-								MissionsWon:  100,
-								MissionsLost: 55,
-								MissionTime:  12345,
-								Kills: structs.StatisticsKills{
-									Terminid:   10000,
-									Automaton:  99999,
-									Illuminate: 333333,
-								},
-								BulletsFired: 11111,
-								BulletsHit:   1111,
-								TimePlayed:   123456,
-								Deaths:       32134,
-								Revives:      94284,
-								Friendlies:   12940,
-								PlayerCount:  444442,
+							Statistics: gen.SnapshotStatistic{
+								MissionsWon:     db.PGUint64(654345432324),
+								MissionsLost:    db.PGUint64(43234242355),
+								MissionTime:     db.PGUint64(6558685),
+								TerminidKills:   db.PGUint64(527838425),
+								AutomatonKills:  db.PGUint64(2854382888),
+								IlluminateKills: db.PGUint64(32845248882),
+								BulletsFired:    db.PGUint64(823344447),
+								BulletsHit:      db.PGUint64(885454545465645466),
+								TimePlayed:      db.PGUint64(uint64(2 * 24 * 60 * time.Second)),
+								Deaths:          db.PGUint64(7574557545454),
+								Revives:         db.PGUint64(2232342344223),
+								Friendlies:      db.PGUint64(99976547755),
+								PlayerCount:     db.PGUint64(4242442443),
 							},
 						},
+					},
+					Statistics: gen.SnapshotStatistic{
+						MissionsWon:     db.PGUint64(564643344),
+						MissionsLost:    db.PGUint64(4324332),
+						MissionTime:     db.PGUint64(432432532552),
+						TerminidKills:   db.PGUint64(66878822),
+						AutomatonKills:  db.PGUint64(73737274),
+						IlluminateKills: db.PGUint64(112212441),
+						BulletsFired:    db.PGUint64(424444421112),
+						BulletsHit:      db.PGUint64(33444465767),
+						TimePlayed:      db.PGUint64(uint64(365 * 24 * 60 * time.Second)),
+						Deaths:          db.PGUint64(885545432),
+						Revives:         db.PGUint64(8765333),
+						Friendlies:      db.PGUint64(444432232),
+						PlayerCount:     db.PGUint64(44899),
 					},
 				},
 			},
 			wantErr: false,
 		},
 		{
-			name: "optional event nil",
-			args: args{
-				data: APIData{
-					WarID: &api.WarId{Id: ptr(int32(6))},
-					War: &api.War{
-						Now:              ptr(time.Date(2024, 2, 3, 4, 5, 6, 7, time.Local)),
-						ImpactMultiplier: ptr(float64(50.5)),
-						Statistics: mustWarStatistics(api.Statistics{
-							MissionsWon:     ptr(uint64(100)),
-							MissionsLost:    ptr(uint64(55)),
-							MissionTime:     ptr(uint64(12345)),
-							TerminidKills:   ptr(uint64(10000)),
-							AutomatonKills:  ptr(uint64(99999)),
-							IlluminateKills: ptr(uint64(333333)),
-							BulletsFired:    ptr(uint64(11111)),
-							BulletsHit:      ptr(uint64(1111)),
-							TimePlayed:      ptr(uint64(123456)),
-							Deaths:          ptr(uint64(32134)),
-							Revives:         ptr(uint64(94284)),
-							Friendlies:      ptr(uint64(12940)),
-							PlayerCount:     ptr(uint64(444442)),
-						}),
-					},
-					Assignments: &[]api.Assignment2{
-						{Id: ptr(int64(2))},
-						{Id: ptr(int64(3))},
-						{Id: ptr(int64(4))},
-					},
-					Campaigns: &[]api.Campaign2{
-						{Id: ptr(int32(7))},
-						{Id: ptr(int32(8))},
-						{Id: ptr(int32(9))},
-					},
-					Dispatches: &[]api.Dispatch{
-						{Id: ptr(int32(10))},
-					},
-					Planets: &[]api.Planet{
-						{
-							Index:        ptr(int32(6)),
-							Health:       ptr(int64(1234567)),
-							CurrentOwner: ptr("Humans"),
-							Event:        nil,
-							Statistics: mustPlanetStatistics(api.Statistics{
-								MissionsWon:     ptr(uint64(100)),
-								MissionsLost:    ptr(uint64(55)),
-								MissionTime:     ptr(uint64(12345)),
-								TerminidKills:   ptr(uint64(10000)),
-								AutomatonKills:  ptr(uint64(99999)),
-								IlluminateKills: ptr(uint64(333333)),
-								BulletsFired:    ptr(uint64(11111)),
-								BulletsHit:      ptr(uint64(1111)),
-								TimePlayed:      ptr(uint64(123456)),
-								Deaths:          ptr(uint64(32134)),
-								Revives:         ptr(uint64(94284)),
-								Friendlies:      ptr(uint64(12940)),
-								PlayerCount:     ptr(uint64(444442)),
-							}),
-							Attacking: &[]int32{8, 9, 10},
-						},
-					},
+			name: "empty war impact multiplier",
+			modifiers: modifiers{
+				WarID: func(wi *api.WarId) {},
+				War: func(w *api.War) {
+					w.ImpactMultiplier = nil
 				},
+				Assignment: func(a *api.Assignment2) {},
+				Campaign:   func(c *api.Campaign2) {},
+				Dispatch:   func(d *api.Dispatch) {},
+				Planet:     func(p *api.Planet) {},
 			},
-			want: &db.DocsProvider[structs.Snapshot]{
-				CollectionName: "snapshots",
-				Docs: []db.DocWrapper[structs.Snapshot]{
-					{
-						DocID: primitive.NewDateTimeFromTime(time.Date(2024, 2, 3, 4, 5, 6, 7, time.Local)),
-						Document: structs.Snapshot{
-							Timestamp: primitive.NewDateTimeFromTime(time.Date(2024, 2, 3, 4, 5, 6, 7, time.Local)),
-							WarSnapshot: structs.WarSnapshot{
-								WarID:            6,
-								ImpactMultiplier: 50.5,
-							},
-							AssignmentIDs: []int64{2, 3, 4},
-							CampaignIDs:   []int32{7, 8, 9},
-							DispatchIDs:   []int32{10},
-							Planets: []structs.PlanetSnapshot{
-								{
-									ID:           6,
-									Health:       1234567,
-									CurrentOwner: "Humans",
-									Event:        nil,
-									Statistics: structs.Statistics{
-										MissionsWon:  100,
-										MissionsLost: 55,
-										MissionTime:  12345,
-										Kills: structs.StatisticsKills{
-											Terminid:   10000,
-											Automaton:  99999,
-											Illuminate: 333333,
-										},
-										BulletsFired: 11111,
-										BulletsHit:   1111,
-										TimePlayed:   123456,
-										Deaths:       32134,
-										Revives:      94284,
-										Friendlies:   12940,
-										PlayerCount:  444442,
-									},
-									Attacking: []int32{8, 9, 10},
-								},
-							},
-							Statistics: structs.Statistics{
-								MissionsWon:  100,
-								MissionsLost: 55,
-								MissionTime:  12345,
-								Kills: structs.StatisticsKills{
-									Terminid:   10000,
-									Automaton:  99999,
-									Illuminate: 333333,
-								},
-								BulletsFired: 11111,
-								BulletsHit:   1111,
-								TimePlayed:   123456,
-								Deaths:       32134,
-								Revives:      94284,
-								Friendlies:   12940,
-								PlayerCount:  444442,
-							},
-						},
-					},
-				},
-			},
-			wantErr: false,
+			want:    nil,
+			wantErr: true,
 		},
 		{
-			name: "nil required campaign ID",
-			args: args{
-				data: APIData{
-					WarID: &api.WarId{Id: ptr(int32(6))},
-					War: &api.War{
-						Now:              ptr(time.Date(2024, 2, 3, 4, 5, 6, 7, time.Local)),
-						ImpactMultiplier: ptr(float64(50.5)),
-						Statistics: mustWarStatistics(api.Statistics{
-							MissionsWon:     ptr(uint64(100)),
-							MissionsLost:    ptr(uint64(55)),
-							MissionTime:     ptr(uint64(12345)),
-							TerminidKills:   ptr(uint64(10000)),
-							AutomatonKills:  ptr(uint64(99999)),
-							IlluminateKills: ptr(uint64(333333)),
-							BulletsFired:    ptr(uint64(11111)),
-							BulletsHit:      ptr(uint64(1111)),
-							TimePlayed:      ptr(uint64(123456)),
-							Deaths:          ptr(uint64(32134)),
-							Revives:         ptr(uint64(94284)),
-							Friendlies:      ptr(uint64(12940)),
-							PlayerCount:     ptr(uint64(444442)),
-						}),
-					},
-					Assignments: &[]api.Assignment2{
-						{Id: ptr(int64(2))},
-						{Id: ptr(int64(3))},
-						{Id: ptr(int64(4))},
-					},
-					Campaigns: &[]api.Campaign2{
-						{Id: nil},
-						{Id: ptr(int32(8))},
-						{Id: ptr(int32(9))},
-					},
-					Dispatches: &[]api.Dispatch{
-						{Id: ptr(int32(10))},
-					},
-					Planets: &[]api.Planet{
-						{
-							Index:        ptr(int32(6)),
-							Health:       ptr(int64(1234567)),
-							CurrentOwner: ptr("Humans"),
-							Event: mustPlanetEvent(api.Event{
-								Id:     ptr(int32(6)),
-								Health: ptr(int64(999)),
-							}),
-							Statistics: mustPlanetStatistics(api.Statistics{
-								MissionsWon:     ptr(uint64(100)),
-								MissionsLost:    ptr(uint64(55)),
-								MissionTime:     ptr(uint64(12345)),
-								TerminidKills:   ptr(uint64(10000)),
-								AutomatonKills:  ptr(uint64(99999)),
-								IlluminateKills: ptr(uint64(333333)),
-								BulletsFired:    ptr(uint64(11111)),
-								BulletsHit:      ptr(uint64(1111)),
-								TimePlayed:      ptr(uint64(123456)),
-								Deaths:          ptr(uint64(32134)),
-								Revives:         ptr(uint64(94284)),
-								Friendlies:      ptr(uint64(12940)),
-								PlayerCount:     ptr(uint64(444442)),
-							}),
-							Attacking: &[]int32{8, 9, 10},
-						},
-					},
+			name: "empty war statistic",
+			modifiers: modifiers{
+				WarID: func(wi *api.WarId) {},
+				War: func(w *api.War) {
+					w.Statistics = mustWarStatistics(api.Statistics{})
+				},
+				Assignment: func(a *api.Assignment2) {},
+				Campaign:   func(c *api.Campaign2) {},
+				Dispatch:   func(d *api.Dispatch) {},
+				Planet:     func(p *api.Planet) {},
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "empty regen",
+			modifiers: modifiers{
+				WarID:      func(wi *api.WarId) {},
+				War:        func(w *api.War) {},
+				Assignment: func(a *api.Assignment2) {},
+				Campaign:   func(c *api.Campaign2) {},
+				Dispatch:   func(d *api.Dispatch) {},
+				Planet: func(p *api.Planet) {
+					p.RegenPerSecond = nil
 				},
 			},
-			want: &db.DocsProvider[structs.Snapshot]{
-				CollectionName: "snapshots",
-				Docs: []db.DocWrapper[structs.Snapshot]{
-					{
-						DocID: primitive.NewDateTimeFromTime(time.Date(2024, 2, 3, 4, 5, 6, 7, time.Local)),
-						Document: structs.Snapshot{
-							Timestamp: primitive.NewDateTimeFromTime(time.Date(2024, 2, 3, 4, 5, 6, 7, time.Local)),
-							WarSnapshot: structs.WarSnapshot{
-								WarID:            6,
-								ImpactMultiplier: 50.5,
-							},
-							AssignmentIDs: []int64{2, 3, 4},
-							CampaignIDs:   []int32{8, 9},
-							DispatchIDs:   []int32{10},
-							Planets: []structs.PlanetSnapshot{
-								{
-									ID:           6,
-									Health:       1234567,
-									CurrentOwner: "Humans",
-									Event: &structs.EventSnapshot{
-										EventID: 6,
-										Health:  999,
-									},
-									Statistics: structs.Statistics{
-										MissionsWon:  100,
-										MissionsLost: 55,
-										MissionTime:  12345,
-										Kills: structs.StatisticsKills{
-											Terminid:   10000,
-											Automaton:  99999,
-											Illuminate: 333333,
-										},
-										BulletsFired: 11111,
-										BulletsHit:   1111,
-										TimePlayed:   123456,
-										Deaths:       32134,
-										Revives:      94284,
-										Friendlies:   12940,
-										PlayerCount:  444442,
-									},
-									Attacking: []int32{8, 9, 10},
-								},
-							},
-							Statistics: structs.Statistics{
-								MissionsWon:  100,
-								MissionsLost: 55,
-								MissionTime:  12345,
-								Kills: structs.StatisticsKills{
-									Terminid:   10000,
-									Automaton:  99999,
-									Illuminate: 333333,
-								},
-								BulletsFired: 11111,
-								BulletsHit:   1111,
-								TimePlayed:   123456,
-								Deaths:       32134,
-								Revives:      94284,
-								Friendlies:   12940,
-								PlayerCount:  444442,
-							},
-						},
-					},
-				},
-			},
+			want:    nil,
 			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotErr := false
-			errFunc := func(err error) {
-				if !tt.wantErr {
-					t.Logf("War.Transform() error: %v", err)
-				}
-				gotErr = true
+			var (
+				warID      api.WarId
+				war        api.War
+				assignment api.Assignment2
+				planet     api.Planet
+				campaign   api.Campaign2
+				dispatch   api.Dispatch
+			)
+			if err := copytest.DeepCopy(
+				&warID, &validWarIDSnapshot,
+				&war, &validWarSnapshot,
+				&planet, &validPlanetSnapshot,
+				&assignment, &validAssignmentSnapshot,
+				&campaign, &validCampaignSnapshot,
+				&dispatch, &validDispatchSnapshot,
+			); err != nil {
+				t.Errorf("failed to create struct copies: %v", err)
+				return
 			}
-			got := tt.s.Transform(tt.args.data, errFunc)
-			if gotErr != tt.wantErr {
-				t.Errorf("Snapshots.Transform() returned error, wantErr %v", tt.wantErr)
+
+			// call modifiers on valid assignment copies
+			tt.modifiers.WarID(&warID)
+			tt.modifiers.War(&war)
+			tt.modifiers.Planet(&planet)
+			tt.modifiers.Assignment(&assignment)
+			tt.modifiers.Campaign(&campaign)
+			tt.modifiers.Dispatch(&dispatch)
+			data := APIData{
+				WarID:       &warID,
+				War:         &war,
+				Planets:     &[]api.Planet{planet},
+				Assignments: &[]api.Assignment2{assignment},
+				Campaigns:   &[]api.Campaign2{campaign},
+				Dispatches:  &[]api.Dispatch{dispatch},
+			}
+			got, err := Snapshot(data)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Snapshot() err = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Snapshots.Transform() = %v, want %v", got, tt.want)
+				t.Errorf("Snapshot() = %v, want %v", got, tt.want)
 			}
 		})
 	}

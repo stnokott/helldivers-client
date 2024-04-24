@@ -6,104 +6,84 @@ import (
 	"time"
 
 	"github.com/stnokott/helldivers-client/internal/api"
+	"github.com/stnokott/helldivers-client/internal/copytest"
 	"github.com/stnokott/helldivers-client/internal/db"
-	"github.com/stnokott/helldivers-client/internal/db/structs"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func TestDispatchesTransform(t *testing.T) {
-	type args struct {
-		data APIData
-	}
+var validDispatch = api.Dispatch{
+	Id:        ptr(int32(678)),
+	Message:   ptr("A dispatch message"),
+	Published: ptr(time.Date(2025, 1, 2, 3, 4, 5, 6, time.UTC)),
+	Type:      ptr(int32(111)),
+}
+
+func TestDispatch(t *testing.T) {
+	type modifier func(*api.Dispatch)
 	tests := []struct {
-		name    string
-		d       Dispatches
-		args    args
-		want    *db.DocsProvider[structs.Dispatch]
-		wantErr bool
+		name     string
+		modifier modifier
+		want     []db.EntityMerger
+		wantErr  bool
 	}{
 		{
-			name: "complete",
-			args: args{
-				data: APIData{
-					Dispatches: &[]api.Dispatch{
-						{
-							Id:        ptr(int32(5)),
-							Published: ptr(time.Date(2024, 12, 31, 23, 59, 59, 0, time.Local)),
-							Type:      ptr(int32(7)),
-							Message:   ptr("Foo"),
-						},
-						{
-							Id:        ptr(int32(6)),
-							Published: ptr(time.Date(2025, 12, 31, 23, 59, 59, 0, time.Local)),
-							Type:      ptr(int32(8)),
-							Message:   ptr("Bar"),
-						},
-					},
-				},
+			name: "valid",
+			modifier: func(d *api.Dispatch) {
+				// keep valid
 			},
-			want: &db.DocsProvider[structs.Dispatch]{
-				CollectionName: "dispatches",
-				Docs: []db.DocWrapper[structs.Dispatch]{
-					{
-						DocID: int32(5),
-						Document: structs.Dispatch{
-							ID:         5,
-							CreateTime: primitive.NewDateTimeFromTime(time.Date(2024, 12, 31, 23, 59, 59, 0, time.Local)),
-							Type:       7,
-							Message:    "Foo",
-						},
-					},
-					{
-						DocID: int32(6),
-						Document: structs.Dispatch{
-							ID:         6,
-							CreateTime: primitive.NewDateTimeFromTime(time.Date(2025, 12, 31, 23, 59, 59, 0, time.Local)),
-							Type:       8,
-							Message:    "Bar",
-						},
-					},
+			want: []db.EntityMerger{
+				&db.Dispatch{
+					ID:         678,
+					Message:    "A dispatch message",
+					CreateTime: db.PGTimestamp(time.Date(2025, 1, 2, 3, 4, 5, 6, time.UTC)),
+					Type:       111,
 				},
 			},
 			wantErr: false,
 		},
 		{
-			name: "nil type",
-			args: args{
-				data: APIData{
-					Dispatches: &[]api.Dispatch{
-						{
-							Id:        ptr(int32(5)),
-							Published: ptr(time.Date(2024, 12, 31, 23, 59, 59, 0, time.Local)),
-							Type:      nil,
-							Message:   ptr("Foo"),
-						},
-					},
-				},
+			name: "empty required ID",
+			modifier: func(d *api.Dispatch) {
+				d.Id = nil
 			},
-			want: &db.DocsProvider[structs.Dispatch]{
-				CollectionName: db.CollDispatches,
-				Docs:           []db.DocWrapper[structs.Dispatch]{},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "empty required message",
+			modifier: func(d *api.Dispatch) {
+				d.Message = nil
 			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "empty create time",
+			modifier: func(d *api.Dispatch) {
+				d.Published = nil
+			},
+			want:    nil,
 			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotErr := false
-			errFunc := func(err error) {
-				if !tt.wantErr {
-					t.Logf("Dispatches.Transform() error: %v", err)
-				}
-				gotErr = true
+			var dispatch api.Dispatch
+			if err := copytest.DeepCopy(&dispatch, &validDispatch); err != nil {
+				t.Errorf("failed to create dispatch struct copy: %v", err)
+				return
 			}
-			got := tt.d.Transform(tt.args.data, errFunc)
-			if gotErr != tt.wantErr {
-				t.Errorf("Dispatches.Transform() returned error, wantErr %v", tt.wantErr)
+			// call modifiers on valid copies
+			tt.modifier(&dispatch)
+			data := APIData{
+				Dispatches: &[]api.Dispatch{dispatch},
+			}
+			got, err := Dispatches(data)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Dispatches() err = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Dispatches.Transform() = %v, want %v", got, tt.want)
+				t.Errorf("Dispatches() = %v, want %v", got, tt.want)
 			}
 		})
 	}

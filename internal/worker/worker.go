@@ -54,11 +54,6 @@ func (w *Worker) Run(interval time.Duration, stop <-chan struct{}) {
 	}
 }
 
-// DocTransformer provides a means of converting API data into structs ready for passing to the MongoDB driver.
-type DocTransformer[T any] interface {
-	Transform(data transform.APIData, errFunc func(error)) *db.DocsProvider[T]
-}
-
 func (w *Worker) do(timeout time.Duration) {
 	w.log.Println("synchronizing")
 
@@ -75,7 +70,7 @@ func (w *Worker) do(timeout time.Duration) {
 
 	data := w.queryData(ctx)
 
-	if err = w.upsertData(ctx, data); err != nil {
+	if err = w.mergeData(ctx, data); err != nil {
 		return
 	}
 }
@@ -90,52 +85,53 @@ func (w *Worker) queryData(ctx context.Context) (data transform.APIData) {
 	if err != nil {
 		w.log.Printf("failed to query current war: %v", err)
 	}
-	data.Planets, err = w.api.Planets(ctx)
-	if err != nil {
-		w.log.Printf("failed to query planets: %v", err)
-	}
 	data.Campaigns, err = w.api.Campaigns(ctx)
 	if err != nil {
 		w.log.Printf("failed to query campaigns: %v", err)
 	}
-	data.Dispatches, err = w.api.Dispatches(ctx)
+	data.Planets, err = w.api.Planets(ctx)
 	if err != nil {
-		w.log.Printf("failed to query dispatches: %v", err)
+		w.log.Printf("failed to query planets: %v", err)
 	}
 	data.Assignments, err = w.api.Assignments(ctx)
 	if err != nil {
 		w.log.Printf("failed to query assignments: %v", err)
 	}
+	data.Dispatches, err = w.api.Dispatches(ctx)
+	if err != nil {
+		w.log.Printf("failed to query dispatches: %v", err)
+	}
 	return
 }
 
-func (w *Worker) upsertData(ctx context.Context, data transform.APIData) (err error) {
-	warTransformer := transform.War{}
-	upsertDoc(ctx, w, data, warTransformer)
+func (w *Worker) mergeData(ctx context.Context, data transform.APIData) (err error) {
+	w.log.Println("transforming API responses")
+	var wars, events, planets, campaigns, assignments, dispatches, snapshots []db.EntityMerger
 
-	planetsTransformer := transform.Planets{}
-	upsertDoc(ctx, w, data, planetsTransformer)
+	if wars, err = transform.Wars(data); err != nil {
+		return
+	}
+	if campaigns, err = transform.Campaigns(data); err != nil {
+		return
+	}
+	if events, err = transform.Events(data); err != nil {
+		return
+	}
+	if planets, err = transform.Planets(data); err != nil {
+		return
+	}
+	if assignments, err = transform.Assignments(data); err != nil {
+		return
+	}
+	if dispatches, err = transform.Dispatches(data); err != nil {
+		return
+	}
+	if snapshots, err = transform.Snapshot(data); err != nil {
+		return
+	}
 
-	campaignsTransformer := transform.Campaigns{}
-	upsertDoc(ctx, w, data, campaignsTransformer)
-
-	dispatchesTransformer := transform.Dispatches{}
-	upsertDoc(ctx, w, data, dispatchesTransformer)
-
-	eventsTransformer := transform.Events{}
-	upsertDoc(ctx, w, data, eventsTransformer)
-
-	assignmentsTransformer := transform.Assignments{}
-	upsertDoc(ctx, w, data, assignmentsTransformer)
-
-	snapshotsTransformer := transform.Snapshots{}
-	upsertDoc(ctx, w, data, snapshotsTransformer)
+	w.log.Println("merging transformed entities into database")
+	// order is important here due to FK constraints
+	err = w.db.Merge(ctx, wars, campaigns, events, planets, assignments, dispatches, snapshots)
 	return
-}
-
-func upsertDoc[T any](ctx context.Context, w *Worker, data transform.APIData, t DocTransformer[T]) {
-	provider := t.Transform(data, func(err error) {
-		w.log.Printf("error during %T transformation: %v", t, err)
-	})
-	db.UpsertDocs(ctx, w.db, provider)
 }

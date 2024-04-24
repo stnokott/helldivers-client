@@ -1,0 +1,14 @@
+version: "2"
+
+sql:
+  - engine: postgresql
+    schema: scripts/migrations
+    queries: scripts/queries
+    gen:
+      go:
+        package: gen
+        out: internal/db/gen
+        sql_package: "pgx/v5"
+        emit_empty_slices: true
+        emit_pointers_for_null_types: true
+        emit_prepared_queries: true
