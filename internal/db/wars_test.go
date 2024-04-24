@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/golang-migrate/migrate/v4"
-	"github.com/jinzhu/copier"
 )
 
 var validWar = War{
@@ -54,9 +53,7 @@ func TestWarsSchema(t *testing.T) {
 				}
 
 				var war War
-				// deep copy will copy values behind pointers instead of the pointers themselves
-				copyOption := copier.Option{DeepCopy: true}
-				if err := copier.CopyWithOption(&war, &validWar, copyOption); err != nil {
+				if err := deepCopy(&war, &validWar); err != nil {
 					t.Errorf("failed to create war struct copy: %v", err)
 					return
 				}

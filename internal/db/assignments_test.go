@@ -7,7 +7,6 @@ import (
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/jinzhu/copier"
 	"github.com/stnokott/helldivers-client/internal/db/gen"
 )
 
@@ -75,9 +74,7 @@ func TestAssignmentsSchema(t *testing.T) {
 				}
 
 				var assignment Assignment
-				// deep copy will copy values behind pointers instead of the pointers themselves
-				copyOption := copier.Option{DeepCopy: true}
-				if err := copier.CopyWithOption(&assignment, &validAssignment, copyOption); err != nil {
+				if err := deepCopy(&assignment, &validAssignment); err != nil {
 					t.Errorf("failed to create assignment struct copy: %v", err)
 					return
 				}

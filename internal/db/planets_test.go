@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/golang-migrate/migrate/v4"
-	"github.com/jinzhu/copier"
 	"github.com/stnokott/helldivers-client/internal/db/gen"
 )
 
@@ -145,9 +144,7 @@ func TestPlanetsSchema(t *testing.T) {
 				}
 
 				var planet Planet
-				// deep copy will copy values behind pointers instead of the pointers themselves
-				copyOption := copier.Option{DeepCopy: true}
-				if err := copier.CopyWithOption(&planet, &validPlanet, copyOption); err != nil {
+				if err := deepCopy(&planet, &validPlanet); err != nil {
 					t.Errorf("failed to create planet struct copy: %v", err)
 					return
 				}

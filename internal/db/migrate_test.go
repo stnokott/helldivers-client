@@ -2,40 +2,12 @@ package db
 
 import (
 	"context"
-	"errors"
-	"io"
-	"log"
 	"testing"
 
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/pgx/v5" // use pgx as driver
 	_ "github.com/golang-migrate/migrate/v4/source/file"     // load migrations from file
-	"github.com/stnokott/helldivers-client/internal/config"
 )
-
-func withClient(t *testing.T, do func(client *Client, migration *migrate.Migrate)) {
-	cfg := config.Get()
-
-	client, err := New(cfg, log.New(io.Discard, "", 0))
-	if err != nil {
-		t.Fatalf("could not initialize DB connection: %v", err)
-	}
-	defer func() {
-		if err = client.Disconnect(); err != nil {
-			t.Logf("failed to disconnect: %v", err)
-		}
-	}()
-	migration, err := client.newMigration("../../scripts/migrations")
-	if err != nil {
-		t.Fatalf("client.newMigration() error = %v, want nil", err)
-	}
-	defer func() {
-		if err = migration.Down(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
-			t.Fatalf("failed to migrate down: %v", err)
-		}
-	}()
-	do(client, migration)
-}
 
 func TestMigrateUp(t *testing.T) {
 	withClient(t, func(client *Client, _ *migrate.Migrate) {

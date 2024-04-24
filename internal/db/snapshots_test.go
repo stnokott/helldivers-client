@@ -2,18 +2,13 @@ package db
 
 import (
 	"context"
-	"errors"
 	"math"
 	"testing"
 	"time"
 
-	"github.com/jinzhu/copier"
-
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/stnokott/helldivers-client/internal/db/gen"
 )
-
-// TODO: fuzzing tests
 
 var validWarSnapshot = War{
 	ID:        999,
@@ -271,50 +266,47 @@ func TestSnapshotsSchema(t *testing.T) {
 					dispatch   Dispatch
 					snapshot   Snapshot
 				)
-				// deep copy will copy values behind pointers instead of the pointers themselves
-				copyOption := copier.Option{DeepCopy: true}
-				err := errors.Join(
-					copier.CopyWithOption(&war, &validWarSnapshot, copyOption),
-					copier.CopyWithOption(&assignment, &validAssignmentSnapshot, copyOption),
-					copier.CopyWithOption(&event, &validEventSnapshot, copyOption),
-					copier.CopyWithOption(&planet, &validPlanetSnapshot, copyOption),
-					copier.CopyWithOption(&campaign, &validCampaignSnapshot, copyOption),
-					copier.CopyWithOption(&dispatch, &validDispatchSnapshot, copyOption),
-					copier.CopyWithOption(&snapshot, &validSnapshot, copyOption),
-				)
-				if err != nil {
+				if err := deepCopy(
+					&war, &validWarSnapshot,
+					&assignment, &validAssignmentSnapshot,
+					&event, &validEventSnapshot,
+					&planet, &validPlanetSnapshot,
+					&campaign, &validCampaignSnapshot,
+					&dispatch, &validDispatchSnapshot,
+					&snapshot, &validSnapshot,
+				); err != nil {
 					t.Errorf("failed to create struct copies: %v", err)
 					return
 				}
 
 				tt.modifier(&snapshot)
 
-				if err = war.Merge(context.Background(), client.queries, tableMergeStats{}); err != nil {
+				if err := war.Merge(context.Background(), client.queries, tableMergeStats{}); err != nil {
 					t.Errorf("failed to insert war (required for snapshot): %v", err)
 					return
 				}
-				if err = event.Merge(context.Background(), client.queries, tableMergeStats{}); err != nil {
+				if err := event.Merge(context.Background(), client.queries, tableMergeStats{}); err != nil {
 					t.Errorf("failed to insert event (required for snapshot): %v", err)
 					return
 				}
-				if err = assignment.Merge(context.Background(), client.queries, tableMergeStats{}); err != nil {
+				if err := assignment.Merge(context.Background(), client.queries, tableMergeStats{}); err != nil {
 					t.Errorf("failed to insert assignment (required for snapshot): %v", err)
 					return
 				}
-				if err = planet.Merge(context.Background(), client.queries, tableMergeStats{}); err != nil {
+				if err := planet.Merge(context.Background(), client.queries, tableMergeStats{}); err != nil {
 					t.Errorf("failed to insert planet (required for snapshot): %v", err)
 					return
 				}
-				if err = campaign.Merge(context.Background(), client.queries, tableMergeStats{}); err != nil {
+				if err := campaign.Merge(context.Background(), client.queries, tableMergeStats{}); err != nil {
 					t.Errorf("failed to insert campaign (required for snapshot): %v", err)
 					return
 				}
-				if err = dispatch.Merge(context.Background(), client.queries, tableMergeStats{}); err != nil {
+				if err := dispatch.Merge(context.Background(), client.queries, tableMergeStats{}); err != nil {
 					t.Errorf("failed to insert dispatch (required for snapshot): %v", err)
 					return
 				}
 
-				err = snapshot.Merge(context.Background(), client.queries, tableMergeStats{})
+				err := snapshot.Merge(context.Background(), client.queries, tableMergeStats{})
 				if (err != nil) != tt.wantErr {
 					t.Errorf("Snapshot.Merge() error = %v, wantErr = %v", err, tt.wantErr)
 					return

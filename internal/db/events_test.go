@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/golang-migrate/migrate/v4"
-	"github.com/jinzhu/copier"
 )
 
 var validEvent = Event{
@@ -71,9 +70,7 @@ func TestEventsSchema(t *testing.T) {
 				}
 
 				var event Event
-				// deep copy will copy values behind pointers instead of the pointers themselves
-				copyOption := copier.Option{DeepCopy: true}
-				if err := copier.CopyWithOption(&event, &validEvent, copyOption); err != nil {
+				if err := deepCopy(&event, &validEvent); err != nil {
 					t.Errorf("failed to create event struct copy: %v", err)
 					return
 				}
