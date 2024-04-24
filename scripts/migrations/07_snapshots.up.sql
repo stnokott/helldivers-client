@@ -37,7 +37,8 @@ CREATE TABLE IF NOT EXISTS assignment_snapshots
 (
     id bigint NOT NULL UNIQUE GENERATED ALWAYS AS IDENTITY,
     assignment_id bigint NOT NULL REFERENCES assignments,
-    progress integer[] NOT NULL
+    progress integer[] NOT NULL,
+    PRIMARY KEY (id)
 );
 
 COMMENT ON COLUMN assignment_snapshots.progress
