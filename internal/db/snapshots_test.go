@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/golang-migrate/migrate/v4"
+	"github.com/stnokott/helldivers-client/internal/copytest"
 	"github.com/stnokott/helldivers-client/internal/db/gen"
 )
 
@@ -36,13 +37,20 @@ var validAssignmentSnapshot = Assignment{
 	},
 }
 
+var validCampaignSnapshot = Campaign{
+	ID:    5,
+	Type:  8,
+	Count: 100,
+}
+
 var validEventSnapshot = Event{
-	ID:        555,
-	Type:      7,
-	Faction:   "Automatons",
-	MaxHealth: 55667788,
-	StartTime: PGTimestamp(time.Date(2024, 1, 1, 1, 1, 1, 1, time.UTC)),
-	EndTime:   PGTimestamp(time.Date(2025, 1, 1, 1, 1, 1, 1, time.UTC)),
+	ID:         555,
+	CampaignID: 5,
+	Type:       7,
+	Faction:    "Automatons",
+	MaxHealth:  55667788,
+	StartTime:  PGTimestamp(time.Date(2024, 1, 1, 1, 1, 1, 1, time.UTC)),
+	EndTime:    PGTimestamp(time.Date(2025, 1, 1, 1, 1, 1, 1, time.UTC)),
 }
 
 var validPlanetSnapshot = Planet{
@@ -68,13 +76,6 @@ var validPlanetSnapshot = Planet{
 			Description: "This hazard contains a lot of bugs",
 		},
 	},
-}
-
-var validCampaignSnapshot = Campaign{
-	ID:       5,
-	PlanetID: 456,
-	Type:     8,
-	Count:    100,
 }
 
 var validDispatchSnapshot = Dispatch{
@@ -266,7 +267,7 @@ func TestSnapshotsSchema(t *testing.T) {
 					dispatch   Dispatch
 					snapshot   Snapshot
 				)
-				if err := deepCopy(
+				if err := copytest.DeepCopy(
 					&war, &validWarSnapshot,
 					&assignment, &validAssignmentSnapshot,
 					&event, &validEventSnapshot,
@@ -285,6 +286,10 @@ func TestSnapshotsSchema(t *testing.T) {
 					t.Errorf("failed to insert war (required for snapshot): %v", err)
 					return
 				}
+				if err := campaign.Merge(context.Background(), client.queries, tableMergeStats{}); err != nil {
+					t.Errorf("failed to insert campaign (required for snapshot): %v", err)
+					return
+				}
 				if err := event.Merge(context.Background(), client.queries, tableMergeStats{}); err != nil {
 					t.Errorf("failed to insert event (required for snapshot): %v", err)
 					return
@@ -295,10 +300,6 @@ func TestSnapshotsSchema(t *testing.T) {
 				}
 				if err := planet.Merge(context.Background(), client.queries, tableMergeStats{}); err != nil {
 					t.Errorf("failed to insert planet (required for snapshot): %v", err)
-					return
-				}
-				if err := campaign.Merge(context.Background(), client.queries, tableMergeStats{}); err != nil {
-					t.Errorf("failed to insert campaign (required for snapshot): %v", err)
 					return
 				}
 				if err := dispatch.Merge(context.Background(), client.queries, tableMergeStats{}); err != nil {

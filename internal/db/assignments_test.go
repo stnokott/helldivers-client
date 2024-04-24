@@ -7,6 +7,7 @@ import (
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/stnokott/helldivers-client/internal/copytest"
 	"github.com/stnokott/helldivers-client/internal/db/gen"
 )
 
@@ -74,7 +75,7 @@ func TestAssignmentsSchema(t *testing.T) {
 				}
 
 				var assignment Assignment
-				if err := deepCopy(&assignment, &validAssignment); err != nil {
+				if err := copytest.DeepCopy(&assignment, &validAssignment); err != nil {
 					t.Errorf("failed to create assignment struct copy: %v", err)
 					return
 				}

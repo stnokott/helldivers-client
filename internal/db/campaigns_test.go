@@ -5,20 +5,16 @@ import (
 	"testing"
 
 	"github.com/golang-migrate/migrate/v4"
+	"github.com/stnokott/helldivers-client/internal/copytest"
 )
 
 var validCampaign = Campaign{
-	ID:       5,
-	PlanetID: 6,
-	Type:     8,
-	Count:    100,
+	ID:    5,
+	Type:  8,
+	Count: 100,
 }
-var validCampaignPlanet = validPlanet
 
 func TestCampaignsSchema(t *testing.T) {
-	// synchronize planet IDs so we have a valid starting point
-	validCampaignPlanet.ID = validCampaign.PlanetID
-
 	// modifier applies a change to the valid struct, based on the test
 	type modifier func(*Campaign)
 	tests := []struct {
@@ -30,13 +26,6 @@ func TestCampaignsSchema(t *testing.T) {
 			name:     "valid",
 			modifier: func(p *Campaign) {},
 			wantErr:  false,
-		},
-		{
-			name: "invalid planet reference",
-			modifier: func(c *Campaign) {
-				c.PlanetID = 99999
-			},
-			wantErr: true,
 		},
 		{
 			name: "negative count",
@@ -54,13 +43,8 @@ func TestCampaignsSchema(t *testing.T) {
 					return
 				}
 
-				if err := validCampaignPlanet.Merge(context.Background(), client.queries, tableMergeStats{}); err != nil {
-					t.Errorf("failed to merge campaign planet (check planet tests): %v", err)
-					return
-				}
-
 				var campaign Campaign
-				if err := deepCopy(&campaign, &validCampaign); err != nil {
+				if err := copytest.DeepCopy(&campaign, &validCampaign); err != nil {
 					t.Errorf("failed to create campaign struct copy: %v", err)
 					return
 				}

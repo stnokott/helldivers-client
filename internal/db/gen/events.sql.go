@@ -12,7 +12,7 @@ import (
 )
 
 const eventExists = `-- name: EventExists :one
-SELECT EXISTS(SELECT id, type, faction, max_health, start_time, end_time FROM events WHERE id = $1)
+SELECT EXISTS(SELECT id, campaign_id, type, faction, max_health, start_time, end_time FROM events WHERE id = $1)
 `
 
 func (q *Queries) EventExists(ctx context.Context, id int32) (bool, error) {
@@ -35,29 +35,31 @@ func (q *Queries) GetEvent(ctx context.Context, id int32) (int32, error) {
 
 const mergeEvent = `-- name: MergeEvent :execrows
 INSERT INTO events (
-    id, type, faction, max_health, start_time, end_time
+    id, campaign_id, type, faction, max_health, start_time, end_time
 ) VALUES (
-    $1, $2, $3, $4, $5, $6
+    $1, $2, $3, $4, $5, $6, $7
 )
 ON CONFLICT (id) DO UPDATE
-    SET type=$2, faction=$3, max_health=$4, start_time=$5, end_time=$6
+    SET campaign_id=$2, type=$3, faction=$4, max_health=$5, start_time=$6, end_time=$7
 WHERE FALSE IN (
-    EXCLUDED.type=$2, EXCLUDED.faction=$3, EXCLUDED.max_health=$4, EXCLUDED.start_time=$5, EXCLUDED.end_time=$6
+    EXCLUDED.campaign_id=$2, EXCLUDED.type=$3, EXCLUDED.faction=$4, EXCLUDED.max_health=$5, EXCLUDED.start_time=$6, EXCLUDED.end_time=$7
 )
 `
 
 type MergeEventParams struct {
-	ID        int32
-	Type      int32
-	Faction   string
-	MaxHealth int64
-	StartTime pgtype.Timestamp
-	EndTime   pgtype.Timestamp
+	ID         int32
+	CampaignID int32
+	Type       int32
+	Faction    string
+	MaxHealth  int64
+	StartTime  pgtype.Timestamp
+	EndTime    pgtype.Timestamp
 }
 
 func (q *Queries) MergeEvent(ctx context.Context, arg MergeEventParams) (int64, error) {
 	result, err := q.db.Exec(ctx, mergeEvent,
 		arg.ID,
+		arg.CampaignID,
 		arg.Type,
 		arg.Faction,
 		arg.MaxHealth,

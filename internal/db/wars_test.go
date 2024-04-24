@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/golang-migrate/migrate/v4"
+	"github.com/stnokott/helldivers-client/internal/copytest"
 )
 
 var validWar = War{
@@ -53,7 +54,7 @@ func TestWarsSchema(t *testing.T) {
 				}
 
 				var war War
-				if err := deepCopy(&war, &validWar); err != nil {
+				if err := copytest.DeepCopy(&war, &validWar); err != nil {
 					t.Errorf("failed to create war struct copy: %v", err)
 					return
 				}

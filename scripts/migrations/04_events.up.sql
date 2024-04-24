@@ -1,6 +1,7 @@
 CREATE TABLE IF NOT EXISTS events
 (
     id integer NOT NULL UNIQUE,
+    campaign_id integer NOT NULL REFERENCES campaigns,
     type integer NOT NULL,
     faction text NOT NULL CHECK (faction <> ''),
     max_health bigint NOT NULL CHECK (max_health >= 0),

@@ -7,12 +7,12 @@ SELECT EXISTS(SELECT * FROM campaigns WHERE id = $1);
 
 -- name: MergeCampaign :execrows
 INSERT INTO campaigns (
-    id, planet_id, type, count
+    id, type, count
 ) VALUES (
-    $1, $2, $3, $4
+    $1, $2, $3
 )
 ON CONFLICT (id) DO UPDATE
-    SET planet_id=$2, type=$3, count=$4
+    SET type=$2, count=$3
 WHERE FALSE IN (
-    EXCLUDED.planet_id=$2, EXCLUDED.type=$3, EXCLUDED.count=$4
+    EXCLUDED.type=$2, EXCLUDED.count=$3
 );

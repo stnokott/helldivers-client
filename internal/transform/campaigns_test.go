@@ -4,26 +4,15 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/jinzhu/copier"
 	"github.com/stnokott/helldivers-client/internal/api"
+	"github.com/stnokott/helldivers-client/internal/copytest"
 	"github.com/stnokott/helldivers-client/internal/db"
 )
-
-func mustCampaignPlanet(from api.Planet) *api.Campaign2_Planet {
-	campaignPlanet := new(api.Campaign2_Planet)
-	if err := campaignPlanet.FromPlanet(from); err != nil {
-		panic(err)
-	}
-	return campaignPlanet
-}
 
 var validCampaign = api.Campaign2{
 	Id:    ptr(int32(987)),
 	Count: ptr(int32(123)),
 	Type:  ptr(int32(7)),
-	Planet: mustCampaignPlanet(api.Planet{
-		Index: ptr(int32(3)),
-	}),
 }
 
 func TestCampaigns(t *testing.T) {
@@ -42,23 +31,12 @@ func TestCampaigns(t *testing.T) {
 			},
 			want: []db.EntityMerger{
 				&db.Campaign{
-					ID:       987,
-					PlanetID: 3,
-					Type:     7,
-					Count:    123,
+					ID:    987,
+					Type:  7,
+					Count: 123,
 				},
 			},
 			wantErr: false,
-		},
-		{
-			name: "missing required planet ID",
-			modifier: func(c *api.Campaign2) {
-				c.Planet = mustCampaignPlanet(api.Planet{
-					Index: nil,
-				})
-			},
-			want:    nil,
-			wantErr: true,
 		},
 		{
 			name: "missing required type",
@@ -72,9 +50,7 @@ func TestCampaigns(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			var campaign api.Campaign2
-			// deep copy will copy values behind pointers instead of the pointers themselves
-			copyOption := copier.Option{DeepCopy: true}
-			if err := copier.CopyWithOption(&campaign, &validCampaign, copyOption); err != nil {
+			if err := copytest.DeepCopy(&campaign, &validCampaign); err != nil {
 				t.Errorf("failed to create campaign struct copy: %v", err)
 				return
 			}

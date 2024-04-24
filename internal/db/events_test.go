@@ -7,15 +7,22 @@ import (
 	"time"
 
 	"github.com/golang-migrate/migrate/v4"
+	"github.com/stnokott/helldivers-client/internal/copytest"
 )
 
+var validEventCampaign = Campaign{
+	ID:    123,
+	Type:  55,
+	Count: 678,
+}
 var validEvent = Event{
-	ID:        555,
-	Type:      7,
-	Faction:   "Automatons",
-	MaxHealth: 55667788,
-	StartTime: PGTimestamp(time.Date(2024, 1, 1, 1, 1, 1, 1, time.UTC)),
-	EndTime:   PGTimestamp(time.Date(2025, 1, 1, 1, 1, 1, 1, time.UTC)),
+	CampaignID: 123,
+	ID:         555,
+	Type:       7,
+	Faction:    "Automatons",
+	MaxHealth:  55667788,
+	StartTime:  PGTimestamp(time.Date(2024, 1, 1, 1, 1, 1, 1, time.UTC)),
+	EndTime:    PGTimestamp(time.Date(2025, 1, 1, 1, 1, 1, 1, time.UTC)),
 }
 
 func TestEventsSchema(t *testing.T) {
@@ -60,6 +67,13 @@ func TestEventsSchema(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		{
+			name: "campaign FK violation",
+			modifier: func(e *Event) {
+				e.CampaignID++
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -69,13 +83,24 @@ func TestEventsSchema(t *testing.T) {
 					return
 				}
 
-				var event Event
-				if err := deepCopy(&event, &validEvent); err != nil {
+				var (
+					campaign Campaign
+					event    Event
+				)
+				if err := copytest.DeepCopy(
+					&campaign, &validEventCampaign,
+					&event, &validEvent,
+				); err != nil {
 					t.Errorf("failed to create event struct copy: %v", err)
 					return
 				}
 
 				tt.modifier(&event)
+
+				if err := campaign.Merge(context.Background(), client.queries, tableMergeStats{}); err != nil {
+					t.Errorf("failed to merge campaign (required for event): %v", err)
+					return
+				}
 
 				err := event.Merge(context.Background(), client.queries, tableMergeStats{})
 				if (err != nil) != tt.wantErr {

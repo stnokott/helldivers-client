@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/golang-migrate/migrate/v4"
+	"github.com/stnokott/helldivers-client/internal/copytest"
 )
 
 var validDispatch = Dispatch{
@@ -45,7 +46,7 @@ func TestDispatchesSchema(t *testing.T) {
 				}
 
 				var dispatch Dispatch
-				if err := deepCopy(&dispatch, &validDispatch); err != nil {
+				if err := copytest.DeepCopy(&dispatch, &validDispatch); err != nil {
 					t.Errorf("failed to create dispatch struct copy: %v", err)
 					return
 				}

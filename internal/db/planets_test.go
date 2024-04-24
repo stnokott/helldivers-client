@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/golang-migrate/migrate/v4"
+	"github.com/stnokott/helldivers-client/internal/copytest"
 	"github.com/stnokott/helldivers-client/internal/db/gen"
 )
 
@@ -144,7 +145,7 @@ func TestPlanetsSchema(t *testing.T) {
 				}
 
 				var planet Planet
-				if err := deepCopy(&planet, &validPlanet); err != nil {
+				if err := copytest.DeepCopy(&planet, &validPlanet); err != nil {
 					t.Errorf("failed to create planet struct copy: %v", err)
 					return
 				}

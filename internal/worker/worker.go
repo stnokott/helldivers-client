@@ -133,6 +133,7 @@ func (w *Worker) mergeData(ctx context.Context, data transform.APIData) (err err
 	// TODO: sort table insert order everywhere sensibly
 
 	w.log.Println("merging transformed entities into database")
-	err = w.db.Merge(ctx, wars, events, planets, campaigns, assignments, dispatches, snapshots)
+	// order is important here due to FK constraints
+	err = w.db.Merge(ctx, wars, campaigns, events, planets, assignments, dispatches, snapshots)
 	return
 }

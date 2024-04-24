@@ -1,13 +1,12 @@
 package transform
 
 import (
-	"errors"
 	"reflect"
 	"testing"
 	"time"
 
-	"github.com/jinzhu/copier"
 	"github.com/stnokott/helldivers-client/internal/api"
+	"github.com/stnokott/helldivers-client/internal/copytest"
 	"github.com/stnokott/helldivers-client/internal/db"
 )
 
@@ -100,13 +99,10 @@ func TestWar(t *testing.T) {
 				warID api.WarId
 				war   api.War
 			)
-			// deep copy will copy values behind pointers instead of the pointers themselves
-			copyOption := copier.Option{DeepCopy: true}
-			err := errors.Join(
-				copier.CopyWithOption(&warID, &validWarID, copyOption),
-				copier.CopyWithOption(&war, &validWar, copyOption),
-			)
-			if err != nil {
+			if err := copytest.DeepCopy(
+				&warID, &validWarID,
+				&war, &validWar,
+			); err != nil {
 				t.Errorf("failed to create struct copies: %v", err)
 				return
 			}

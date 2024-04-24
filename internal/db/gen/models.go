@@ -56,8 +56,6 @@ type Biome struct {
 type Campaign struct {
 	// The unique identifier of this campaign
 	ID int32
-	// The planet on which this campaign is being fought
-	PlanetID int32
 	// The type of campaign, this should be mapped onto an enum
 	Type int32
 	// Indicates how many campaigns have already been fought on this Planet
@@ -78,7 +76,8 @@ type Dispatch struct {
 
 // Represents an ongoing event on a Planet.
 type Event struct {
-	ID int32
+	ID         int32
+	CampaignID int32
 	// The type of event
 	Type int32
 	// The faction that initiated the event

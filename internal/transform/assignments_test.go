@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jinzhu/copier"
 	"github.com/stnokott/helldivers-client/internal/api"
+	"github.com/stnokott/helldivers-client/internal/copytest"
 	"github.com/stnokott/helldivers-client/internal/db"
 	"github.com/stnokott/helldivers-client/internal/db/gen"
 )
@@ -106,9 +106,7 @@ func TestAssignments(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			var assignment api.Assignment2
-			// deep copy will copy values behind pointers instead of the pointers themselves
-			copyOption := copier.Option{DeepCopy: true}
-			if err := copier.CopyWithOption(&assignment, &validAssignment, copyOption); err != nil {
+			if err := copytest.DeepCopy(&assignment, &validAssignment); err != nil {
 				t.Errorf("failed to create assignment struct copy: %v", err)
 				return
 			}

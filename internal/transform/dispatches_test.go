@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jinzhu/copier"
 	"github.com/stnokott/helldivers-client/internal/api"
+	"github.com/stnokott/helldivers-client/internal/copytest"
 	"github.com/stnokott/helldivers-client/internal/db"
 )
 
@@ -68,9 +68,7 @@ func TestDispatch(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			var dispatch api.Dispatch
-			// deep copy will copy values behind pointers instead of the pointers themselves
-			copyOption := copier.Option{DeepCopy: true}
-			if err := copier.CopyWithOption(&dispatch, &validDispatch, copyOption); err != nil {
+			if err := copytest.DeepCopy(&dispatch, &validDispatch); err != nil {
 				t.Errorf("failed to create dispatch struct copy: %v", err)
 				return
 			}
