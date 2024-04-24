@@ -51,7 +51,7 @@ dockers:
       - "--platform=linux/amd64"
     dockerfile: Dockerfile
     extra_files:
-      - "migrations"
+      - "scripts/migrations"
   - use: buildx
     image_templates:
       - "ghcr.io/stnokott/{{ .ProjectName }}:{{ .Version }}-armv7"
@@ -65,7 +65,7 @@ dockers:
       - "--platform=linux/arm/7"
     dockerfile: Dockerfile
     extra_files:
-      - "migrations"
+      - "scripts/migrations"
 
 docker_manifests:
   - name_template: "ghcr.io/stnokott/{{ .ProjectName }}:{{ .Version }}"
