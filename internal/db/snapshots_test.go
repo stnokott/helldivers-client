@@ -25,14 +25,12 @@ var validAssignmentSnapshot = Assignment{
 		Briefing:     "Foobriefing",
 		Description:  "Bardescription",
 		Expiration:   PGTimestamp(time.Date(2024, 1, 2, 3, 4, 5, 6, time.Local)),
-		Progress:     []int32{1, 2, 3},
-		TaskIds:      []int64{5, 6, 7},
 		RewardType:   8,
 		RewardAmount: 100,
 	},
 	Tasks: []gen.AssignmentTask{
 		{
-			Type:       9,
+			TaskType:   9,
 			Values:     []int32{7, 8, 9},
 			ValueTypes: []int32{42, 44, 46},
 		},
@@ -189,15 +187,19 @@ func TestSnapshotsSchema(t *testing.T) {
 				}
 				if err := assignment.Merge(context.Background(), client.queries, tableMergeStats{}); err != nil {
 					t.Errorf("failed to insert assignment (required for snapshot): %v", err)
+					return
 				}
 				if err := planet.Merge(context.Background(), client.queries, tableMergeStats{}); err != nil {
 					t.Errorf("failed to insert planet (required for snapshot): %v", err)
+					return
 				}
 				if err := campaign.Merge(context.Background(), client.queries, tableMergeStats{}); err != nil {
 					t.Errorf("failed to insert campaign (required for snapshot): %v", err)
+					return
 				}
 				if err := dispatch.Merge(context.Background(), client.queries, tableMergeStats{}); err != nil {
 					t.Errorf("failed to insert dispatch (required for snapshot): %v", err)
+					return
 				}
 
 				err := snapshot.Merge(context.Background(), client.queries, tableMergeStats{})

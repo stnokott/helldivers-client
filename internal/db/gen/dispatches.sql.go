@@ -11,6 +11,17 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const dispatchExists = `-- name: DispatchExists :one
+SELECT EXISTS(SELECT id, create_time, type, message FROM dispatches WHERE id = $1)
+`
+
+func (q *Queries) DispatchExists(ctx context.Context, id int32) (bool, error) {
+	row := q.db.QueryRow(ctx, dispatchExists, id)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
+}
+
 const getDispatch = `-- name: GetDispatch :one
 SELECT id FROM dispatches
 WHERE id = $1
@@ -22,7 +33,7 @@ func (q *Queries) GetDispatch(ctx context.Context, id int32) (int32, error) {
 	return id, err
 }
 
-const mergeDispatch = `-- name: MergeDispatch :one
+const mergeDispatch = `-- name: MergeDispatch :execrows
 INSERT INTO dispatches (
     id, create_time, type, message
 ) VALUES (
@@ -30,7 +41,9 @@ INSERT INTO dispatches (
 )
 ON CONFLICT (id) DO UPDATE
     SET create_time=$2, type=$3, message=$4
-RETURNING id
+WHERE FALSE IN (
+    EXCLUDED.create_time=$2, EXCLUDED.type=$3, EXCLUDED.message=$4
+)
 `
 
 type MergeDispatchParams struct {
@@ -40,14 +53,15 @@ type MergeDispatchParams struct {
 	Message    string
 }
 
-func (q *Queries) MergeDispatch(ctx context.Context, arg MergeDispatchParams) (int32, error) {
-	row := q.db.QueryRow(ctx, mergeDispatch,
+func (q *Queries) MergeDispatch(ctx context.Context, arg MergeDispatchParams) (int64, error) {
+	result, err := q.db.Exec(ctx, mergeDispatch,
 		arg.ID,
 		arg.CreateTime,
 		arg.Type,
 		arg.Message,
 	)
-	var id int32
-	err := row.Scan(&id)
-	return id, err
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }

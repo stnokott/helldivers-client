@@ -11,6 +11,17 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const eventExists = `-- name: EventExists :one
+SELECT EXISTS(SELECT id, type, faction, max_health, start_time, end_time FROM events WHERE id = $1)
+`
+
+func (q *Queries) EventExists(ctx context.Context, id int32) (bool, error) {
+	row := q.db.QueryRow(ctx, eventExists, id)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
+}
+
 const getEvent = `-- name: GetEvent :one
 SELECT id FROM events
 WHERE id = $1
@@ -22,7 +33,7 @@ func (q *Queries) GetEvent(ctx context.Context, id int32) (int32, error) {
 	return id, err
 }
 
-const mergeEvent = `-- name: MergeEvent :one
+const mergeEvent = `-- name: MergeEvent :execrows
 INSERT INTO events (
     id, type, faction, max_health, start_time, end_time
 ) VALUES (
@@ -30,7 +41,9 @@ INSERT INTO events (
 )
 ON CONFLICT (id) DO UPDATE
     SET type=$2, faction=$3, max_health=$4, start_time=$5, end_time=$6
-RETURNING id
+WHERE FALSE IN (
+    EXCLUDED.type=$2, EXCLUDED.faction=$3, EXCLUDED.max_health=$4, EXCLUDED.start_time=$5, EXCLUDED.end_time=$6
+)
 `
 
 type MergeEventParams struct {
@@ -42,8 +55,8 @@ type MergeEventParams struct {
 	EndTime   pgtype.Timestamp
 }
 
-func (q *Queries) MergeEvent(ctx context.Context, arg MergeEventParams) (int32, error) {
-	row := q.db.QueryRow(ctx, mergeEvent,
+func (q *Queries) MergeEvent(ctx context.Context, arg MergeEventParams) (int64, error) {
+	result, err := q.db.Exec(ctx, mergeEvent,
 		arg.ID,
 		arg.Type,
 		arg.Faction,
@@ -51,7 +64,8 @@ func (q *Queries) MergeEvent(ctx context.Context, arg MergeEventParams) (int32, 
 		arg.StartTime,
 		arg.EndTime,
 	)
-	var id int32
-	err := row.Scan(&id)
-	return id, err
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }

@@ -36,6 +36,7 @@ func (c *Client) MigrateUp(migrationsFolder string) error {
 	if err = migration.Up(); !errors.Is(err, migrate.ErrNoChange) {
 		return err
 	}
+
 	return nil
 }
 

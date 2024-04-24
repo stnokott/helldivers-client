@@ -9,6 +9,17 @@ import (
 	"context"
 )
 
+const campaignExists = `-- name: CampaignExists :one
+SELECT EXISTS(SELECT id, planet_id, type, count FROM campaigns WHERE id = $1)
+`
+
+func (q *Queries) CampaignExists(ctx context.Context, id int32) (bool, error) {
+	row := q.db.QueryRow(ctx, campaignExists, id)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
+}
+
 const getCampaign = `-- name: GetCampaign :one
 SELECT id FROM campaigns
 WHERE id = $1
@@ -20,7 +31,7 @@ func (q *Queries) GetCampaign(ctx context.Context, id int32) (int32, error) {
 	return id, err
 }
 
-const mergeCampaign = `-- name: MergeCampaign :one
+const mergeCampaign = `-- name: MergeCampaign :execrows
 INSERT INTO campaigns (
     id, planet_id, type, count
 ) VALUES (
@@ -28,7 +39,9 @@ INSERT INTO campaigns (
 )
 ON CONFLICT (id) DO UPDATE
     SET planet_id=$2, type=$3, count=$4
-RETURNING id
+WHERE FALSE IN (
+    EXCLUDED.planet_id=$2, EXCLUDED.type=$3, EXCLUDED.count=$4
+)
 `
 
 type MergeCampaignParams struct {
@@ -38,14 +51,15 @@ type MergeCampaignParams struct {
 	Count    int32
 }
 
-func (q *Queries) MergeCampaign(ctx context.Context, arg MergeCampaignParams) (int32, error) {
-	row := q.db.QueryRow(ctx, mergeCampaign,
+func (q *Queries) MergeCampaign(ctx context.Context, arg MergeCampaignParams) (int64, error) {
+	result, err := q.db.Exec(ctx, mergeCampaign,
 		arg.ID,
 		arg.PlanetID,
 		arg.Type,
 		arg.Count,
 	)
-	var id int32
-	err := row.Scan(&id)
-	return id, err
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }

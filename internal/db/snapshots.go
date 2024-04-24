@@ -51,7 +51,7 @@ func (s *Snapshot) Merge(ctx context.Context, tx *gen.Queries, stats tableMergeS
 	}); err != nil {
 		return fmt.Errorf("failed to insert snapshot: %v", err)
 	}
-	stats.IncrInsert("Snapshots")
+	stats.Incr("Snapshots", false, 1)
 	return nil
 }
 
@@ -63,7 +63,7 @@ func insertWarSnapshot(ctx context.Context, tx *gen.Queries, warSnap gen.WarSnap
 	if err != nil {
 		return -1, fmt.Errorf("failed to insert war snapshot: %v", err)
 	}
-	stats.IncrInsert("War Snapshots")
+	stats.Incr("War Snapshots", false, 1)
 	return id, nil
 }
 
@@ -92,8 +92,8 @@ func insertPlanetSnapshots(ctx context.Context, tx *gen.Queries, planetSnaps []P
 			return nil, fmt.Errorf("failed to insert planet snapshot: %w", err)
 		}
 		ids[i] = id
+		stats.Incr("Planet Snapshots", false, 1)
 	}
-	stats.IncrInserts("Planet Snapshots", len(ids))
 	return ids, nil
 }
 
@@ -109,7 +109,7 @@ func insertEventSnapshot(ctx context.Context, tx *gen.Queries, eventSnap *gen.Ev
 	if err != nil {
 		return nil, fmt.Errorf("failed to insert event snapshot: %w", err)
 	}
-	stats.IncrInsert("Event Snapshots")
+	stats.Incr("Event Snapshots", false, 1)
 	return &id, nil
 }
 
@@ -132,6 +132,6 @@ func insertSnapshotStatistics(ctx context.Context, tx *gen.Queries, snapshotStat
 	if err != nil {
 		return -1, fmt.Errorf("failed to insert snapshot statistics: %w", err)
 	}
-	stats.IncrInsert("Snapshot Statistics")
+	stats.Incr("Snapshots Statistics", false, 1)
 	return id, nil
 }

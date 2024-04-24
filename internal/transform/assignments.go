@@ -43,8 +43,6 @@ func Assignments(data APIData) ([]db.EntityMerger, error) {
 				Briefing:     *assignment.Briefing,
 				Description:  *assignment.Description,
 				Expiration:   db.PGTimestamp(*assignment.Expiration),
-				TaskIds:      nil, // will be filled from DB
-				Progress:     *assignment.Progress,
 				RewardType:   *reward.Type,
 				RewardAmount: *reward.Amount,
 			},
@@ -72,7 +70,7 @@ func convertAssignmentTasks(in *[]api.Task2) ([]gen.AssignmentTask, error) {
 			return nil, errFromNils(&task)
 		}
 		tasks[i] = gen.AssignmentTask{
-			Type:       *task.Type,
+			TaskType:   *task.Type,
 			Values:     *task.Values,
 			ValueTypes: *task.ValueTypes,
 		}

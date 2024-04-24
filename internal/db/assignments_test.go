@@ -17,14 +17,12 @@ var validAssignment = Assignment{
 		Briefing:     "Foobriefing",
 		Description:  "Bardescription",
 		Expiration:   PGTimestamp(time.Date(2024, 1, 2, 3, 4, 5, 6, time.Local)),
-		Progress:     []int32{1, 2, 3},
-		TaskIds:      []int64{5, 6, 7},
 		RewardType:   8,
 		RewardAmount: 100,
 	},
 	Tasks: []gen.AssignmentTask{
 		{
-			Type:       9,
+			TaskType:   9,
 			Values:     []int32{7, 8, 9},
 			ValueTypes: []int32{42, 44, 46},
 		},

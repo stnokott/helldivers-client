@@ -11,6 +11,27 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const assignmentExists = `-- name: AssignmentExists :one
+SELECT EXISTS(SELECT id, title, briefing, description, expiration, task_ids, reward_type, reward_amount FROM assignments WHERE id = $1)
+`
+
+func (q *Queries) AssignmentExists(ctx context.Context, id int64) (bool, error) {
+	row := q.db.QueryRow(ctx, assignmentExists, id)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
+}
+
+const deleteAssignmentTasks = `-- name: DeleteAssignmentTasks :exec
+DELETE FROM assignment_tasks
+WHERE id = ANY($1::bigint[])
+`
+
+func (q *Queries) DeleteAssignmentTasks(ctx context.Context, ids []int64) error {
+	_, err := q.db.Exec(ctx, deleteAssignmentTasks, ids)
+	return err
+}
+
 const getAssignment = `-- name: GetAssignment :one
 SELECT id FROM assignments
 WHERE id = $1
@@ -22,62 +43,66 @@ func (q *Queries) GetAssignment(ctx context.Context, id int64) (int64, error) {
 	return id, err
 }
 
-const insertAssignment = `-- name: InsertAssignment :one
-INSERT INTO assignments (
-    id, title, briefing, description, expiration, progress, task_ids, reward_type, reward_amount
-) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9
-)
-RETURNING id
-`
-
-type InsertAssignmentParams struct {
-	ID           int64
-	Title        string
-	Briefing     string
-	Description  string
-	Expiration   pgtype.Timestamp
-	Progress     []int32
-	TaskIds      []int64
-	RewardType   int32
-	RewardAmount int32
-}
-
-func (q *Queries) InsertAssignment(ctx context.Context, arg InsertAssignmentParams) (int64, error) {
-	row := q.db.QueryRow(ctx, insertAssignment,
-		arg.ID,
-		arg.Title,
-		arg.Briefing,
-		arg.Description,
-		arg.Expiration,
-		arg.Progress,
-		arg.TaskIds,
-		arg.RewardType,
-		arg.RewardAmount,
-	)
-	var id int64
-	err := row.Scan(&id)
-	return id, err
-}
-
-const insertAssignmentTask = `-- name: InsertAssignmentTask :one
+const insertAssignmentTask = `-- name: InsertAssignmentTask :execrows
 INSERT INTO assignment_tasks (
-    type, values, value_types
+    task_type, values, value_types
 ) VALUES (
     $1, $2, $3
 )
-RETURNING id
 `
 
 type InsertAssignmentTaskParams struct {
-	Type       int32
+	TaskType   int32
 	Values     []int32
 	ValueTypes []int32
 }
 
 func (q *Queries) InsertAssignmentTask(ctx context.Context, arg InsertAssignmentTaskParams) (int64, error) {
-	row := q.db.QueryRow(ctx, insertAssignmentTask, arg.Type, arg.Values, arg.ValueTypes)
-	var id int64
-	err := row.Scan(&id)
-	return id, err
+	result, err := q.db.Exec(ctx, insertAssignmentTask, arg.TaskType, arg.Values, arg.ValueTypes)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
+const mergeAssignment = `-- name: MergeAssignment :execrows
+INSERT INTO assignments (
+    id, title, briefing, description, expiration, task_ids, reward_type, reward_amount
+) VALUES (
+    $1, $2, $3, $4, $5, $6, $7, $8
+)
+ON CONFLICT (id) DO UPDATE
+    SET title=$2, briefing=$3, description=$4, expiration=$5, task_ids=$6, reward_type=$7, reward_amount=$8
+WHERE FALSE IN (
+    EXCLUDED.title=$2, EXCLUDED.briefing=$3, EXCLUDED.description=$4, EXCLUDED.expiration=$5, EXCLUDED.reward_type=$7, EXCLUDED.reward_amount=$8
+)
+`
+
+type MergeAssignmentParams struct {
+	ID           int64
+	Title        string
+	Briefing     string
+	Description  string
+	Expiration   pgtype.Timestamp
+	TaskIds      []int64
+	RewardType   int32
+	RewardAmount int32
+}
+
+// TODO: use COPYFROM for inserts
+func (q *Queries) MergeAssignment(ctx context.Context, arg MergeAssignmentParams) (int64, error) {
+	result, err := q.db.Exec(ctx, mergeAssignment,
+		arg.ID,
+		arg.Title,
+		arg.Briefing,
+		arg.Description,
+		arg.Expiration,
+		arg.TaskIds,
+		arg.RewardType,
+		arg.RewardAmount,
+	)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }

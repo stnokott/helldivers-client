@@ -60,14 +60,12 @@ func TestAssignments(t *testing.T) {
 						Briefing:     "Foo briefing",
 						Description:  "Foo description",
 						Expiration:   db.PGTimestamp(time.Date(2024, 1, 1, 0, 0, 0, 0, time.Local)),
-						Progress:     []int32{1, 2, 3},
 						RewardType:   3,
 						RewardAmount: 100,
-						TaskIds:      nil,
 					},
 					Tasks: []gen.AssignmentTask{
 						{
-							Type:       4,
+							TaskType:   4,
 							ValueTypes: []int32{2, 3, 4},
 							Values:     []int32{5, 6, 7},
 						},

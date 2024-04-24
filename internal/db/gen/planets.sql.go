@@ -9,6 +9,17 @@ import (
 	"context"
 )
 
+const biomeExists = `-- name: BiomeExists :one
+SELECT EXISTS(SELECT name, description FROM biomes WHERE name = $1)
+`
+
+func (q *Queries) BiomeExists(ctx context.Context, name string) (bool, error) {
+	row := q.db.QueryRow(ctx, biomeExists, name)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
+}
+
 const getBiome = `-- name: GetBiome :one
 SELECT name FROM biomes
 WHERE name = $1
@@ -42,7 +53,18 @@ func (q *Queries) GetPlanet(ctx context.Context, id int32) (int32, error) {
 	return id, err
 }
 
-const mergeBiome = `-- name: MergeBiome :one
+const hazardExists = `-- name: HazardExists :one
+SELECT EXISTS(SELECT name, description FROM hazards WHERE name = $1)
+`
+
+func (q *Queries) HazardExists(ctx context.Context, name string) (bool, error) {
+	row := q.db.QueryRow(ctx, hazardExists, name)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
+}
+
+const mergeBiome = `-- name: MergeBiome :execrows
 INSERT INTO biomes (
     name, description
 ) VALUES (
@@ -50,7 +72,9 @@ INSERT INTO biomes (
 )
 ON CONFLICT (name) DO UPDATE
     SET description=$2
-RETURNING name
+WHERE FALSE IN (
+    EXCLUDED.description=$2
+)
 `
 
 type MergeBiomeParams struct {
@@ -58,14 +82,15 @@ type MergeBiomeParams struct {
 	Description string
 }
 
-func (q *Queries) MergeBiome(ctx context.Context, arg MergeBiomeParams) (string, error) {
-	row := q.db.QueryRow(ctx, mergeBiome, arg.Name, arg.Description)
-	var name string
-	err := row.Scan(&name)
-	return name, err
+func (q *Queries) MergeBiome(ctx context.Context, arg MergeBiomeParams) (int64, error) {
+	result, err := q.db.Exec(ctx, mergeBiome, arg.Name, arg.Description)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }
 
-const mergeHazard = `-- name: MergeHazard :one
+const mergeHazard = `-- name: MergeHazard :execrows
 INSERT INTO hazards (
     name, description
 ) VALUES (
@@ -73,7 +98,9 @@ INSERT INTO hazards (
 )
 ON CONFLICT (name) DO UPDATE
     SET description=$2
-RETURNING name
+WHERE FALSE IN (
+    EXCLUDED.description=$2
+)
 `
 
 type MergeHazardParams struct {
@@ -81,14 +108,15 @@ type MergeHazardParams struct {
 	Description string
 }
 
-func (q *Queries) MergeHazard(ctx context.Context, arg MergeHazardParams) (string, error) {
-	row := q.db.QueryRow(ctx, mergeHazard, arg.Name, arg.Description)
-	var name string
-	err := row.Scan(&name)
-	return name, err
+func (q *Queries) MergeHazard(ctx context.Context, arg MergeHazardParams) (int64, error) {
+	result, err := q.db.Exec(ctx, mergeHazard, arg.Name, arg.Description)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }
 
-const mergePlanet = `-- name: MergePlanet :one
+const mergePlanet = `-- name: MergePlanet :execrows
 INSERT INTO planets (
     id, name, sector, position, waypoint_ids, disabled, biome_name, hazard_names, max_health, initial_owner
 ) VALUES (
@@ -96,7 +124,9 @@ INSERT INTO planets (
 )
 ON CONFLICT (id) DO UPDATE
     SET name=$2, sector=$3, position=$4, waypoint_ids=$5, disabled=$6, biome_name=$7, hazard_names=$8, max_health=$9, initial_owner=$10
-RETURNING id
+WHERE FALSE IN (
+    EXCLUDED.name=$2, EXCLUDED.sector=$3, EXCLUDED.position=$4,EXCLUDED. waypoint_ids=$5, EXCLUDED.disabled=$6, EXCLUDED.biome_name=$7, EXCLUDED.hazard_names=$8, EXCLUDED.max_health=$9, EXCLUDED.initial_owner=$10
+)
 `
 
 type MergePlanetParams struct {
@@ -112,8 +142,8 @@ type MergePlanetParams struct {
 	InitialOwner string
 }
 
-func (q *Queries) MergePlanet(ctx context.Context, arg MergePlanetParams) (int32, error) {
-	row := q.db.QueryRow(ctx, mergePlanet,
+func (q *Queries) MergePlanet(ctx context.Context, arg MergePlanetParams) (int64, error) {
+	result, err := q.db.Exec(ctx, mergePlanet,
 		arg.ID,
 		arg.Name,
 		arg.Sector,
@@ -125,7 +155,19 @@ func (q *Queries) MergePlanet(ctx context.Context, arg MergePlanetParams) (int32
 		arg.MaxHealth,
 		arg.InitialOwner,
 	)
-	var id int32
-	err := row.Scan(&id)
-	return id, err
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
+const planetExists = `-- name: PlanetExists :one
+SELECT EXISTS(SELECT id, name, sector, position, waypoint_ids, disabled, biome_name, hazard_names, max_health, initial_owner FROM planets WHERE id = $1)
+`
+
+func (q *Queries) PlanetExists(ctx context.Context, id int32) (bool, error) {
+	row := q.db.QueryRow(ctx, planetExists, id)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
 }

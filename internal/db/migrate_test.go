@@ -53,7 +53,6 @@ var tableNames = []string{
 	"dispatches",
 	"events",
 	"assignments",
-	"assignment_tasks",
 	"wars",
 	"snapshots",
 	"war_snapshots",

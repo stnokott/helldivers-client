@@ -106,30 +106,27 @@ func (w *Worker) queryData(ctx context.Context) (data transform.APIData) {
 
 func (w *Worker) mergeData(ctx context.Context, data transform.APIData) (err error) {
 	w.log.Println("transforming API responses")
-	var assignments, planets, campaigns, wars, dispatches, snapshots []db.EntityMerger
+	var wars, events, planets, campaigns, assignments, dispatches, snapshots []db.EntityMerger
 
-	wars, err = transform.Wars(data)
-	if err != nil {
+	if wars, err = transform.Wars(data); err != nil {
 		return
 	}
-	planets, err = transform.Planets(data)
-	if err != nil {
+	if events, err = transform.Events(data); err != nil {
 		return
 	}
-	campaigns, err = transform.Campaigns(data)
-	if err != nil {
+	if planets, err = transform.Planets(data); err != nil {
 		return
 	}
-	assignments, err = transform.Assignments(data)
-	if err != nil {
+	if campaigns, err = transform.Campaigns(data); err != nil {
 		return
 	}
-	dispatches, err = transform.Dispatches(data)
-	if err != nil {
+	if assignments, err = transform.Assignments(data); err != nil {
 		return
 	}
-	snapshots, err = transform.Snapshot(data)
-	if err != nil {
+	if dispatches, err = transform.Dispatches(data); err != nil {
+		return
+	}
+	if snapshots, err = transform.Snapshot(data); err != nil {
 		return
 	}
 
@@ -137,6 +134,6 @@ func (w *Worker) mergeData(ctx context.Context, data transform.APIData) (err err
 	// TODO: write tests for this function
 
 	w.log.Println("merging transformed entities into database")
-	err = w.db.Merge(ctx, wars, planets, campaigns, assignments, dispatches, snapshots)
+	err = w.db.Merge(ctx, wars, events, planets, campaigns, assignments, dispatches, snapshots)
 	return
 }

@@ -39,6 +39,7 @@ func New(cfg *config.Config, logger *log.Logger) (*Client, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to PostgreSQL: %w", err)
 	}
+
 	queries := gen.New(conn)
 
 	// ensure connection is stable
@@ -97,6 +98,7 @@ func (c *Client) Merge(ctx context.Context, mergers ...[]EntityMerger) (err erro
 
 	// prepare insert/update statistics
 	stats := tableMergeStats{}
+
 	// run merges
 	for _, mSlice := range mergers {
 		if len(mSlice) == 0 {

@@ -2,7 +2,10 @@
 SELECT id FROM campaigns
 WHERE id = $1;
 
--- name: MergeCampaign :one
+-- name: CampaignExists :one
+SELECT EXISTS(SELECT * FROM campaigns WHERE id = $1);
+
+-- name: MergeCampaign :execrows
 INSERT INTO campaigns (
     id, planet_id, type, count
 ) VALUES (
@@ -10,4 +13,6 @@ INSERT INTO campaigns (
 )
 ON CONFLICT (id) DO UPDATE
     SET planet_id=$2, type=$3, count=$4
-RETURNING id;
+WHERE FALSE IN (
+    EXCLUDED.planet_id=$2, EXCLUDED.type=$3, EXCLUDED.count=$4
+);

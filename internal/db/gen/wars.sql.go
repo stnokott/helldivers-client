@@ -22,7 +22,7 @@ func (q *Queries) GetWar(ctx context.Context, id int32) (int32, error) {
 	return id, err
 }
 
-const mergeWar = `-- name: MergeWar :one
+const mergeWar = `-- name: MergeWar :execrows
 INSERT INTO wars (
     id, start_time, end_time, factions
 ) VALUES (
@@ -30,7 +30,9 @@ INSERT INTO wars (
 )
 ON CONFLICT (id) DO UPDATE
     SET start_time=$2, end_time=$3, factions=$4
-RETURNING id
+WHERE FALSE IN (
+    EXCLUDED.start_time=$2, EXCLUDED.end_time=$3, EXCLUDED.factions=$4
+)
 `
 
 type MergeWarParams struct {
@@ -40,14 +42,26 @@ type MergeWarParams struct {
 	Factions  []string
 }
 
-func (q *Queries) MergeWar(ctx context.Context, arg MergeWarParams) (int32, error) {
-	row := q.db.QueryRow(ctx, mergeWar,
+func (q *Queries) MergeWar(ctx context.Context, arg MergeWarParams) (int64, error) {
+	result, err := q.db.Exec(ctx, mergeWar,
 		arg.ID,
 		arg.StartTime,
 		arg.EndTime,
 		arg.Factions,
 	)
-	var id int32
-	err := row.Scan(&id)
-	return id, err
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
+const warExists = `-- name: WarExists :one
+SELECT EXISTS(SELECT id, start_time, end_time, factions FROM wars WHERE id = $1)
+`
+
+func (q *Queries) WarExists(ctx context.Context, id int32) (bool, error) {
+	row := q.db.QueryRow(ctx, warExists, id)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
 }
