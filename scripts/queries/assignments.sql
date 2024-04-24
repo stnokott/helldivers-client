@@ -5,7 +5,6 @@ WHERE id = $1;
 -- name: AssignmentExists :one
 SELECT EXISTS(SELECT * FROM assignments WHERE id = $1);
 
--- TODO: use COPYFROM for inserts
 -- name: MergeAssignment :execrows
 INSERT INTO assignments (
     id, title, briefing, description, expiration, task_ids, reward_type, reward_amount

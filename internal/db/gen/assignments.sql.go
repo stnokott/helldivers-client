@@ -89,7 +89,6 @@ type MergeAssignmentParams struct {
 	RewardAmount int32
 }
 
-// TODO: use COPYFROM for inserts
 func (q *Queries) MergeAssignment(ctx context.Context, arg MergeAssignmentParams) (int64, error) {
 	result, err := q.db.Exec(ctx, mergeAssignment,
 		arg.ID,
