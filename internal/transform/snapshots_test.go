@@ -69,7 +69,8 @@ var validPlanetSnapshot = api.Planet{
 }
 
 var validAssignmentSnapshot = api.Assignment2{
-	Id: ptr(int64(7)),
+	Id:       ptr(int64(7)),
+	Progress: &[]int32{5, 6, 7},
 }
 
 var validCampaignSnapshot = api.Campaign2{
@@ -109,16 +110,23 @@ func TestSnapshots(t *testing.T) {
 			want: []db.EntityMerger{
 				&db.Snapshot{
 					Snapshot: gen.Snapshot{
-						AssignmentIds:     []int64{7},
-						CampaignIds:       []int32{987},
-						DispatchIds:       []int32{678},
-						StatisticsID:      -1,
-						WarSnapshotID:     -1,
-						PlanetSnapshotIds: nil,
+						AssignmentSnapshotIds: nil,
+						CampaignIds:           []int32{987},
+						DispatchIds:           []int32{678},
+						StatisticsID:          -1,
+						WarSnapshotID:         -1,
+						PlanetSnapshotIds:     nil,
 					},
 					WarSnapshot: gen.WarSnapshot{
 						WarID:            999,
 						ImpactMultiplier: 0.0004,
+					},
+					AssignmentSnapshots: []gen.AssignmentSnapshot{
+						{
+							ID:           -1,
+							AssignmentID: 7,
+							Progress:     []int32{5, 6, 7},
+						},
 					},
 					PlanetSnapshots: []db.PlanetSnapshot{
 						{

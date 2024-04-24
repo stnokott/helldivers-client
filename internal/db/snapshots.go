@@ -13,9 +13,10 @@ var _ EntityMerger = (*Snapshot)(nil)
 // Snapshot implements EntityMerger
 type Snapshot struct {
 	gen.Snapshot
-	WarSnapshot     gen.WarSnapshot
-	PlanetSnapshots []PlanetSnapshot
-	Statistics      gen.SnapshotStatistic
+	WarSnapshot         gen.WarSnapshot
+	AssignmentSnapshots []gen.AssignmentSnapshot
+	PlanetSnapshots     []PlanetSnapshot
+	Statistics          gen.SnapshotStatistic
 }
 
 type PlanetSnapshot struct {
@@ -26,6 +27,11 @@ type PlanetSnapshot struct {
 
 func (s *Snapshot) Merge(ctx context.Context, tx *gen.Queries, stats tableMergeStats) error {
 	warSnapID, err := insertWarSnapshot(ctx, tx, s.WarSnapshot, stats)
+	if err != nil {
+		return err
+	}
+
+	assignmentSnapIDs, err := insertAssignmentSnapshots(ctx, tx, s.AssignmentSnapshots, stats)
 	if err != nil {
 		return err
 	}
@@ -42,12 +48,12 @@ func (s *Snapshot) Merge(ctx context.Context, tx *gen.Queries, stats tableMergeS
 
 	// perform INSERT
 	if _, err = tx.InsertSnapshot(ctx, gen.InsertSnapshotParams{
-		WarSnapshotID:     warSnapID,
-		AssignmentIds:     s.AssignmentIds,
-		CampaignIds:       s.CampaignIds,
-		DispatchIds:       s.DispatchIds,
-		PlanetSnapshotIds: planetSnapIDs,
-		StatisticsID:      statsID,
+		WarSnapshotID:         warSnapID,
+		AssignmentSnapshotIds: assignmentSnapIDs,
+		CampaignIds:           s.CampaignIds,
+		DispatchIds:           s.DispatchIds,
+		PlanetSnapshotIds:     planetSnapIDs,
+		StatisticsID:          statsID,
 	}); err != nil {
 		return fmt.Errorf("failed to insert snapshot: %v", err)
 	}
@@ -65,6 +71,22 @@ func insertWarSnapshot(ctx context.Context, tx *gen.Queries, warSnap gen.WarSnap
 	}
 	stats.Incr("War Snapshots", false, 1)
 	return id, nil
+}
+
+func insertAssignmentSnapshots(ctx context.Context, tx *gen.Queries, assignmentSnaps []gen.AssignmentSnapshot, stats tableMergeStats) ([]int64, error) {
+	ids := make([]int64, len(assignmentSnaps))
+	for i, snap := range assignmentSnaps {
+		id, err := tx.InsertAssignmentSnapshot(ctx, gen.InsertAssignmentSnapshotParams{
+			AssignmentID: snap.AssignmentID,
+			Progress:     snap.Progress,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("failed to insert assignment snapshot: %v", err)
+		}
+		stats.Incr("Assignment Snapshots", false, 1)
+		ids[i] = id
+	}
+	return ids, nil
 }
 
 func insertPlanetSnapshots(ctx context.Context, tx *gen.Queries, planetSnaps []PlanetSnapshot, stats tableMergeStats) ([]int64, error) {

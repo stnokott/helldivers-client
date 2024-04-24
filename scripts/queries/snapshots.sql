@@ -5,7 +5,7 @@ LIMIT 1;
 
 -- name: InsertSnapshot :one
 INSERT INTO snapshots (
-    war_snapshot_id, assignment_ids, campaign_ids, dispatch_ids, planet_snapshot_ids, statistics_id
+    war_snapshot_id, assignment_snapshot_ids, campaign_ids, dispatch_ids, planet_snapshot_ids, statistics_id
 ) VALUES (
     $1, $2, $3, $4, $5, $6
 )
@@ -14,6 +14,14 @@ RETURNING create_time;
 -- name: InsertWarSnapshot :one
 INSERT INTO war_snapshots (
     war_id, impact_multiplier
+) VALUES (
+    $1, $2
+)
+RETURNING id;
+
+-- name: InsertAssignmentSnapshot :one
+INSERT INTO assignment_snapshots (
+    assignment_id, progress
 ) VALUES (
     $1, $2
 )

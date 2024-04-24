@@ -12,12 +12,15 @@ import (
 func Snapshot(data APIData) (mergers []db.EntityMerger, err error) {
 	s := &db.Snapshot{
 		Snapshot: gen.Snapshot{
-			WarSnapshotID: -1, // will be filled during insert
-			StatisticsID:  -1, // will be filled during insert
+			WarSnapshotID:         -1,  // will be filled during insert
+			AssignmentSnapshotIds: nil, // see above
+			PlanetSnapshotIds:     nil, // see above
+			StatisticsID:          -1,  // see above
 		},
-		WarSnapshot:     gen.WarSnapshot{},
-		PlanetSnapshots: []db.PlanetSnapshot{},
-		Statistics:      gen.SnapshotStatistic{},
+		WarSnapshot:         gen.WarSnapshot{},
+		AssignmentSnapshots: []gen.AssignmentSnapshot{},
+		PlanetSnapshots:     []db.PlanetSnapshot{},
+		Statistics:          gen.SnapshotStatistic{},
 	}
 
 	if err = snapshotSetWarID(s, data.WarID); err != nil {
@@ -73,15 +76,20 @@ func snapshotSetAssignments(snap *db.Snapshot, assignmentsPtr *[]api.Assignment2
 	if assignmentsPtr == nil {
 		return errors.New("got nil Assignments slice, will be omitted")
 	}
-	assignments := *assignmentsPtr
-	assignmentIDs := make([]int64, len(assignments))
-	for i, assignment := range assignments {
-		if assignment.Id == nil {
+	src := *assignmentsPtr
+	assignmentSnaps := make([]gen.AssignmentSnapshot, len(src))
+	for i, assignment := range src {
+		if assignment.Id == nil ||
+			assignment.Progress == nil {
 			return errors.New("got nil Assignment ID, will be omitted")
 		}
-		assignmentIDs[i] = *assignment.Id
+		assignmentSnaps[i] = gen.AssignmentSnapshot{
+			ID:           -1, // will be filled from DB
+			AssignmentID: *assignment.Id,
+			Progress:     *assignment.Progress,
+		}
 	}
-	snap.Snapshot.AssignmentIds = assignmentIDs
+	snap.AssignmentSnapshots = assignmentSnaps
 	return nil
 }
 

@@ -12,7 +12,7 @@ import (
 )
 
 const getLatestSnapshot = `-- name: GetLatestSnapshot :one
-SELECT create_time, war_snapshot_id, assignment_ids, campaign_ids, dispatch_ids, planet_snapshot_ids, statistics_id FROM snapshots
+SELECT create_time, war_snapshot_id, assignment_snapshot_ids, campaign_ids, dispatch_ids, planet_snapshot_ids, statistics_id FROM snapshots
 ORDER BY create_time desc
 LIMIT 1
 `
@@ -23,13 +23,34 @@ func (q *Queries) GetLatestSnapshot(ctx context.Context) (Snapshot, error) {
 	err := row.Scan(
 		&i.CreateTime,
 		&i.WarSnapshotID,
-		&i.AssignmentIds,
+		&i.AssignmentSnapshotIds,
 		&i.CampaignIds,
 		&i.DispatchIds,
 		&i.PlanetSnapshotIds,
 		&i.StatisticsID,
 	)
 	return i, err
+}
+
+const insertAssignmentSnapshot = `-- name: InsertAssignmentSnapshot :one
+INSERT INTO assignment_snapshots (
+    assignment_id, progress
+) VALUES (
+    $1, $2
+)
+RETURNING id
+`
+
+type InsertAssignmentSnapshotParams struct {
+	AssignmentID int64
+	Progress     []int32
+}
+
+func (q *Queries) InsertAssignmentSnapshot(ctx context.Context, arg InsertAssignmentSnapshotParams) (int64, error) {
+	row := q.db.QueryRow(ctx, insertAssignmentSnapshot, arg.AssignmentID, arg.Progress)
+	var id int64
+	err := row.Scan(&id)
+	return id, err
 }
 
 const insertEventSnapshot = `-- name: InsertEventSnapshot :one
@@ -89,7 +110,7 @@ func (q *Queries) InsertPlanetSnapshot(ctx context.Context, arg InsertPlanetSnap
 
 const insertSnapshot = `-- name: InsertSnapshot :one
 INSERT INTO snapshots (
-    war_snapshot_id, assignment_ids, campaign_ids, dispatch_ids, planet_snapshot_ids, statistics_id
+    war_snapshot_id, assignment_snapshot_ids, campaign_ids, dispatch_ids, planet_snapshot_ids, statistics_id
 ) VALUES (
     $1, $2, $3, $4, $5, $6
 )
@@ -97,18 +118,18 @@ RETURNING create_time
 `
 
 type InsertSnapshotParams struct {
-	WarSnapshotID     int64
-	AssignmentIds     []int64
-	CampaignIds       []int32
-	DispatchIds       []int32
-	PlanetSnapshotIds []int64
-	StatisticsID      int64
+	WarSnapshotID         int64
+	AssignmentSnapshotIds []int64
+	CampaignIds           []int32
+	DispatchIds           []int32
+	PlanetSnapshotIds     []int64
+	StatisticsID          int64
 }
 
 func (q *Queries) InsertSnapshot(ctx context.Context, arg InsertSnapshotParams) (pgtype.Timestamp, error) {
 	row := q.db.QueryRow(ctx, insertSnapshot,
 		arg.WarSnapshotID,
-		arg.AssignmentIds,
+		arg.AssignmentSnapshotIds,
 		arg.CampaignIds,
 		arg.DispatchIds,
 		arg.PlanetSnapshotIds,

@@ -33,10 +33,16 @@ COMMENT ON COLUMN event_snapshots.id
 
 
 
--- TODO: create assignment snapshot
---     progress integer[] NOT NULL,
--- COMMENT ON COLUMN assignments.progress
---    IS 'A list of numbers, how they represent progress is unknown.';
+CREATE TABLE IF NOT EXISTS assignment_snapshots
+(
+    id bigint NOT NULL UNIQUE GENERATED ALWAYS AS IDENTITY,
+    assignment_id bigint NOT NULL REFERENCES assignments,
+    progress integer[] NOT NULL
+);
+
+COMMENT ON COLUMN assignment_snapshots.progress
+    IS 'A list of numbers, how they represent progress is unknown.';
+
 
 
 CREATE TABLE IF NOT EXISTS snapshot_statistics
@@ -148,7 +154,7 @@ CREATE TABLE IF NOT EXISTS snapshots
 (
     create_time timestamp without time zone NOT NULL UNIQUE DEFAULT CURRENT_TIMESTAMP,
     war_snapshot_id bigint NOT NULL REFERENCES war_snapshots,
-    assignment_ids bigint[] NOT NULL,
+    assignment_snapshot_ids bigint[] NOT NULL,
     campaign_ids integer[] NOT NULL,
     dispatch_ids integer[] NOT NULL,
     planet_snapshot_ids bigint[] NOT NULL,
@@ -158,15 +164,15 @@ CREATE TABLE IF NOT EXISTS snapshots
 
 CREATE OR REPLACE FUNCTION validate_snapshot_refs() RETURNS TRIGGER AS $validate_snapshot_refs$
 	DECLARE
-		new_assignment_id bigint;
+		new_assignment_snapshot_id bigint;
         new_campaign_id integer;
         new_dispatch_id integer;
         new_planet_snapshot_id integer;
     BEGIN
-		-- check assignment refs
-		FOREACH new_assignment_id IN ARRAY NEW.assignment_ids LOOP
-			IF NOT EXISTS (SELECT 1 FROM assignments WHERE id = new_assignment_id) THEN
-				RAISE EXCEPTION 'snapshot at % has non-existent assignment ID %', NEW.create_time, new_assignment_id;
+		-- check assignment snapshot refs
+		FOREACH new_assignment_snapshot_id IN ARRAY NEW.assignment_snapshot_ids LOOP
+			IF NOT EXISTS (SELECT 1 FROM assignment_snapshots WHERE id = new_assignment_snapshot_id) THEN
+				RAISE EXCEPTION 'snapshot at % has non-existent assignment snapshot ID %', NEW.create_time, new_assignment_snapshot_id;
 			END IF;
 		END LOOP;
 
@@ -207,8 +213,8 @@ COMMENT ON COLUMN snapshots.create_time
 COMMENT ON COLUMN snapshots.war_snapshot_id
     IS 'Dynamic data about current war';
 
-COMMENT ON COLUMN snapshots.assignment_ids
-    IS 'Currently active assignments';
+COMMENT ON COLUMN snapshots.assignment_snapshot_ids
+    IS 'Snapshots for currently active assignments';
 
 COMMENT ON COLUMN snapshots.campaign_ids
     IS 'Currently active campaigns';

@@ -87,16 +87,22 @@ var validDispatchSnapshot = Dispatch{
 
 var validSnapshot = Snapshot{
 	Snapshot: gen.Snapshot{
-		AssignmentIds:     []int64{3},
-		WarSnapshotID:     -1, // will be filled from Merge
-		CampaignIds:       []int32{5},
-		DispatchIds:       []int32{123},
-		StatisticsID:      -1,  // will be filled from Merge
-		PlanetSnapshotIds: nil, // will be filled from Merge
+		WarSnapshotID:         -1,  // will be filled from Merge
+		AssignmentSnapshotIds: nil, // will be filled from Merge
+		CampaignIds:           []int32{5},
+		DispatchIds:           []int32{123},
+		StatisticsID:          -1,  // will be filled from Merge
+		PlanetSnapshotIds:     nil, // will be filled from Merge
 	},
 	WarSnapshot: gen.WarSnapshot{
 		WarID:            999,
 		ImpactMultiplier: 0.005,
+	},
+	AssignmentSnapshots: []gen.AssignmentSnapshot{
+		{
+			AssignmentID: 3,
+			Progress:     []int32{2, 3, 4},
+		},
 	},
 	PlanetSnapshots: []PlanetSnapshot{
 		{
@@ -158,6 +164,7 @@ func TestSnapshotsSchema(t *testing.T) {
 			modifier: func(p *Snapshot) {},
 			wantErr:  false,
 		},
+		// TODO: more tests
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
