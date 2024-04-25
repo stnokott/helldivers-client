@@ -32,8 +32,6 @@ services:
     environment:
       MONGO_URI: postgresql://root:REPLACEME@db:5432/helldivers  # IMPORTANT: use same credentials as in the <db> container.
       API_URL: http://api:8080
-      API_RATE_LIMIT_INTERVAL: 10s
-      API_RATE_LIMIT_COUNT: 3
       WORKER_INTERVAL: 5m  # How frequent the API is queried. Should be no less than API update interval below.
     networks:
       - default
@@ -41,7 +39,7 @@ services:
   api:
     build:
       # Needs to be built from GitHub as there is currently no public Docker image available
-      context: https://github.com/helldivers-2/api.git#62412756b45e239847d2c3e9fcff43853d52f421
+      context: https://github.com/helldivers-2/api.git#f754f2bb8d53e278e4239ff08d6daa8cb803db66
       dockerfile: ./src/Helldivers-2-API/Dockerfile
     networks:
       - default

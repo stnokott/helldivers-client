@@ -27,8 +27,6 @@ func mustClient() *Client {
 var globalClient = mustClient()
 
 func TestClientHosts(t *testing.T) {
-	t.Skip("currently skipped until we can disable rate-limiting in API") // TODO
-
 	host := config.Get().APIRootURL
 	tests := []struct {
 		name    string
@@ -69,7 +67,6 @@ func TestClientHosts(t *testing.T) {
 }
 
 func TestClientWarId(t *testing.T) {
-	t.Skip("currently skipped until we can disable rate-limiting in API") // TODO
 	got, err := globalClient.WarID(context.Background())
 	if err != nil {
 		t.Errorf("Client.WarID() error = %v, want nil", err)
@@ -86,7 +83,6 @@ func TestClientWarId(t *testing.T) {
 }
 
 func TestClientWar(t *testing.T) {
-	t.Skip("currently skipped until we can disable rate-limiting in API") // TODO
 	got, err := globalClient.War(context.Background())
 	if err != nil {
 		t.Errorf("Client.War() error = %v, want nil", err)
@@ -103,7 +99,6 @@ func TestClientWar(t *testing.T) {
 }
 
 func TestClientAssignments(t *testing.T) {
-	t.Skip("currently skipped until we can disable rate-limiting in API") // TODO
 	got, err := globalClient.Assignments(context.Background())
 	if err != nil {
 		t.Errorf("Client.Assignments() error = %v, want nil", err)
@@ -121,7 +116,6 @@ func TestClientAssignments(t *testing.T) {
 }
 
 func TestClientCampaigns(t *testing.T) {
-	t.Skip("currently skipped until we can disable rate-limiting in API") // TODO
 	got, err := globalClient.Campaigns(context.Background())
 	if err != nil {
 		t.Errorf("Client.Campaigns() error = %v, want nil", err)
@@ -139,7 +133,6 @@ func TestClientCampaigns(t *testing.T) {
 }
 
 func TestClientDispatches(t *testing.T) {
-	t.Skip("currently skipped until we can disable rate-limiting in API") // TODO
 	got, err := globalClient.Dispatches(context.Background())
 	if err != nil {
 		t.Errorf("Client.Dispatches() error = %v, want nil", err)
@@ -157,7 +150,6 @@ func TestClientDispatches(t *testing.T) {
 }
 
 func TestClientPlanets(t *testing.T) {
-	t.Skip("currently skipped until we can disable rate-limiting in API") // TODO
 	got, err := globalClient.Planets(context.Background())
 	if err != nil {
 		t.Errorf("Client.Planets() error = %v, want nil", err)
