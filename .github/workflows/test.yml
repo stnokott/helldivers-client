@@ -23,7 +23,7 @@ jobs:
   
     steps:
       - name: Check out code
-        uses: actions/checkout@v4.1.3
+        uses: actions/checkout@v4.1.4
 
       - name: Login to Dockerhub
         run: docker login -u $DOCKER_USER -p $DOCKER_PASS
