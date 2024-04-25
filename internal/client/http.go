@@ -57,7 +57,7 @@ func (c *rateLimitHTTPClient) doIter(req *http.Request) (*http.Response, error) 
 	}
 	if err != nil {
 		c.log.Printf("** HTTP error: %v", err)
-		return nil, nil
+		return nil, err
 	}
 	c.log.Printf("** HTTP error: %s", resp.Status)
 	if resp.StatusCode != http.StatusTooManyRequests {
