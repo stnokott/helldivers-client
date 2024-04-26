@@ -23,7 +23,7 @@ services:
 
   api:
     build:
-      context: https://github.com/helldivers-2/api.git#f754f2bb8d53e278e4239ff08d6daa8cb803db66
+      context: https://github.com/helldivers-2/api.git#1d3f4dd90b1f17034a531ea94a7ea21a269a6dd1
       dockerfile: ./src/Helldivers-2-API/Dockerfile
       args:
         OPENAPI: false
@@ -32,6 +32,7 @@ services:
     environment:
       Helldivers__Synchronization__IntervalSeconds: 30
       Helldivers__Synchronization__DefaultLanguage: en-US
+      Helldivers__API__Authentication__Enabled: false
       Helldivers__API__RateLimit: 9999
       Helldivers__API__RateLimitWindow: 1
       Helldivers__API__Authentication__SigningKey: ${API_SIGNING_KEY}

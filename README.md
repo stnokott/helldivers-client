@@ -39,11 +39,12 @@ services:
   api:
     build:
       # Needs to be built from GitHub as there is currently no public Docker image available
-      context: https://github.com/helldivers-2/api.git#f754f2bb8d53e278e4239ff08d6daa8cb803db66
+      context: https://github.com/helldivers-2/api.git#1d3f4dd90b1f17034a531ea94a7ea21a269a6dd1  # pin version
       dockerfile: ./src/Helldivers-2-API/Dockerfile
     networks:
       - default
     environment:
+      Helldivers__API__Authentication__Enabled: false  # Set to true if exposed
       Helldivers__Synchronization__IntervalSeconds: 300  # How frequent the API data is updated.
       Helldivers__Synchronization__DefaultLanguage: en-US  # Language of strings such as Major Order text.
 
