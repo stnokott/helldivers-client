@@ -149,9 +149,11 @@ func TestRateLimitHTTPClient(t *testing.T) {
 				t.Errorf("rateLimitHTTPClient.Do() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			defer func() {
-				_ = resp.Body.Close()
-			}()
+			if err == nil {
+				defer func() {
+					_ = resp.Body.Close()
+				}()
+			}
 		})
 	}
 }

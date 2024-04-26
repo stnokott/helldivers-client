@@ -33,6 +33,7 @@ func (s tableMergeStats) Incr(tableName string, exists bool, affectedRows int64)
 	}
 }
 
+// TODO: print table instead
 func (s tableMergeStats) Print(logger *log.Logger) {
 	var padTableName, padInserted, padUpdated, padNoop int
 	for tableName, stats := range s {
