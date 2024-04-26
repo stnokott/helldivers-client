@@ -21,14 +21,11 @@ func mustClient() *Client {
 	return client
 }
 
-// global client used for rate-limiting across tests.
-//
-// FIXME: not required anymore once we can disable rate limiting in API container
-var globalClient = mustClient()
+// TODO: split up client tests into:
+// - integration tests (query actual API)
+// - unit tests (using httptest mock server)
 
 func TestClientHosts(t *testing.T) {
-	t.Skip("currently skipped until we can disable rate-limiting in API") // TODO
-
 	host := config.Get().APIRootURL
 	tests := []struct {
 		name    string
@@ -69,8 +66,8 @@ func TestClientHosts(t *testing.T) {
 }
 
 func TestClientWarId(t *testing.T) {
-	t.Skip("currently skipped until we can disable rate-limiting in API") // TODO
-	got, err := globalClient.WarID(context.Background())
+	client := mustClient()
+	got, err := client.WarID(context.Background())
 	if err != nil {
 		t.Errorf("Client.WarID() error = %v, want nil", err)
 		return
@@ -86,8 +83,8 @@ func TestClientWarId(t *testing.T) {
 }
 
 func TestClientWar(t *testing.T) {
-	t.Skip("currently skipped until we can disable rate-limiting in API") // TODO
-	got, err := globalClient.War(context.Background())
+	client := mustClient()
+	got, err := client.War(context.Background())
 	if err != nil {
 		t.Errorf("Client.War() error = %v, want nil", err)
 		return
@@ -103,14 +100,18 @@ func TestClientWar(t *testing.T) {
 }
 
 func TestClientAssignments(t *testing.T) {
-	t.Skip("currently skipped until we can disable rate-limiting in API") // TODO
-	got, err := globalClient.Assignments(context.Background())
+	client := mustClient()
+	got, err := client.Assignments(context.Background())
 	if err != nil {
 		t.Errorf("Client.Assignments() error = %v, want nil", err)
 		return
 	}
 	if got == nil {
 		t.Error("Client.Assignments() returned nil, want non-nil")
+		return
+	}
+	if len(*got) == 0 {
+		t.Skipf("Client.Assignments() returned len() = 0 (no assignments available at the moment)")
 		return
 	}
 	firstItem := (*got)[0]
@@ -121,8 +122,8 @@ func TestClientAssignments(t *testing.T) {
 }
 
 func TestClientCampaigns(t *testing.T) {
-	t.Skip("currently skipped until we can disable rate-limiting in API") // TODO
-	got, err := globalClient.Campaigns(context.Background())
+	client := mustClient()
+	got, err := client.Campaigns(context.Background())
 	if err != nil {
 		t.Errorf("Client.Campaigns() error = %v, want nil", err)
 		return
@@ -139,8 +140,8 @@ func TestClientCampaigns(t *testing.T) {
 }
 
 func TestClientDispatches(t *testing.T) {
-	t.Skip("currently skipped until we can disable rate-limiting in API") // TODO
-	got, err := globalClient.Dispatches(context.Background())
+	client := mustClient()
+	got, err := client.Dispatches(context.Background())
 	if err != nil {
 		t.Errorf("Client.Dispatches() error = %v, want nil", err)
 		return
@@ -157,8 +158,8 @@ func TestClientDispatches(t *testing.T) {
 }
 
 func TestClientPlanets(t *testing.T) {
-	t.Skip("currently skipped until we can disable rate-limiting in API") // TODO
-	got, err := globalClient.Planets(context.Background())
+	client := mustClient()
+	got, err := client.Planets(context.Background())
 	if err != nil {
 		t.Errorf("Client.Planets() error = %v, want nil", err)
 		return

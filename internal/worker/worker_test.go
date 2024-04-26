@@ -27,7 +27,6 @@ func mustWorker() *Worker {
 }
 
 func TestWorkerQueryData(t *testing.T) {
-	t.Skip("currently skipped until we can disable rate-limiting in API") // TODO
 	worker := mustWorker()
 
 	got := worker.queryData(context.Background())
