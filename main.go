@@ -14,10 +14,10 @@ import (
 )
 
 var (
-	projectName string
-	version     string
-	commit      string
-	buildDate   string
+	projectName = "helldivers-client"
+	version     = "0.0.0"
+	commit      = "dev"
+	buildDate   = "now"
 )
 
 const databaseName = "helldivers2"
