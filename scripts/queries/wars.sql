@@ -1,12 +1,12 @@
 -- name: GetWar :one
-SELECT id FROM wars
+SELECT id FROM data.wars
 WHERE id = $1;
 
 -- name: WarExists :one
-SELECT EXISTS(SELECT * FROM wars WHERE id = $1);
+SELECT EXISTS(SELECT * FROM data.wars WHERE id = $1);
 
 -- name: MergeWar :execrows
-INSERT INTO wars (
+INSERT INTO data.wars (
     id, start_time, end_time, factions
 ) VALUES (
     $1, $2, $3, $4

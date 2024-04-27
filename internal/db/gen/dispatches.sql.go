@@ -12,7 +12,7 @@ import (
 )
 
 const dispatchExists = `-- name: DispatchExists :one
-SELECT EXISTS(SELECT id, create_time, type, message FROM dispatches WHERE id = $1)
+SELECT EXISTS(SELECT id, create_time, type, message FROM data.dispatches WHERE id = $1)
 `
 
 func (q *Queries) DispatchExists(ctx context.Context, id int32) (bool, error) {
@@ -23,7 +23,7 @@ func (q *Queries) DispatchExists(ctx context.Context, id int32) (bool, error) {
 }
 
 const getDispatch = `-- name: GetDispatch :one
-SELECT id FROM dispatches
+SELECT id FROM data.dispatches
 WHERE id = $1
 `
 
@@ -34,7 +34,7 @@ func (q *Queries) GetDispatch(ctx context.Context, id int32) (int32, error) {
 }
 
 const mergeDispatch = `-- name: MergeDispatch :execrows
-INSERT INTO dispatches (
+INSERT INTO data.dispatches (
     id, create_time, type, message
 ) VALUES (
     $1, $2, $3, $4

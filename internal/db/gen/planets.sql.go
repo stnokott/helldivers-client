@@ -10,7 +10,7 @@ import (
 )
 
 const biomeExists = `-- name: BiomeExists :one
-SELECT EXISTS(SELECT name, description FROM biomes WHERE name = $1)
+SELECT EXISTS(SELECT name, description FROM data.biomes WHERE name = $1)
 `
 
 func (q *Queries) BiomeExists(ctx context.Context, name string) (bool, error) {
@@ -21,7 +21,7 @@ func (q *Queries) BiomeExists(ctx context.Context, name string) (bool, error) {
 }
 
 const getBiome = `-- name: GetBiome :one
-SELECT name FROM biomes
+SELECT name FROM data.biomes
 WHERE name = $1
 `
 
@@ -32,7 +32,7 @@ func (q *Queries) GetBiome(ctx context.Context, name string) (string, error) {
 }
 
 const getHazard = `-- name: GetHazard :one
-SELECT name FROM hazards
+SELECT name FROM data.hazards
 WHERE name = $1
 `
 
@@ -43,7 +43,7 @@ func (q *Queries) GetHazard(ctx context.Context, name string) (string, error) {
 }
 
 const getPlanet = `-- name: GetPlanet :one
-SELECT id FROM planets
+SELECT id FROM data.planets
 WHERE id = $1
 `
 
@@ -54,7 +54,7 @@ func (q *Queries) GetPlanet(ctx context.Context, id int32) (int32, error) {
 }
 
 const hazardExists = `-- name: HazardExists :one
-SELECT EXISTS(SELECT name, description FROM hazards WHERE name = $1)
+SELECT EXISTS(SELECT name, description FROM data.hazards WHERE name = $1)
 `
 
 func (q *Queries) HazardExists(ctx context.Context, name string) (bool, error) {
@@ -65,7 +65,7 @@ func (q *Queries) HazardExists(ctx context.Context, name string) (bool, error) {
 }
 
 const mergeBiome = `-- name: MergeBiome :execrows
-INSERT INTO biomes (
+INSERT INTO data.biomes (
     name, description
 ) VALUES (
     $1, $2
@@ -91,7 +91,7 @@ func (q *Queries) MergeBiome(ctx context.Context, arg MergeBiomeParams) (int64, 
 }
 
 const mergeHazard = `-- name: MergeHazard :execrows
-INSERT INTO hazards (
+INSERT INTO data.hazards (
     name, description
 ) VALUES (
     $1, $2
@@ -117,7 +117,7 @@ func (q *Queries) MergeHazard(ctx context.Context, arg MergeHazardParams) (int64
 }
 
 const mergePlanet = `-- name: MergePlanet :execrows
-INSERT INTO planets (
+INSERT INTO data.planets (
     id, name, sector, position, waypoint_ids, disabled, biome_name, hazard_names, max_health, initial_owner
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
@@ -162,7 +162,7 @@ func (q *Queries) MergePlanet(ctx context.Context, arg MergePlanetParams) (int64
 }
 
 const planetExists = `-- name: PlanetExists :one
-SELECT EXISTS(SELECT id, name, sector, position, waypoint_ids, disabled, biome_name, hazard_names, max_health, initial_owner FROM planets WHERE id = $1)
+SELECT EXISTS(SELECT id, name, sector, position, waypoint_ids, disabled, biome_name, hazard_names, max_health, initial_owner FROM data.planets WHERE id = $1)
 `
 
 func (q *Queries) PlanetExists(ctx context.Context, id int32) (bool, error) {

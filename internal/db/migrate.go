@@ -12,7 +12,13 @@ import (
 
 func (c *Client) newMigration(scriptFolder string) (*migrate.Migrate, error) {
 	cfg := c.conn.Config()
-	uri := fmt.Sprintf("pgx5://%s:%s@%s:%d/%s", cfg.User, cfg.Password, cfg.Host, cfg.Port, cfg.Database)
+	uri := fmt.Sprintf(
+		"pgx5://%s:%s@%s:%d/%s?application_name=%s",
+		cfg.User, cfg.Password,
+		cfg.Host, cfg.Port,
+		cfg.Database,
+		_appName,
+	)
 
 	migration, err := migrate.New(
 		"file://"+scriptFolder,

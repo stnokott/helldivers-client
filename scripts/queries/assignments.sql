@@ -1,12 +1,12 @@
 -- name: GetAssignment :one
-SELECT id FROM assignments
+SELECT id FROM data.assignments
 WHERE id = $1;
 
 -- name: AssignmentExists :one
-SELECT EXISTS(SELECT * FROM assignments WHERE id = $1);
+SELECT EXISTS(SELECT * FROM data.assignments WHERE id = $1);
 
 -- name: MergeAssignment :execrows
-INSERT INTO assignments (
+INSERT INTO data.assignments (
     id, title, briefing, description, expiration, task_ids, reward_type, reward_amount
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7, $8
@@ -18,12 +18,12 @@ WHERE FALSE IN (
 );
 
 -- name: InsertAssignmentTask :execrows
-INSERT INTO assignment_tasks (
+INSERT INTO data.assignment_tasks (
     task_type, values, value_types
 ) VALUES (
     $1, $2, $3
 );
 
 -- name: DeleteAssignmentTasks :exec
-DELETE FROM assignment_tasks
+DELETE FROM data.assignment_tasks
 WHERE id = ANY(sqlc.arg(ids)::bigint[]);

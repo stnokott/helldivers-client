@@ -12,7 +12,7 @@ import (
 )
 
 const eventExists = `-- name: EventExists :one
-SELECT EXISTS(SELECT id, campaign_id, type, faction, max_health, start_time, end_time FROM events WHERE id = $1)
+SELECT EXISTS(SELECT id, campaign_id, type, faction, max_health, start_time, end_time FROM data.events WHERE id = $1)
 `
 
 func (q *Queries) EventExists(ctx context.Context, id int32) (bool, error) {
@@ -23,7 +23,7 @@ func (q *Queries) EventExists(ctx context.Context, id int32) (bool, error) {
 }
 
 const getEvent = `-- name: GetEvent :one
-SELECT id FROM events
+SELECT id FROM data.events
 WHERE id = $1
 `
 
@@ -34,7 +34,7 @@ func (q *Queries) GetEvent(ctx context.Context, id int32) (int32, error) {
 }
 
 const mergeEvent = `-- name: MergeEvent :execrows
-INSERT INTO events (
+INSERT INTO data.events (
     id, campaign_id, type, faction, max_health, start_time, end_time
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7

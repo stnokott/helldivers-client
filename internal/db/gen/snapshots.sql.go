@@ -12,7 +12,7 @@ import (
 )
 
 const getLatestSnapshot = `-- name: GetLatestSnapshot :one
-SELECT create_time, war_snapshot_id, assignment_snapshot_ids, campaign_ids, dispatch_ids, planet_snapshot_ids, statistics_id FROM snapshots
+SELECT create_time, war_snapshot_id, assignment_snapshot_ids, campaign_ids, dispatch_ids, planet_snapshot_ids, statistics_id FROM data.snapshots
 ORDER BY create_time desc
 LIMIT 1
 `
@@ -33,7 +33,7 @@ func (q *Queries) GetLatestSnapshot(ctx context.Context) (Snapshot, error) {
 }
 
 const insertAssignmentSnapshot = `-- name: InsertAssignmentSnapshot :one
-INSERT INTO assignment_snapshots (
+INSERT INTO data.assignment_snapshots (
     assignment_id, progress
 ) VALUES (
     $1, $2
@@ -54,7 +54,7 @@ func (q *Queries) InsertAssignmentSnapshot(ctx context.Context, arg InsertAssign
 }
 
 const insertEventSnapshot = `-- name: InsertEventSnapshot :one
-INSERT INTO event_snapshots (
+INSERT INTO data.event_snapshots (
     event_id, health
 ) VALUES (
     $1, $2
@@ -75,7 +75,7 @@ func (q *Queries) InsertEventSnapshot(ctx context.Context, arg InsertEventSnapsh
 }
 
 const insertPlanetSnapshot = `-- name: InsertPlanetSnapshot :one
-INSERT INTO planet_snapshots (
+INSERT INTO data.planet_snapshots (
     planet_id, health, current_owner, event_snapshot_id, attacking_planet_ids, regen_per_second, statistics_id
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7
@@ -109,7 +109,7 @@ func (q *Queries) InsertPlanetSnapshot(ctx context.Context, arg InsertPlanetSnap
 }
 
 const insertSnapshot = `-- name: InsertSnapshot :one
-INSERT INTO snapshots (
+INSERT INTO data.snapshots (
     war_snapshot_id, assignment_snapshot_ids, campaign_ids, dispatch_ids, planet_snapshot_ids, statistics_id
 ) VALUES (
     $1, $2, $3, $4, $5, $6
@@ -141,7 +141,7 @@ func (q *Queries) InsertSnapshot(ctx context.Context, arg InsertSnapshotParams) 
 }
 
 const insertSnapshotStatistics = `-- name: InsertSnapshotStatistics :one
-INSERT INTO snapshot_statistics (
+INSERT INTO data.snapshot_statistics (
     missions_won, missions_lost, mission_time, terminid_kills, automaton_kills, illuminate_kills, bullets_fired, bullets_hit, time_played, deaths, revives, friendlies, player_count
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13
@@ -187,7 +187,7 @@ func (q *Queries) InsertSnapshotStatistics(ctx context.Context, arg InsertSnapsh
 }
 
 const insertWarSnapshot = `-- name: InsertWarSnapshot :one
-INSERT INTO war_snapshots (
+INSERT INTO data.war_snapshots (
     war_id, impact_multiplier
 ) VALUES (
     $1, $2
