@@ -6,6 +6,8 @@ linters:
     - errcheck
     - gocritic
     - gosimple
+    - goimports
+    - golint
     - govet
     - ineffassign
     - staticcheck
