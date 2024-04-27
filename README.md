@@ -39,7 +39,7 @@ services:
   api:
     build:
       # Needs to be built from GitHub as there is currently no public Docker image available
-      context: https://github.com/helldivers-2/api.git#1d3f4dd90b1f17034a531ea94a7ea21a269a6dd1  # pin version
+      context: https://github.com/helldivers-2/api.git#27867d76eacaafec7ee32a89d1d10ad25eddc5cc  # pin version
       dockerfile: ./src/Helldivers-2-API/Dockerfile
     networks:
       - default
