@@ -2,6 +2,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -12,9 +13,18 @@ import (
 	"github.com/stnokott/helldivers-client/internal/worker"
 )
 
+var (
+	projectName string
+	version     string
+	commit      string
+	buildDate   string
+)
+
 const databaseName = "helldivers2"
 
 func main() {
+	fmt.Printf("%s v%s %s built %s\n\n", projectName, version, commit, buildDate)
+
 	cfg := config.Get()
 	logger := loggerFor("main")
 
