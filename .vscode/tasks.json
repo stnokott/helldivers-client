@@ -28,12 +28,12 @@
 			"command": "godotenv",
 			"args": [
 				"-f",
-				"${workspaceFolder}/.env.test",
+				".env.test",
 				"go",
 				"test",
 				"./..."
 			],
-			"group": "test",
+			"group": "test"
 		},
 		{
 			"label": "build snapshot",
