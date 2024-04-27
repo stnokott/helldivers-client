@@ -12,7 +12,7 @@ import (
 )
 
 const getWar = `-- name: GetWar :one
-SELECT id FROM data.wars
+SELECT id FROM wars
 WHERE id = $1
 `
 
@@ -23,7 +23,7 @@ func (q *Queries) GetWar(ctx context.Context, id int32) (int32, error) {
 }
 
 const mergeWar = `-- name: MergeWar :execrows
-INSERT INTO data.wars (
+INSERT INTO wars (
     id, start_time, end_time, factions
 ) VALUES (
     $1, $2, $3, $4
@@ -56,7 +56,7 @@ func (q *Queries) MergeWar(ctx context.Context, arg MergeWarParams) (int64, erro
 }
 
 const warExists = `-- name: WarExists :one
-SELECT EXISTS(SELECT id, start_time, end_time, factions FROM data.wars WHERE id = $1)
+SELECT EXISTS(SELECT id, start_time, end_time, factions FROM wars WHERE id = $1)
 `
 
 func (q *Queries) WarExists(ctx context.Context, id int32) (bool, error) {

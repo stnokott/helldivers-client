@@ -10,7 +10,7 @@ import (
 )
 
 const campaignExists = `-- name: CampaignExists :one
-SELECT EXISTS(SELECT id, type, count FROM data.campaigns WHERE id = $1)
+SELECT EXISTS(SELECT id, type, count FROM campaigns WHERE id = $1)
 `
 
 func (q *Queries) CampaignExists(ctx context.Context, id int32) (bool, error) {
@@ -21,7 +21,7 @@ func (q *Queries) CampaignExists(ctx context.Context, id int32) (bool, error) {
 }
 
 const getCampaign = `-- name: GetCampaign :one
-SELECT id FROM data.campaigns
+SELECT id FROM campaigns
 WHERE id = $1
 `
 
@@ -32,7 +32,7 @@ func (q *Queries) GetCampaign(ctx context.Context, id int32) (int32, error) {
 }
 
 const mergeCampaign = `-- name: MergeCampaign :execrows
-INSERT INTO data.campaigns (
+INSERT INTO campaigns (
     id, type, count
 ) VALUES (
     $1, $2, $3

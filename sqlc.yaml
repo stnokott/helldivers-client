@@ -12,21 +12,3 @@ sql:
         emit_empty_slices: true
         emit_pointers_for_null_types: true
         emit_prepared_queries: true
-overrides:
-  go:
-    rename:
-      data_assignment: Assignment
-      data_assignment_task: AssignmentTask
-      data_biome: Biome
-      data_hazard: Hazard
-      data_planet: Planet
-      data_campaign: Campaign
-      data_dispatch: Dispatch
-      data_event: Event
-      data_war: War
-      data_event_snapshot: EventSnapshot
-      data_assignment_snapshot: AssignmentSnapshot
-      data_planet_snapshot: PlanetSnapshot
-      data_snapshot: Snapshot
-      data_snapshot_statistic: SnapshotStatistic
-      data_war_snapshot: WarSnapshot

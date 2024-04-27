@@ -1,12 +1,12 @@
 -- name: GetDispatch :one
-SELECT id FROM data.dispatches
+SELECT id FROM dispatches
 WHERE id = $1;
 
 -- name: DispatchExists :one
-SELECT EXISTS(SELECT * FROM data.dispatches WHERE id = $1);
+SELECT EXISTS(SELECT * FROM dispatches WHERE id = $1);
 
 -- name: MergeDispatch :execrows
-INSERT INTO data.dispatches (
+INSERT INTO dispatches (
     id, create_time, type, message
 ) VALUES (
     $1, $2, $3, $4

@@ -1,12 +1,12 @@
 -- name: GetPlanet :one
-SELECT id FROM data.planets
+SELECT id FROM planets
 WHERE id = $1;
 
 -- name: PlanetExists :one
-SELECT EXISTS(SELECT * FROM data.planets WHERE id = $1);
+SELECT EXISTS(SELECT * FROM planets WHERE id = $1);
 
 -- name: MergePlanet :execrows
-INSERT INTO data.planets (
+INSERT INTO planets (
     id, name, sector, position, waypoint_ids, disabled, biome_name, hazard_names, max_health, initial_owner
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
@@ -18,14 +18,14 @@ WHERE FALSE IN (
 );
 
 -- name: GetBiome :one
-SELECT name FROM data.biomes
+SELECT name FROM biomes
 WHERE name = $1;
 
 -- name: BiomeExists :one
-SELECT EXISTS(SELECT * FROM data.biomes WHERE name = $1);
+SELECT EXISTS(SELECT * FROM biomes WHERE name = $1);
 
 -- name: MergeBiome :execrows
-INSERT INTO data.biomes (
+INSERT INTO biomes (
     name, description
 ) VALUES (
     $1, $2
@@ -37,14 +37,14 @@ WHERE FALSE IN (
 );
 
 -- name: GetHazard :one
-SELECT name FROM data.hazards
+SELECT name FROM hazards
 WHERE name = $1;
 
 -- name: HazardExists :one
-SELECT EXISTS(SELECT * FROM data.hazards WHERE name = $1);
+SELECT EXISTS(SELECT * FROM hazards WHERE name = $1);
 
 -- name: MergeHazard :execrows
-INSERT INTO data.hazards (
+INSERT INTO hazards (
     name, description
 ) VALUES (
     $1, $2

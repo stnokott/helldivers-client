@@ -1,12 +1,12 @@
 -- name: GetCampaign :one
-SELECT id FROM data.campaigns
+SELECT id FROM campaigns
 WHERE id = $1;
 
 -- name: CampaignExists :one
-SELECT EXISTS(SELECT * FROM data.campaigns WHERE id = $1);
+SELECT EXISTS(SELECT * FROM campaigns WHERE id = $1);
 
 -- name: MergeCampaign :execrows
-INSERT INTO data.campaigns (
+INSERT INTO campaigns (
     id, type, count
 ) VALUES (
     $1, $2, $3

@@ -14,10 +14,7 @@ import (
 	"github.com/stnokott/helldivers-client/internal/db/gen"
 )
 
-const (
-	_appName = "HELLDIVERS_2_CLIENT"
-	_schema  = "data"
-)
+const appName = "HELLDIVERS_2_CLIENT"
 
 // Client is the abstraction layer for the MongoDB connector
 type Client struct {
@@ -32,8 +29,7 @@ func New(cfg *config.Config, logger *log.Logger) (*Client, error) {
 	if err != nil {
 		return nil, fmt.Errorf("parse PostgreSQL config from ENV: %w", err)
 	}
-	pgxConfig.RuntimeParams["application_name"] = _appName
-	pgxConfig.RuntimeParams["search_path"] = _schema
+	pgxConfig.RuntimeParams["application_name"] = appName
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()

@@ -1,12 +1,12 @@
 -- name: GetEvent :one
-SELECT id FROM data.events
+SELECT id FROM events
 WHERE id = $1;
 
 -- name: EventExists :one
-SELECT EXISTS(SELECT * FROM data.events WHERE id = $1);
+SELECT EXISTS(SELECT * FROM events WHERE id = $1);
 
 -- name: MergeEvent :execrows
-INSERT INTO data.events (
+INSERT INTO events (
     id, campaign_id, type, faction, max_health, start_time, end_time
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7
