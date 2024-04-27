@@ -18,6 +18,8 @@ func main() {
 	cfg := config.Get()
 	logger := loggerFor("main")
 
+	// TODO: wait until DB available
+
 	dbClient, err := db.New(cfg, loggerFor("postgresql"))
 	if err != nil {
 		logger.Fatal(err)
@@ -30,6 +32,8 @@ func main() {
 	if err = dbClient.MigrateUp("./scripts/migrations"); err != nil {
 		logger.Fatal(err)
 	}
+
+	// TODO: wait until API available
 
 	apiClient, err := client.New(cfg, loggerFor("api"))
 	if err != nil {
