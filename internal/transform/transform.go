@@ -23,7 +23,7 @@ type APIData struct {
 
 // errFromNils returns an error containing the list of nil fields in v.
 func errFromNils[T any](v *T) error {
-	names := []string{}
+	var names []string
 	value := reflect.ValueOf(v).Elem()
 	valueType := value.Type()
 	for i := 0; i < value.NumField(); i++ {

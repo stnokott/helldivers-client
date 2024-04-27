@@ -39,7 +39,7 @@ func TestWarsSchema(t *testing.T) {
 		{
 			name: "empty faction list",
 			modifier: func(w *War) {
-				w.Factions = []string{}
+				w.Factions = nil
 			},
 			wantErr: true,
 		},

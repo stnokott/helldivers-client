@@ -43,11 +43,11 @@ func TestTablesExist(t *testing.T) {
 			)
 			if err != nil {
 				t.Errorf("could not list tables: %v", err)
-				return []string{}
+				return nil
 			}
 			defer rows.Close()
 
-			names := []string{}
+			var names []string
 			for rows.Next() {
 				var tableName string
 				rows.Scan(&tableName)
