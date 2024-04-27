@@ -41,7 +41,7 @@ func (a *Assignment) Merge(ctx context.Context, tx *gen.Queries, stats tableMerg
 	if _, err = tx.MergeAssignment(ctx, gen.MergeAssignmentParams(a.Assignment)); err != nil {
 		return fmt.Errorf("failed to insert assignment '%s': %v", a.Title, err)
 	}
-	stats.Incr("Assignments", false, 1)
+	stats.Incr("Assignments", exists, 1)
 	return nil
 }
 

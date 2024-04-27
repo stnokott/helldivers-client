@@ -21,6 +21,7 @@ func Events(data APIData) ([]db.EntityMerger, error) {
 	if err != nil {
 		return nil, err
 	}
+	// TODO: query and use planet-events instead to avoid confusion here
 	events := []db.EntityMerger{}
 	for _, planet := range src {
 		if planet.Event == nil {
