@@ -24,11 +24,11 @@ func (a *Assignment) Merge(ctx context.Context, tx *gen.Queries, stats tableMerg
 	//   2. Then, merge the assignment as usual, re-inserting the tasks along the way
 	exists, err := tx.AssignmentExists(ctx, a.ID)
 	if err != nil {
-		return fmt.Errorf("failed to check if assignment (ID=%d) exists: %w", a.ID, err)
+		return fmt.Errorf("check if assignment (ID=%d) exists: %w", a.ID, err)
 	}
 	if exists {
 		if err = tx.DeleteAssignmentTasks(ctx, a.TaskIds); err != nil {
-			return fmt.Errorf("failed to delete assignment tasks: %w", err)
+			return fmt.Errorf("delete assignment tasks: %w", err)
 		}
 	}
 
@@ -39,7 +39,7 @@ func (a *Assignment) Merge(ctx context.Context, tx *gen.Queries, stats tableMerg
 	a.TaskIds = taskIDs
 
 	if _, err = tx.MergeAssignment(ctx, gen.MergeAssignmentParams(a.Assignment)); err != nil {
-		return fmt.Errorf("failed to insert assignment '%s': %v", a.Title, err)
+		return fmt.Errorf("insert assignment '%s': %v", a.Title, err)
 	}
 	stats.Incr("Assignments", exists, 1)
 	return nil

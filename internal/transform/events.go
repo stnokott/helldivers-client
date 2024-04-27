@@ -79,7 +79,7 @@ func parseCampaignPlanet(in *api.Campaign2_Planet) (api.Planet, error) {
 	}
 	planet, err := in.AsPlanet()
 	if err != nil {
-		return api.Planet{}, fmt.Errorf("cannot parse campaign planet: %w", err)
+		return api.Planet{}, fmt.Errorf("parse campaign planet: %w", err)
 	}
 	if planet.Index == nil {
 		return api.Planet{}, errFromNils(&planet)
@@ -90,7 +90,7 @@ func parseCampaignPlanet(in *api.Campaign2_Planet) (api.Planet, error) {
 func parsePlanetEvent(in *api.Planet_Event) (api.Event, error) {
 	event, err := in.AsEvent()
 	if err != nil {
-		return api.Event{}, fmt.Errorf("cannot parse planet event: %w", err)
+		return api.Event{}, fmt.Errorf("parse planet event: %w", err)
 	}
 	if event.Id == nil ||
 		event.EventType == nil ||
