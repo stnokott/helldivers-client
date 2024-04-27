@@ -1,7 +1,7 @@
 .env.*
 
 vendor/
-dist/**
+dist/
 
 # Binaries for programs and plugins
 *.exe

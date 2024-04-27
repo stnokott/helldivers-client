@@ -55,7 +55,7 @@ func Assignments(data APIData) ([]db.EntityMerger, error) {
 func parseAssignmentReward(in *api.Assignment2_Reward) (api.Reward2, error) {
 	reward, err := in.AsReward2()
 	if err != nil {
-		return api.Reward2{}, fmt.Errorf("cannot parse assignment reward: %w", err)
+		return api.Reward2{}, fmt.Errorf("parse assignment reward: %w", err)
 	}
 	if reward.Amount == nil || reward.Type == nil {
 		return api.Reward2{}, errFromNils(&reward)

@@ -6,17 +6,23 @@ linters:
     - errcheck
     - gocritic
     - gosimple
+    - goimports
+    - golint
     - govet
     - ineffassign
     - staticcheck
     - typecheck
     - unused
-
+    - cyclop
+    - gocognit
+    - gocritic
+    - godot
     - bodyclose
     - decorder
     - exportloopref
     - goconst
     - nilerr
+    - ireturn
 
 linters-settings:
   errcheck:

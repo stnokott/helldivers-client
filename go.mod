@@ -8,7 +8,6 @@ require (
 	github.com/jinzhu/copier v0.4.0
 	github.com/oapi-codegen/runtime v1.1.1
 	go-simpler.org/env v0.11.0
-	golang.org/x/time v0.5.0
 )
 
 require (

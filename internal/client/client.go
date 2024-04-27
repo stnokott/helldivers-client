@@ -24,7 +24,7 @@ func New(cfg *config.Config, logger *log.Logger) (*Client, error) {
 	)
 	c, err := api.NewClientWithResponses(cfg.APIRootURL, options)
 	if err != nil {
-		return nil, fmt.Errorf("client initialization failed: %w", err)
+		return nil, fmt.Errorf("client initialization: %w", err)
 	}
 
 	return &Client{

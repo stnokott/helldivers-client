@@ -75,7 +75,7 @@ func Planets(data APIData) ([]db.EntityMerger, error) {
 func parsePlanetPosition(in *api.Planet_Position) (api.Position, error) {
 	pos, err := in.AsPosition()
 	if err != nil {
-		return api.Position{}, fmt.Errorf("cannot parse planet position: %w", err)
+		return api.Position{}, fmt.Errorf("parse planet position: %w", err)
 	}
 	if pos.X == nil || pos.Y == nil {
 		return api.Position{}, errFromNils(&pos)
@@ -86,7 +86,7 @@ func parsePlanetPosition(in *api.Planet_Position) (api.Position, error) {
 func parsePlanetBiome(in *api.Planet_Biome) (api.Biome, error) {
 	biome, err := in.AsBiome()
 	if err != nil {
-		return api.Biome{}, fmt.Errorf("cannot parse planet position: %w", err)
+		return api.Biome{}, fmt.Errorf("parse planet position: %w", err)
 	}
 	if biome.Name == nil || biome.Description == nil {
 		return api.Biome{}, errFromNils(&biome)

@@ -21,3 +21,9 @@
 | Field  | Value | Meaning |
 | ------ | ----- | ------- |
 | `type` | 0     | ?       |
+
+# Text formatting
+
+## Dispatches
+
+See [this discussion](https://github.com/helldivers-2/api/issues/55) for information on text styling.

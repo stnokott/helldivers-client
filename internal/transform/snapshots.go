@@ -177,7 +177,7 @@ func makeEventSnapshot(eventPtr *api.Planet_Event) (*gen.EventSnapshot, error) {
 	}
 	planetEvent, err := eventPtr.AsEvent()
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse Planet Event: %w", err)
+		return nil, fmt.Errorf("parse Planet Event: %w", err)
 	}
 	if planetEvent.Id == nil || planetEvent.Health == nil {
 		return nil, errFromNils(&planetEvent)
@@ -228,7 +228,7 @@ func makePlanetStatistics(statsPtr *api.Planet_Statistics) (*gen.SnapshotStatist
 	}
 	stats, err := statsPtr.AsStatistics()
 	if err != nil {
-		return nil, fmt.Errorf("cannot parse Planet Statistics: %w", err)
+		return nil, fmt.Errorf("parse Planet Statistics: %w", err)
 	}
 	return makeStatistics(stats)
 }
@@ -239,7 +239,7 @@ func makeWarStatistics(statsPtr *api.War_Statistics) (*gen.SnapshotStatistic, er
 	}
 	stats, err := statsPtr.AsStatistics()
 	if err != nil {
-		return nil, fmt.Errorf("cannot parse War Statistics: %w", err)
+		return nil, fmt.Errorf("parse War Statistics: %w", err)
 	}
 	return makeStatistics(stats)
 }

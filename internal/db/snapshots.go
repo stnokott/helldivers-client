@@ -111,7 +111,7 @@ func insertPlanetSnapshots(ctx context.Context, tx *gen.Queries, planetSnaps []P
 			StatisticsID:       statsID,
 		})
 		if err != nil {
-			return nil, fmt.Errorf("failed to insert planet snapshot: %w", err)
+			return nil, fmt.Errorf("insert planet snapshot: %w", err)
 		}
 		ids[i] = id
 		stats.Incr("Planet Snapshots", false, 1)
@@ -129,7 +129,7 @@ func insertEventSnapshot(ctx context.Context, tx *gen.Queries, eventSnap *gen.Ev
 		Health:  eventSnap.Health,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to insert event snapshot: %w", err)
+		return nil, fmt.Errorf("insert event snapshot: %w", err)
 	}
 	stats.Incr("Event Snapshots", false, 1)
 	return &id, nil
@@ -152,7 +152,7 @@ func insertSnapshotStatistics(ctx context.Context, tx *gen.Queries, snapshotStat
 		PlayerCount:     snapshotStats.PlayerCount,
 	})
 	if err != nil {
-		return -1, fmt.Errorf("failed to insert snapshot statistics: %w", err)
+		return -1, fmt.Errorf("insert snapshot statistics: %w", err)
 	}
 	stats.Incr("Snapshots Statistics", false, 1)
 	return id, nil
