@@ -25,7 +25,7 @@ const databaseName = "helldivers2"
 func main() {
 	fmt.Printf("%s v%s %s built %s\n\n", projectName, version, commit, buildDate)
 
-	cfg := config.Get()
+	cfg := config.MustGet()
 	logger := loggerFor("main")
 
 	// TODO: wait until DB available

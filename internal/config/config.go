@@ -18,10 +18,11 @@ type Config struct {
 	WorkerInterval time.Duration `env:"WORKER_INTERVAL" default:"5m" usage:"Interval at which data will be queried from the API and written to the database."`
 }
 
-// Get reads environment variables and parses them into a Config struct.
+// MustGet reads environment variables and parses them into a Config struct.
 //
-// Any required environment variables which are not provided will cause the application to exit.
-func Get() *Config {
+// Any required environment variables which are not provided will cause the
+// application to print usage and exit.
+func MustGet() *Config {
 
 	c := new(Config)
 	if err := env.Load(c, nil); err != nil {

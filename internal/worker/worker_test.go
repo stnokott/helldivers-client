@@ -14,7 +14,7 @@ import (
 )
 
 func mustWorker() *Worker {
-	cfg := config.Get()
+	cfg := config.MustGet()
 	api, err := client.New(cfg, log.Default())
 	if err != nil {
 		panic(err)
