@@ -4,8 +4,7 @@ package stats
 import (
 	"fmt"
 	"log"
-	"strconv"
-	"unicode/utf8"
+	"text/tabwriter"
 
 	"github.com/stnokott/helldivers-client/internal/db/gen"
 )
@@ -49,23 +48,11 @@ func (s mergeStats) Noop(table gen.Table, n int64) {
 
 // TODO: print table instead.
 func (s mergeStats) Print(logger *log.Logger) {
-	var padTableName, padInserted, padUpdated, padNoop int
+	w := tabwriter.NewWriter(logger.Writer(), 0, 0, 1, ' ', tabwriter.Debug)
+
+	fmt.Fprintln(w, "\t TABLE NAME \t INSERTED \t UPDATED \t UNCHANGED \t")
 	for tableName, stats := range s {
-		if x := utf8.RuneCountInString(tableName.String()); x > padTableName {
-			padTableName = x
-		}
-		if x := len(strconv.FormatInt(stats.Inserted, 10)); x > padInserted {
-			padInserted = x
-		}
-		if x := len(strconv.FormatInt(stats.Updated, 10)); x > padUpdated {
-			padUpdated = x
-		}
-		if x := len(strconv.FormatInt(stats.Noop, 10)); x > padNoop {
-			padNoop = x
-		}
+		fmt.Fprintf(w, "\t %s \t %d \t %d \t %d \t\n", tableName, stats.Inserted, stats.Updated, stats.Noop)
 	}
-	formatString := fmt.Sprintf("** %%-%ds -> %%%dd inserted, %%%dd updated, %%%dd unchanged", padTableName, padInserted, padUpdated, padNoop)
-	for tableName, stats := range s {
-		logger.Printf(formatString, tableName, stats.Inserted, stats.Updated, stats.Noop)
-	}
+	w.Flush()
 }
