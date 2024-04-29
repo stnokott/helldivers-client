@@ -6,11 +6,18 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/stnokott/helldivers-client/internal/db/gen"
+	"github.com/stnokott/helldivers-client/internal/db/stats"
 )
 
+// TODO: implement "Register" function which registers a table merger.
+// that register function initializes the table stats to 0 and will perform the merge later.
+// (could be an interface or an actual function)
+
 type EntityMerger interface {
-	Merge(ctx context.Context, tx *gen.Queries, stats tableMergeStats) error
+	Merge(ctx context.Context, tx *gen.Queries, onMerge onMergeFunc) error
 }
+
+type onMergeFunc func(table gen.Table, exists bool, affectedRows int64)
 
 func (c *Client) Merge(ctx context.Context, mergers ...[]EntityMerger) (err error) {
 	tx, err := c.conn.BeginTx(ctx, pgx.TxOptions{})
@@ -39,7 +46,10 @@ func (c *Client) Merge(ctx context.Context, mergers ...[]EntityMerger) (err erro
 	}()
 
 	// prepare insert/update statistics
-	stats := tableMergeStats{}
+	stats := stats.NewCollector()
+	onMerge := func(table gen.Table, exists bool, affectedRows int64) {
+		collectAfterMerge(stats, table, exists, affectedRows)
+	}
 
 	// run merges
 	for _, mSlice := range mergers {
@@ -47,11 +57,23 @@ func (c *Client) Merge(ctx context.Context, mergers ...[]EntityMerger) (err erro
 			c.log.Println("WARN: got 0 entities to merge")
 		}
 		for _, merger := range mSlice {
-			if err = merger.Merge(ctx, qtx, stats); err != nil {
+			if err = merger.Merge(ctx, qtx, onMerge); err != nil {
 				return
 			}
 		}
 	}
 	stats.Print(c.log)
 	return
+}
+
+func collectAfterMerge(s stats.Collector, table gen.Table, exists bool, affectedRows int64) {
+	if affectedRows == 0 {
+		s.Noop(table, 1)
+		return
+	}
+	if exists {
+		s.Updated(table, affectedRows)
+	} else {
+		s.Inserted(table, affectedRows)
+	}
 }

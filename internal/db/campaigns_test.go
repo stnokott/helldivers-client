@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stnokott/helldivers-client/internal/copytest"
+	"github.com/stnokott/helldivers-client/internal/db/gen"
 )
 
 var validCampaign = Campaign{
@@ -45,7 +46,7 @@ func TestCampaignsSchema(t *testing.T) {
 
 				tt.modifier(&campaign)
 
-				err := campaign.Merge(context.Background(), client.queries, tableMergeStats{})
+				err := campaign.Merge(context.Background(), client.queries, func(gen.Table, bool, int64) {})
 				if (err != nil) != tt.wantErr {
 					t.Errorf("Campaign.Merge() error = %v, wantErr = %v", err, tt.wantErr)
 					return

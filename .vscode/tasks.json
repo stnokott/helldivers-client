@@ -43,6 +43,19 @@
 			"group": "build"
 		},
 		{
+			"label": "build sqlc-gen-enum",
+			"type": "shell",
+			"command": "go build -o sqlc-gen-enum.wasm ./internal/db/sqlc-gen-enum",
+			"group": "build",
+			"hide": true,
+			"options": {
+				"env": {
+					"GOOS": "wasip1",
+					"GOARCH": "wasm"
+				}
+			}
+		},
+		{
 			"label": "sqlc generate",
 			"type": "shell",
 			"command": "sqlc generate",
@@ -50,7 +63,10 @@
 			"group": "none",
 			"icon": {
 				"id": "wand"
-			}
+			},
+			"dependsOn": [
+				"build sqlc-gen-enum"
+			]
 		}
 	]
 }

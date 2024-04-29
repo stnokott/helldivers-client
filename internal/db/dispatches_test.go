@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/stnokott/helldivers-client/internal/copytest"
+	"github.com/stnokott/helldivers-client/internal/db/gen"
 )
 
 var validDispatch = Dispatch{
@@ -47,7 +48,7 @@ func TestDispatchesSchema(t *testing.T) {
 
 				tt.modifier(&dispatch)
 
-				err := dispatch.Merge(context.Background(), client.queries, tableMergeStats{})
+				err := dispatch.Merge(context.Background(), client.queries, func(gen.Table, bool, int64) {})
 				if (err != nil) != tt.wantErr {
 					t.Errorf("Dispatch.Merge() error = %v, wantErr = %v", err, tt.wantErr)
 					return
