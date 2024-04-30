@@ -18,9 +18,6 @@ builds:
       - linux
     goarch:
       - amd64
-      - arm
-    goarm:
-      - "7"
     ldflags:
       - -s -w # -s and -w reduce binary size, but prevent debugging (not necessary for production build)
       - -X main.projectName={{ .ProjectName }}
@@ -33,8 +30,7 @@ builds:
       - windows
 
 dockers:
-  - &default_docker
-    use: buildx
+  - use: buildx
     image_templates:
       - "ghcr.io/stnokott/{{ .ProjectName }}:{{ .Version }}-amd64"
       - "ghcr.io/stnokott/{{ .ProjectName }}:latest-amd64"
@@ -48,25 +44,12 @@ dockers:
     dockerfile: Dockerfile
     extra_files:
       - "scripts/migrations"
-  - <<: *default_docker
-    image_templates:
-      - "ghcr.io/stnokott/{{ .ProjectName }}:{{ .Version }}-armv7"
-      - "ghcr.io/stnokott/{{ .ProjectName }}:latest-armv7"
-    build_flag_templates:
-      - "--pull"
-      - "--label=org.opencontainers.image.created={{.Date}}"
-      - "--label=org.opencontainers.image.title={{.ProjectName}}"
-      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
-      - "--label=org.opencontainers.image.version={{.Version}}"
-      - "--platform=linux/arm/7"
 
 docker_manifests:
   - name_template: "ghcr.io/stnokott/{{ .ProjectName }}:{{ .Version }}"
     image_templates:
       - "ghcr.io/stnokott/{{ .ProjectName }}:{{ .Version }}-amd64"
       - "ghcr.io/stnokott/{{ .ProjectName }}:latest-amd64"
-      - "ghcr.io/stnokott/{{ .ProjectName }}:{{ .Version }}-armv7"
-      - "ghcr.io/stnokott/{{ .ProjectName }}:latest-armv7"
 
 changelog:
   sort: asc

@@ -1,6 +1,5 @@
-// Package worker synchronizes data between API and DB.
-//
-// It queries the API at a specified interval and merges the results into the DB.
+//go:build integration
+
 package worker
 
 import (
@@ -14,7 +13,7 @@ import (
 )
 
 func mustWorker() *Worker {
-	cfg := config.Get()
+	cfg := config.MustGet()
 	api, err := client.New(cfg, log.Default())
 	if err != nil {
 		panic(err)

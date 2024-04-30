@@ -1,4 +1,5 @@
-// Package db handles interactions with the MongoDB instance and works as an abstraction layer
+//go:build integration
+
 package db
 
 import (
@@ -21,7 +22,7 @@ func TestNew(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		{name: "valid", args: args{config.Get()}, wantErr: false},
+		{name: "valid", args: args{config.MustGet()}, wantErr: false},
 		{name: "invalid", args: args{&config.Config{PostgresURI: "http://localhost"}}, wantErr: true},
 	}
 	for _, tt := range tests {
@@ -41,7 +42,7 @@ func TestNew(t *testing.T) {
 }
 
 func TestClientDisconnect(t *testing.T) {
-	cfg := config.Get()
+	cfg := config.MustGet()
 	client, err := New(cfg, log.Default())
 	if err != nil {
 		t.Fatalf("could not initialize DB connection: %v", err)
@@ -55,7 +56,7 @@ func TestClientDisconnect(t *testing.T) {
 }
 
 func withClient(t *testing.T, do func(client *Client, migration *migrate.Migrate)) {
-	cfg := config.Get()
+	cfg := config.MustGet()
 
 	client, err := New(cfg, log.New(io.Discard, "", 0))
 	if err != nil {

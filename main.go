@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"time"
 
 	"github.com/stnokott/helldivers-client/internal/client"
 	"github.com/stnokott/helldivers-client/internal/config"
@@ -14,26 +15,33 @@ import (
 )
 
 var (
-	projectName string
-	version     string
-	commit      string
-	buildDate   string
+	projectName = "helldivers-client"
+	version     = "0.0.0"
+	commit      = "dev"
+	buildDate   = "now"
 )
 
-const databaseName = "helldivers2"
+const (
+	databaseName   = "helldivers2"
+	dbReadyTimeout = 30 * time.Second
+)
+
+const apiReadyTimeout = 30 * time.Second
 
 func main() {
 	fmt.Printf("%s v%s %s built %s\n\n", projectName, version, commit, buildDate)
 
-	cfg := config.Get()
+	cfg := config.MustGet()
 	logger := loggerFor("main")
-
-	// TODO: wait until DB available
 
 	dbClient, err := db.New(cfg, loggerFor("postgresql"))
 	if err != nil {
 		logger.Fatal(err)
 	}
+	if err = waitFor(dbClient, dbReadyTimeout, logger); err != nil {
+		logger.Fatal(err)
+	}
+
 	defer func() {
 		if errInner := dbClient.Disconnect(); errInner != nil {
 			logger.Println(errInner)
@@ -43,10 +51,11 @@ func main() {
 		logger.Fatal(err)
 	}
 
-	// TODO: wait until API available
-
 	apiClient, err := client.New(cfg, loggerFor("api"))
 	if err != nil {
+		logger.Fatal(err)
+	}
+	if err = waitFor(apiClient, apiReadyTimeout, logger); err != nil {
 		logger.Fatal(err)
 	}
 

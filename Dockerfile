@@ -1,7 +1,10 @@
+FROM alpine:3.19.1 AS tzbuild
+
+RUN apk update && apk add --no-cache tzdata
+
 FROM scratch
 
-# TODO: get TZ data to work, see e.g. https://stackoverflow.com/questions/47794740/gos-time-doesnt-work-under-the-docker-image-from-scratch
-
+COPY --from=tzbuild ["/usr/share/zoneinfo", "/usr/share/zoneinfo"]
 COPY ["scripts/migrations/*.sql", "scripts/migrations/"]
 COPY ["app", "/app"]
 ENTRYPOINT [ "/app" ]

@@ -33,6 +33,7 @@ services:
       POSTGRES_URI: postgresql://root:REPLACEME@db:5432/helldivers  # IMPORTANT: use same credentials as in the <db> container.
       API_URL: http://api:8080
       WORKER_INTERVAL: 5m  # How frequent the API is queried. Should be no less than API update interval below.
+      TZ: Europe/Berlin
     networks:
       - default
 
@@ -65,6 +66,7 @@ services:
 ### Install required tools
 
 ```shell
+go install golang.org/x/tools/cmd/stringer@v0.20.0
 go install github.com/deepmap/oapi-codegen/v2/cmd/oapi-codegen@v2.1.0
 go install github.com/joho/godotenv/cmd/godotenv@v1.5.1
 go install github.com/goreleaser/goreleaser@v1.25.1

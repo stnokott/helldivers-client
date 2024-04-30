@@ -1,7 +1,8 @@
 name: Review
 
 on:
-  pull_request: {}
+  pull_request:
+    branches: [main]
   pull_request_review_comment:
     types: [created, edited]
 

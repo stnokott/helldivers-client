@@ -5,6 +5,7 @@ dist/
 
 # Binaries for programs and plugins
 *.exe
+*.wasm
 *.exe~
 *.dll
 *.so

@@ -25,23 +25,23 @@ type PlanetSnapshot struct {
 	Statistics gen.SnapshotStatistic
 }
 
-func (s *Snapshot) Merge(ctx context.Context, tx *gen.Queries, stats tableMergeStats) error {
-	warSnapID, err := insertWarSnapshot(ctx, tx, s.WarSnapshot, stats)
+func (s *Snapshot) Merge(ctx context.Context, tx *gen.Queries, onMerge onMergeFunc) error {
+	warSnapID, err := insertWarSnapshot(ctx, tx, s.WarSnapshot, onMerge)
 	if err != nil {
 		return err
 	}
 
-	assignmentSnapIDs, err := insertAssignmentSnapshots(ctx, tx, s.AssignmentSnapshots, stats)
+	assignmentSnapIDs, err := insertAssignmentSnapshots(ctx, tx, s.AssignmentSnapshots, onMerge)
 	if err != nil {
 		return err
 	}
 
-	planetSnapIDs, err := insertPlanetSnapshots(ctx, tx, s.PlanetSnapshots, stats)
+	planetSnapIDs, err := insertPlanetSnapshots(ctx, tx, s.PlanetSnapshots, onMerge)
 	if err != nil {
 		return err
 	}
 
-	statsID, err := insertSnapshotStatistics(ctx, tx, s.Statistics, stats)
+	statsID, err := insertSnapshotStatistics(ctx, tx, s.Statistics, onMerge)
 	if err != nil {
 		return err
 	}
@@ -57,11 +57,11 @@ func (s *Snapshot) Merge(ctx context.Context, tx *gen.Queries, stats tableMergeS
 	}); err != nil {
 		return fmt.Errorf("failed to insert snapshot: %v", err)
 	}
-	stats.Incr("Snapshots", false, 1)
+	onMerge(gen.TableSnapshots, false, 1)
 	return nil
 }
 
-func insertWarSnapshot(ctx context.Context, tx *gen.Queries, warSnap gen.WarSnapshot, stats tableMergeStats) (int64, error) {
+func insertWarSnapshot(ctx context.Context, tx *gen.Queries, warSnap gen.WarSnapshot, onMerge onMergeFunc) (int64, error) {
 	id, err := tx.InsertWarSnapshot(ctx, gen.InsertWarSnapshotParams{
 		WarID:            warSnap.WarID,
 		ImpactMultiplier: warSnap.ImpactMultiplier,
@@ -69,11 +69,11 @@ func insertWarSnapshot(ctx context.Context, tx *gen.Queries, warSnap gen.WarSnap
 	if err != nil {
 		return -1, fmt.Errorf("failed to insert war snapshot: %v", err)
 	}
-	stats.Incr("War Snapshots", false, 1)
+	onMerge(gen.TableWarSnapshots, false, 1)
 	return id, nil
 }
 
-func insertAssignmentSnapshots(ctx context.Context, tx *gen.Queries, assignmentSnaps []gen.AssignmentSnapshot, stats tableMergeStats) ([]int64, error) {
+func insertAssignmentSnapshots(ctx context.Context, tx *gen.Queries, assignmentSnaps []gen.AssignmentSnapshot, onMerge onMergeFunc) ([]int64, error) {
 	ids := make([]int64, len(assignmentSnaps))
 	for i, snap := range assignmentSnaps {
 		id, err := tx.InsertAssignmentSnapshot(ctx, gen.InsertAssignmentSnapshotParams{
@@ -83,20 +83,20 @@ func insertAssignmentSnapshots(ctx context.Context, tx *gen.Queries, assignmentS
 		if err != nil {
 			return nil, fmt.Errorf("failed to insert assignment snapshot: %v", err)
 		}
-		stats.Incr("Assignment Snapshots", false, 1)
+		onMerge(gen.TableAssignmentSnapshots, false, 1)
 		ids[i] = id
 	}
 	return ids, nil
 }
 
-func insertPlanetSnapshots(ctx context.Context, tx *gen.Queries, planetSnaps []PlanetSnapshot, stats tableMergeStats) ([]int64, error) {
+func insertPlanetSnapshots(ctx context.Context, tx *gen.Queries, planetSnaps []PlanetSnapshot, onMerge onMergeFunc) ([]int64, error) {
 	ids := make([]int64, len(planetSnaps))
 	for i, snap := range planetSnaps {
-		eventSnapID, err := insertEventSnapshot(ctx, tx, snap.Event, stats)
+		eventSnapID, err := insertEventSnapshot(ctx, tx, snap.Event, onMerge)
 		if err != nil {
 			return nil, err
 		}
-		statsID, err := insertSnapshotStatistics(ctx, tx, snap.Statistics, stats)
+		statsID, err := insertSnapshotStatistics(ctx, tx, snap.Statistics, onMerge)
 		if err != nil {
 			return nil, err
 		}
@@ -114,12 +114,12 @@ func insertPlanetSnapshots(ctx context.Context, tx *gen.Queries, planetSnaps []P
 			return nil, fmt.Errorf("insert planet snapshot: %w", err)
 		}
 		ids[i] = id
-		stats.Incr("Planet Snapshots", false, 1)
+		onMerge(gen.TablePlanetSnapshots, false, 1)
 	}
 	return ids, nil
 }
 
-func insertEventSnapshot(ctx context.Context, tx *gen.Queries, eventSnap *gen.EventSnapshot, stats tableMergeStats) (*int64, error) {
+func insertEventSnapshot(ctx context.Context, tx *gen.Queries, eventSnap *gen.EventSnapshot, onMerge onMergeFunc) (*int64, error) {
 	if eventSnap == nil {
 		// event is optional
 		return nil, nil
@@ -131,11 +131,11 @@ func insertEventSnapshot(ctx context.Context, tx *gen.Queries, eventSnap *gen.Ev
 	if err != nil {
 		return nil, fmt.Errorf("insert event snapshot: %w", err)
 	}
-	stats.Incr("Event Snapshots", false, 1)
+	onMerge(gen.TableEventSnapshots, false, 1)
 	return &id, nil
 }
 
-func insertSnapshotStatistics(ctx context.Context, tx *gen.Queries, snapshotStats gen.SnapshotStatistic, stats tableMergeStats) (int64, error) {
+func insertSnapshotStatistics(ctx context.Context, tx *gen.Queries, snapshotStats gen.SnapshotStatistic, onMerge onMergeFunc) (int64, error) {
 	id, err := tx.InsertSnapshotStatistics(ctx, gen.InsertSnapshotStatisticsParams{
 		MissionsWon:     snapshotStats.MissionsWon,
 		MissionsLost:    snapshotStats.MissionsLost,
@@ -154,6 +154,6 @@ func insertSnapshotStatistics(ctx context.Context, tx *gen.Queries, snapshotStat
 	if err != nil {
 		return -1, fmt.Errorf("insert snapshot statistics: %w", err)
 	}
-	stats.Incr("Snapshots Statistics", false, 1)
+	onMerge(gen.TableSnapshotStatistics, false, 1)
 	return id, nil
 }

@@ -1,3 +1,5 @@
+//go:build integration
+
 package db
 
 import (
@@ -7,6 +9,7 @@ import (
 	"time"
 
 	"github.com/stnokott/helldivers-client/internal/copytest"
+	"github.com/stnokott/helldivers-client/internal/db/gen"
 )
 
 var validEventCampaign = Campaign{
@@ -91,12 +94,12 @@ func TestEventsSchema(t *testing.T) {
 
 				tt.modifier(&event)
 
-				if err := campaign.Merge(context.Background(), client.queries, tableMergeStats{}); err != nil {
+				if err := campaign.Merge(context.Background(), client.queries, func(gen.Table, bool, int64) {}); err != nil {
 					t.Errorf("failed to merge campaign (required for event): %v", err)
 					return
 				}
 
-				err := event.Merge(context.Background(), client.queries, tableMergeStats{})
+				err := event.Merge(context.Background(), client.queries, func(gen.Table, bool, int64) {})
 				if (err != nil) != tt.wantErr {
 					t.Errorf("Event.Merge() error = %v, wantErr = %v", err, tt.wantErr)
 					return

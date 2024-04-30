@@ -1,3 +1,5 @@
+//go:build integration
+
 package db
 
 import (
@@ -76,7 +78,7 @@ func TestAssignmentsSchema(t *testing.T) {
 
 				tt.modifier(&assignment)
 
-				err := assignment.Merge(context.Background(), client.queries, tableMergeStats{})
+				err := assignment.Merge(context.Background(), client.queries, func(gen.Table, bool, int64) {})
 				if (err != nil) != tt.wantErr {
 					t.Errorf("Assignment.Merge() error = %v, wantErr = %v", err, tt.wantErr)
 					return

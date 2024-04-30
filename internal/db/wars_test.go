@@ -1,3 +1,5 @@
+//go:build integration
+
 package db
 
 import (
@@ -6,6 +8,7 @@ import (
 	"time"
 
 	"github.com/stnokott/helldivers-client/internal/copytest"
+	"github.com/stnokott/helldivers-client/internal/db/gen"
 )
 
 var validWar = War{
@@ -54,7 +57,7 @@ func TestWarsSchema(t *testing.T) {
 				}
 				tt.modifier(&war)
 
-				err := war.Merge(context.Background(), client.queries, tableMergeStats{})
+				err := war.Merge(context.Background(), client.queries, func(gen.Table, bool, int64) {})
 				if (err != nil) != tt.wantErr {
 					t.Errorf("War.Merge() error = %v, wantErr = %v", err, tt.wantErr)
 					return

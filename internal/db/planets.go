@@ -17,14 +17,14 @@ type Planet struct {
 	Hazards []gen.Hazard
 }
 
-func (p *Planet) Merge(ctx context.Context, tx *gen.Queries, stats tableMergeStats) error {
-	biomeName, err := mergeBiome(ctx, tx, p.Biome, stats)
+func (p *Planet) Merge(ctx context.Context, tx *gen.Queries, onMerge onMergeFunc) error {
+	biomeName, err := mergeBiome(ctx, tx, p.Biome, onMerge)
 	if err != nil {
 		return err
 	}
 	p.BiomeName = biomeName
 
-	hazardNames, err := mergeHazards(ctx, tx, p.Hazards, stats)
+	hazardNames, err := mergeHazards(ctx, tx, p.Hazards, onMerge)
 	if err != nil {
 		return err
 	}
@@ -38,11 +38,11 @@ func (p *Planet) Merge(ctx context.Context, tx *gen.Queries, stats tableMergeSta
 	if err != nil {
 		return fmt.Errorf("failed to merge planet '%s': %v", p.Name, err)
 	}
-	stats.Incr("Planets", exists, rows)
+	onMerge(gen.TablePlanets, exists, rows)
 	return nil
 }
 
-func mergeBiome(ctx context.Context, tx *gen.Queries, biome gen.Biome, stats tableMergeStats) (string, error) {
+func mergeBiome(ctx context.Context, tx *gen.Queries, biome gen.Biome, onMerge onMergeFunc) (string, error) {
 	exists, err := tx.BiomeExists(ctx, biome.Name)
 	if err != nil {
 		return "", fmt.Errorf("failed to check if biome '%s' exists: %v", biome.Name, err)
@@ -52,11 +52,11 @@ func mergeBiome(ctx context.Context, tx *gen.Queries, biome gen.Biome, stats tab
 	if err != nil {
 		return "", fmt.Errorf("failed to merge biome '%s': %v", biome.Name, err)
 	}
-	stats.Incr("Biomes", exists, rows)
+	onMerge(gen.TableBiomes, exists, rows)
 	return biome.Name, nil
 }
 
-func mergeHazards(ctx context.Context, tx *gen.Queries, hazards []gen.Hazard, stats tableMergeStats) ([]string, error) {
+func mergeHazards(ctx context.Context, tx *gen.Queries, hazards []gen.Hazard, onMerge onMergeFunc) ([]string, error) {
 	hazardNames := make([]string, len(hazards))
 	for i, hazard := range hazards {
 		exists, err := tx.HazardExists(ctx, hazard.Name)
@@ -69,7 +69,7 @@ func mergeHazards(ctx context.Context, tx *gen.Queries, hazards []gen.Hazard, st
 			return nil, fmt.Errorf("failed to merge hazard '%s': %v", hazard.Name, err)
 		}
 		hazardNames[i] = hazard.Name
-		stats.Incr("Hazards", exists, rows)
+		onMerge(gen.TableHazards, exists, rows)
 	}
 	return hazardNames, nil
 }

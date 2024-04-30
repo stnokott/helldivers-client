@@ -1,3 +1,5 @@
+//go:build integration
+
 package db
 
 import (
@@ -146,7 +148,7 @@ func TestPlanetsSchema(t *testing.T) {
 
 				tt.modifier(&planet)
 
-				err := planet.Merge(context.Background(), client.queries, tableMergeStats{})
+				err := planet.Merge(context.Background(), client.queries, func(gen.Table, bool, int64) {})
 				if (err != nil) != tt.wantErr {
 					t.Errorf("Planet.Merge() error = %v, wantErr = %v", err, tt.wantErr)
 					return

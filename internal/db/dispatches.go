@@ -13,7 +13,7 @@ var _ EntityMerger = (*Dispatch)(nil)
 // Dispatch implements EntityMerger
 type Dispatch gen.Dispatch
 
-func (d *Dispatch) Merge(ctx context.Context, tx *gen.Queries, stats tableMergeStats) error {
+func (d *Dispatch) Merge(ctx context.Context, tx *gen.Queries, onMerge onMergeFunc) error {
 	exists, err := tx.DispatchExists(ctx, d.ID)
 	if err != nil {
 		return fmt.Errorf("failed to check if dispatch ID=%d exists: %v", d.ID, err)
@@ -23,6 +23,6 @@ func (d *Dispatch) Merge(ctx context.Context, tx *gen.Queries, stats tableMergeS
 	if err != nil {
 		return fmt.Errorf("failed to merge dispatch (ID=%d): %v", d.ID, err)
 	}
-	stats.Incr("Dispatches", exists, rows)
+	onMerge(gen.TableDispatches, exists, rows)
 	return nil
 }

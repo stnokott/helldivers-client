@@ -24,13 +24,23 @@
 		},
 		{
 			"type": "shell",
-			"label": "Run tests locally",
+			"label": "Run integration tests locally",
 			"command": "godotenv",
 			"args": [
 				"-f",
 				".env.test",
 				"go",
 				"test",
+				"--tags=integration",
+				"./..."
+			],
+			"group": "test"
+		},
+		{
+			"type": "go",
+			"label": "Run unit tests",
+			"command": "test",
+			"args": [
 				"./..."
 			],
 			"group": "test"
@@ -43,6 +53,19 @@
 			"group": "build"
 		},
 		{
+			"label": "build sqlc-gen-enum",
+			"type": "shell",
+			"command": "go build -o sqlc-gen-enum.wasm ./internal/db/sqlc-gen-enum",
+			"group": "build",
+			"hide": true,
+			"options": {
+				"env": {
+					"GOOS": "wasip1",
+					"GOARCH": "wasm"
+				}
+			}
+		},
+		{
 			"label": "sqlc generate",
 			"type": "shell",
 			"command": "sqlc generate",
@@ -50,7 +73,10 @@
 			"group": "none",
 			"icon": {
 				"id": "wand"
-			}
+			},
+			"dependsOn": [
+				"build sqlc-gen-enum"
+			]
 		}
 	]
 }

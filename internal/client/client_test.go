@@ -1,3 +1,5 @@
+//go:build integration
+
 // Package client wraps the API specs into a client
 package client
 
@@ -12,7 +14,7 @@ import (
 var logger = log.Default()
 
 func mustClient() *Client {
-	config := config.Get()
+	config := config.MustGet()
 
 	client, err := New(config, logger)
 	if err != nil {
@@ -21,12 +23,8 @@ func mustClient() *Client {
 	return client
 }
 
-// TODO: split up client tests into:
-// - integration tests (query actual API)
-// - unit tests (using httptest mock server)
-
 func TestClientHosts(t *testing.T) {
-	host := config.Get().APIRootURL
+	host := config.MustGet().APIRootURL
 	tests := []struct {
 		name    string
 		cfg     *config.Config

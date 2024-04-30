@@ -1,3 +1,5 @@
+//go:build integration
+
 package db
 
 import (
@@ -276,32 +278,34 @@ func TestSnapshotsSchema(t *testing.T) {
 
 				tt.modifier(&snapshot)
 
-				if err := war.Merge(context.Background(), client.queries, tableMergeStats{}); err != nil {
+				onMerge := func(gen.Table, bool, int64) {}
+
+				if err := war.Merge(context.Background(), client.queries, onMerge); err != nil {
 					t.Errorf("failed to insert war (required for snapshot): %v", err)
 					return
 				}
-				if err := campaign.Merge(context.Background(), client.queries, tableMergeStats{}); err != nil {
+				if err := campaign.Merge(context.Background(), client.queries, onMerge); err != nil {
 					t.Errorf("failed to insert campaign (required for snapshot): %v", err)
 					return
 				}
-				if err := event.Merge(context.Background(), client.queries, tableMergeStats{}); err != nil {
+				if err := event.Merge(context.Background(), client.queries, onMerge); err != nil {
 					t.Errorf("failed to insert event (required for snapshot): %v", err)
 					return
 				}
-				if err := assignment.Merge(context.Background(), client.queries, tableMergeStats{}); err != nil {
+				if err := assignment.Merge(context.Background(), client.queries, onMerge); err != nil {
 					t.Errorf("failed to insert assignment (required for snapshot): %v", err)
 					return
 				}
-				if err := planet.Merge(context.Background(), client.queries, tableMergeStats{}); err != nil {
+				if err := planet.Merge(context.Background(), client.queries, onMerge); err != nil {
 					t.Errorf("failed to insert planet (required for snapshot): %v", err)
 					return
 				}
-				if err := dispatch.Merge(context.Background(), client.queries, tableMergeStats{}); err != nil {
+				if err := dispatch.Merge(context.Background(), client.queries, onMerge); err != nil {
 					t.Errorf("failed to insert dispatch (required for snapshot): %v", err)
 					return
 				}
 
-				err := snapshot.Merge(context.Background(), client.queries, tableMergeStats{})
+				err := snapshot.Merge(context.Background(), client.queries, onMerge)
 				if (err != nil) != tt.wantErr {
 					t.Errorf("Snapshot.Merge() error = %v, wantErr = %v", err, tt.wantErr)
 					return
