@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/stnokott/helldivers-client/internal/api"
 	"github.com/stnokott/helldivers-client/internal/config"
@@ -13,6 +14,7 @@ import (
 // Client wraps the generated OpenAPI client
 type Client struct {
 	api *api.ClientWithResponses
+	log *log.Logger
 }
 
 const maxHTTPRetries = 3
@@ -29,7 +31,27 @@ func New(cfg *config.Config, logger *log.Logger) (*Client, error) {
 
 	return &Client{
 		api: c,
+		log: logger,
 	}, nil
+}
+
+// Connect implements main.ConnectWaiter.
+func (c *Client) Connect(ctx context.Context) error {
+	ticker := time.NewTicker(2 * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		case <-ticker.C:
+			if _, err := c.WarID(ctx); err == nil {
+				return nil
+			} else {
+				c.log.Printf("API query: %v", err)
+			}
+		}
+	}
 }
 
 func processResp[

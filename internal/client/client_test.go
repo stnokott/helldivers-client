@@ -23,10 +23,6 @@ func mustClient() *Client {
 	return client
 }
 
-// TODO: split up client tests into:
-// - integration tests (query actual API)
-// - unit tests (using httptest mock server)
-
 func TestClientHosts(t *testing.T) {
 	host := config.MustGet().APIRootURL
 	tests := []struct {
