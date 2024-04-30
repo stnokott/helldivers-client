@@ -24,13 +24,23 @@
 		},
 		{
 			"type": "shell",
-			"label": "Run tests locally",
+			"label": "Run integration tests locally",
 			"command": "godotenv",
 			"args": [
 				"-f",
 				".env.test",
 				"go",
 				"test",
+				"--tags=integration",
+				"./..."
+			],
+			"group": "test"
+		},
+		{
+			"type": "go",
+			"label": "Run unit tests",
+			"command": "test",
+			"args": [
 				"./..."
 			],
 			"group": "test"

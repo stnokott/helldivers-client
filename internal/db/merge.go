@@ -9,10 +9,6 @@ import (
 	"github.com/stnokott/helldivers-client/internal/db/stats"
 )
 
-// TODO: implement "Register" function which registers a table merger.
-// that register function initializes the table stats to 0 and will perform the merge later.
-// (could be an interface or an actual function)
-
 type EntityMerger interface {
 	Merge(ctx context.Context, tx *gen.Queries, onMerge onMergeFunc) error
 }

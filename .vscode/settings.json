@@ -1,4 +1,11 @@
 {
 	"sonarlint.testFilePattern": "**/*_test.go",
-	"go.testEnvFile": "${workspaceFolder}/.env.test"
+	"go.testEnvFile": "${workspaceFolder}/.env.test",
+	"gitlens.currentLine.enabled": false,
+	"gitlens.currentLine.pullRequests.enabled": false,
+	"gopls": {
+		"build.buildFlags": [
+			"--tags=integration"
+		]
+	}
 }

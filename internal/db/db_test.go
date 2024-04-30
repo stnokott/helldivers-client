@@ -1,4 +1,5 @@
-// Package db handles interactions with the MongoDB instance and works as an abstraction layer
+//go:build integration
+
 package db
 
 import (

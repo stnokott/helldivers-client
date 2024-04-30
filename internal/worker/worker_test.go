@@ -1,6 +1,5 @@
-// Package worker synchronizes data between API and DB.
-//
-// It queries the API at a specified interval and merges the results into the DB.
+//go:build integration
+
 package worker
 
 import (

@@ -46,7 +46,6 @@ func (s mergeStats) Noop(table gen.Table, n int64) {
 	s[table].Noop += n
 }
 
-// TODO: print table instead.
 func (s mergeStats) Print(logger *log.Logger) {
 	w := tabwriter.NewWriter(logger.Writer(), 0, 0, 1, ' ', tabwriter.Debug)
 

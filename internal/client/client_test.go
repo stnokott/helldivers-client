@@ -1,3 +1,5 @@
+//go:build integration
+
 // Package client wraps the API specs into a client
 package client
 
