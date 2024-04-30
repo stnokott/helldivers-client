@@ -43,6 +43,17 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v4.1.4
 
+      # prepare local Go (outside of Docker) so that we can leverage the cache
+      # inside the Docker build step (via go mod vendor)
+      - uses: actions/setup-go@v5.0.0
+        with:
+          go-version-file: "go.mod"
+      
+      - name: Get dependencies
+        run: |
+          go get .
+          go mod vendor
+
       - name: Login to Dockerhub
         run: docker login -u $DOCKER_USER -p $DOCKER_PASS
 
