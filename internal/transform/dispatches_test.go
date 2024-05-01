@@ -1,3 +1,5 @@
+//go:build !goverter
+
 package transform
 
 import (
@@ -77,7 +79,8 @@ func TestDispatch(t *testing.T) {
 			data := APIData{
 				Dispatches: &[]api.Dispatch{dispatch},
 			}
-			got, err := Dispatches(data)
+			converter := &ConverterImpl{}
+			got, err := Dispatches(converter, data)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Dispatches() err = %v, wantErr %v", err, tt.wantErr)
 				return

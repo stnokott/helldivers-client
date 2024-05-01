@@ -1,3 +1,5 @@
+//go:build !goverter
+
 package transform
 
 import (
@@ -117,7 +119,8 @@ func TestAssignments(t *testing.T) {
 					assignment,
 				},
 			}
-			got, err := Assignments(data)
+			converter := &ConverterImpl{}
+			got, err := Assignments(converter, data)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Assignments() err = %v, wantErr %v", err, tt.wantErr)
 				return

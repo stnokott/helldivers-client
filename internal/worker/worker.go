@@ -1,3 +1,7 @@
+//go:build !goverter
+
+// TODO: remove
+
 // Package worker synchronizes data between API and DB.
 //
 // It queries the API at a specified interval and merges the results into the DB.
@@ -108,6 +112,7 @@ func (w *Worker) mergeData(ctx context.Context, data transform.APIData) (err err
 	w.log.Println("transforming API responses")
 	var wars, events, planets, campaigns, assignments, dispatches, snapshots []db.EntityMerger
 
+	converter := &transform.ConverterImpl{}
 	if wars, err = transform.Wars(data); err != nil {
 		return
 	}
@@ -120,10 +125,10 @@ func (w *Worker) mergeData(ctx context.Context, data transform.APIData) (err err
 	if planets, err = transform.Planets(data); err != nil {
 		return
 	}
-	if assignments, err = transform.Assignments(data); err != nil {
+	if assignments, err = transform.Assignments(converter, data); err != nil {
 		return
 	}
-	if dispatches, err = transform.Dispatches(data); err != nil {
+	if dispatches, err = transform.Dispatches(converter, data); err != nil {
 		return
 	}
 	if snapshots, err = transform.Snapshot(data); err != nil {

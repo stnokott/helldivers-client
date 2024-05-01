@@ -6,50 +6,45 @@ import (
 
 	"github.com/stnokott/helldivers-client/internal/api"
 	"github.com/stnokott/helldivers-client/internal/db"
-	"github.com/stnokott/helldivers-client/internal/db/gen"
 )
 
-func Assignments(data APIData) ([]db.EntityMerger, error) {
+func Assignments(c Converter, data APIData) ([]db.EntityMerger, error) {
 	if data.Assignments == nil {
 		return nil, errors.New("got nil assignments slice")
 	}
 
 	src := *data.Assignments
-	assignments := make([]db.EntityMerger, len(src))
+	mergers := make([]db.EntityMerger, len(src))
 	for i, assignment := range src {
-		if assignment.Id == nil ||
-			assignment.Title == nil ||
-			assignment.Briefing == nil ||
-			assignment.Description == nil ||
-			assignment.Expiration == nil ||
-			assignment.Tasks == nil ||
-			assignment.Reward == nil {
-			return nil, errFromNils(&assignment)
-		}
-
-		reward, err := parseAssignmentReward(assignment.Reward)
+		a, err := c.ConvertAssignment(assignment)
 		if err != nil {
 			return nil, err
 		}
-		tasks, err := convertAssignmentTasks(assignment.Tasks)
-		if err != nil {
-			return nil, err
-		}
-
-		assignments[i] = &db.Assignment{
-			Assignment: gen.Assignment{
-				ID:           *assignment.Id,
-				Title:        *assignment.Title,
-				Briefing:     *assignment.Briefing,
-				Description:  *assignment.Description,
-				Expiration:   db.PGTimestamp(*assignment.Expiration),
-				RewardType:   *reward.Type,
-				RewardAmount: *reward.Amount,
-			},
-			Tasks: tasks,
-		}
+		mergers[i] = db.EntityMerger(a)
 	}
-	return assignments, nil
+	return mergers, nil
+}
+
+func parseAssignmentRewardType(source *api.Assignment2_Reward) (int32, error) {
+	parsed, err := parseAssignmentReward(source)
+	if err != nil {
+		return -1, err
+	}
+	if parsed.Type == nil {
+		return -1, errors.New("reward type is nil")
+	}
+	return *parsed.Type, nil
+}
+
+func parseAssignmentRewardAmount(source *api.Assignment2_Reward) (int32, error) {
+	parsed, err := parseAssignmentReward(source)
+	if err != nil {
+		return -1, err
+	}
+	if parsed.Amount == nil {
+		return -1, errors.New("reward amount is nil")
+	}
+	return *parsed.Amount, nil
 }
 
 func parseAssignmentReward(in *api.Assignment2_Reward) (api.Reward2, error) {
@@ -57,23 +52,5 @@ func parseAssignmentReward(in *api.Assignment2_Reward) (api.Reward2, error) {
 	if err != nil {
 		return api.Reward2{}, fmt.Errorf("parse assignment reward: %w", err)
 	}
-	if reward.Amount == nil || reward.Type == nil {
-		return api.Reward2{}, errFromNils(&reward)
-	}
 	return reward, nil
-}
-
-func convertAssignmentTasks(in *[]api.Task2) ([]gen.AssignmentTask, error) {
-	tasks := make([]gen.AssignmentTask, len(*in))
-	for i, task := range *in {
-		if task.Type == nil || task.ValueTypes == nil || task.Values == nil {
-			return nil, errFromNils(&task)
-		}
-		tasks[i] = gen.AssignmentTask{
-			TaskType:   *task.Type,
-			Values:     *task.Values,
-			ValueTypes: *task.ValueTypes,
-		}
-	}
-	return tasks, nil
 }
