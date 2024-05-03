@@ -10,7 +10,7 @@ import (
 	"github.com/stnokott/helldivers-client/internal/db/gen"
 )
 
-//go:generate goverter gen github.com/stnokott/helldivers-client/internal/transform
+//go:generate go run github.com/jmattheis/goverter/cmd/goverter@v1.4.0 gen github.com/stnokott/helldivers-client/internal/transform
 
 // Converter converts API structs into mergable DB structs.
 //
