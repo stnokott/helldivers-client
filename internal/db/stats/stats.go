@@ -2,11 +2,13 @@
 package stats
 
 import (
-	"fmt"
 	"log"
-	"text/tabwriter"
+	"strconv"
+	"strings"
 
 	"github.com/stnokott/helldivers-client/internal/db/gen"
+
+	"github.com/jedib0t/go-pretty/v6/table"
 )
 
 type Collector interface {
@@ -46,12 +48,45 @@ func (s mergeStats) Noop(table gen.Table, n int64) {
 	s[table].Noop += n
 }
 
-func (s mergeStats) Print(logger *log.Logger) {
-	w := tabwriter.NewWriter(logger.Writer(), 0, 0, 1, ' ', tabwriter.Debug)
-
-	fmt.Fprintln(w, "\t TABLE NAME \t INSERTED \t UPDATED \t UNCHANGED \t")
-	for tableName, stats := range s {
-		fmt.Fprintf(w, "\t %s \t %d \t %d \t %d \t\n", tableName, stats.Inserted, stats.Updated, stats.Noop)
+func statOrNan(x int64) string {
+	if x > 0 {
+		return strconv.FormatInt(x, 10)
 	}
-	w.Flush()
+	return "-"
+}
+
+func (s mergeStats) renderTable() string {
+	w := table.NewWriter()
+
+	w.AppendHeader(table.Row{"Table Name", "Inserted", "Updated", "Unchanged"})
+
+	total := tblMergeStats{}
+	for tableName, stats := range s {
+		w.AppendRow(table.Row{
+			tableName,
+			statOrNan(stats.Inserted),
+			statOrNan(stats.Updated),
+			statOrNan(stats.Noop),
+		})
+		total.Inserted += stats.Inserted
+		total.Updated += stats.Updated
+		total.Noop += stats.Noop
+	}
+	w.AppendSeparator()
+	w.AppendFooter(table.Row{"Total", total.Inserted, total.Updated, total.Noop})
+	w.SetStyle(table.StyleLight)
+	w.SortBy([]table.SortBy{
+		{Name: "Inserted", Mode: table.DscNumericAlpha},
+		{Name: "Updated", Mode: table.DscNumericAlpha},
+		{Name: "Unchanged", Mode: table.DscNumericAlpha},
+	})
+	return w.Render()
+}
+
+func (s mergeStats) Print(logger *log.Logger) {
+	rendered := s.renderTable()
+	lines := strings.Split(rendered, "\n")
+	for _, line := range lines {
+		logger.Println(line)
+	}
 }

@@ -42,6 +42,7 @@ func (a *Assignment) Merge(ctx context.Context, tx *gen.Queries, onMerge onMerge
 		return fmt.Errorf("insert assignment '%s': %v", a.Title, err)
 	}
 	onMerge(gen.TableAssignments, exists, 1)
+	onMerge(gen.TableAssignmentTasks, exists, int64(len(taskIDs)))
 	return nil
 }
 
@@ -56,7 +57,6 @@ func insertAssignmentTasks(ctx context.Context, tx *gen.Queries, tasks []gen.Ass
 		if err != nil {
 			return nil, fmt.Errorf("failed to insert assignment task (ID=%d): %v", task.ID, err)
 		}
-		onMerge(gen.TableAssignmentTasks, false, 1)
 		taskIDs[i] = taskID
 	}
 	return taskIDs, nil
