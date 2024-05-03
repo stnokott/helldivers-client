@@ -23,6 +23,12 @@ func (c *Client) Merge(ctx context.Context, mergers ...[]EntityMerger) (err erro
 
 	qtx := c.queries.WithTx(tx)
 
+	// prepare insert/update statistics
+	stats := stats.NewCollector()
+	onMerge := func(table gen.Table, exists bool, affectedRows int64) {
+		collectAfterMerge(stats, table, exists, affectedRows)
+	}
+
 	// defer commit/rollback depending on error
 	defer func() {
 		if err != nil {
@@ -37,15 +43,10 @@ func (c *Client) Merge(ctx context.Context, mergers ...[]EntityMerger) (err erro
 				c.log.Printf("failed to commit: %v", errComm)
 			} else {
 				c.log.Println("changes committed")
+				stats.Print(c.log)
 			}
 		}
 	}()
-
-	// prepare insert/update statistics
-	stats := stats.NewCollector()
-	onMerge := func(table gen.Table, exists bool, affectedRows int64) {
-		collectAfterMerge(stats, table, exists, affectedRows)
-	}
 
 	// run merges
 	for _, mSlice := range mergers {
@@ -58,7 +59,6 @@ func (c *Client) Merge(ctx context.Context, mergers ...[]EntityMerger) (err erro
 			}
 		}
 	}
-	stats.Print(c.log)
 	return
 }
 
