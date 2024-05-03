@@ -1,3 +1,5 @@
+//go:build !goverter
+
 package transform
 
 import (
@@ -11,6 +13,30 @@ import (
 	"github.com/stnokott/helldivers-client/internal/db/gen"
 )
 
+func mustAssignmentTitle(from api.Assignment2Title0) *api.Assignment2_Title {
+	assignmentTitle := new(api.Assignment2_Title)
+	if err := assignmentTitle.FromAssignment2Title0(from); err != nil {
+		panic(err)
+	}
+	return assignmentTitle
+}
+
+func mustAssignmentBriefing(from api.Assignment2Briefing0) *api.Assignment2_Briefing {
+	assignmentBriefing := new(api.Assignment2_Briefing)
+	if err := assignmentBriefing.FromAssignment2Briefing0(from); err != nil {
+		panic(err)
+	}
+	return assignmentBriefing
+}
+
+func mustAssignmentDescription(from api.Assignment2Description0) *api.Assignment2_Description {
+	assignmentDescription := new(api.Assignment2_Description)
+	if err := assignmentDescription.FromAssignment2Description0(from); err != nil {
+		panic(err)
+	}
+	return assignmentDescription
+}
+
 func mustAssignment2Reward(from api.Reward2) *api.Assignment2_Reward {
 	assignmentReward := new(api.Assignment2_Reward)
 	if err := assignmentReward.FromReward2(from); err != nil {
@@ -21,9 +47,9 @@ func mustAssignment2Reward(from api.Reward2) *api.Assignment2_Reward {
 
 var validAssignment = api.Assignment2{
 	Id:          ptr(int64(7)),
-	Title:       ptr("Foo"),
-	Briefing:    ptr("Foo briefing"),
-	Description: ptr("Foo description"),
+	Title:       mustAssignmentTitle("Foo"),
+	Briefing:    mustAssignmentBriefing("Foo briefing"),
+	Description: mustAssignmentDescription("Foo description"),
 	Expiration:  ptr(time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)),
 	Progress:    &[]int32{1, 2, 3},
 	Reward: mustAssignment2Reward(api.Reward2{
@@ -117,7 +143,8 @@ func TestAssignments(t *testing.T) {
 					assignment,
 				},
 			}
-			got, err := Assignments(data)
+			converter := &ConverterImpl{}
+			got, err := Assignments(converter, data)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Assignments() err = %v, wantErr %v", err, tt.wantErr)
 				return

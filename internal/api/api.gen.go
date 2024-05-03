@@ -40,10 +40,10 @@ type Assignment_Setting struct {
 // This is also known as 'Major Order's in the game.
 type Assignment2 struct {
 	// Briefing A long form description of the assignment, usually contains context.
-	Briefing *string `json:"briefing,omitempty"`
+	Briefing *Assignment2_Briefing `json:"briefing,omitempty"`
 
 	// Description A very short summary of the description.
-	Description *string `json:"description,omitempty"`
+	Description *Assignment2_Description `json:"description,omitempty"`
 
 	// Expiration The date when the assignment will expire.
 	Expiration *time.Time `json:"expiration,omitempty"`
@@ -61,11 +61,125 @@ type Assignment2 struct {
 	Tasks *[]Task2 `json:"tasks,omitempty"`
 
 	// Title The title of the assignment.
-	Title *string `json:"title,omitempty"`
+	Title *Assignment2_Title `json:"title,omitempty"`
+}
+
+// Assignment2Briefing0 defines model for .
+type Assignment2Briefing0 = string
+
+// Assignment2Briefing1 When passing in ivl-IV as Accept-Language, all available languages are returned
+type Assignment2Briefing1 struct {
+	// DeDE The message in de-DE
+	DeDE *string `json:"de-DE,omitempty"`
+
+	// EnUS The message in en-US
+	EnUS *string `json:"en-US,omitempty"`
+
+	// EsES The message in es-ES
+	EsES *string `json:"es-ES,omitempty"`
+
+	// FrFR The message in fr-FR
+	FrFR *string `json:"fr-FR,omitempty"`
+
+	// ItIT The message in it-IT
+	ItIT *string `json:"it-IT,omitempty"`
+
+	// PlPL The message in pl-PL
+	PlPL *string `json:"pl-PL,omitempty"`
+
+	// RuRU The message in ru-RU
+	RuRU *string `json:"ru-RU,omitempty"`
+
+	// ZhHans The message in zh-Hans
+	ZhHans *string `json:"zh-Hans,omitempty"`
+
+	// ZhHant The message in zh-Hant
+	ZhHant *string `json:"zh-Hant,omitempty"`
+}
+
+// Assignment2_Briefing A long form description of the assignment, usually contains context.
+type Assignment2_Briefing struct {
+	union json.RawMessage
+}
+
+// Assignment2Description0 defines model for .
+type Assignment2Description0 = string
+
+// Assignment2Description1 When passing in ivl-IV as Accept-Language, all available languages are returned
+type Assignment2Description1 struct {
+	// DeDE The message in de-DE
+	DeDE *string `json:"de-DE,omitempty"`
+
+	// EnUS The message in en-US
+	EnUS *string `json:"en-US,omitempty"`
+
+	// EsES The message in es-ES
+	EsES *string `json:"es-ES,omitempty"`
+
+	// FrFR The message in fr-FR
+	FrFR *string `json:"fr-FR,omitempty"`
+
+	// ItIT The message in it-IT
+	ItIT *string `json:"it-IT,omitempty"`
+
+	// PlPL The message in pl-PL
+	PlPL *string `json:"pl-PL,omitempty"`
+
+	// RuRU The message in ru-RU
+	RuRU *string `json:"ru-RU,omitempty"`
+
+	// ZhHans The message in zh-Hans
+	ZhHans *string `json:"zh-Hans,omitempty"`
+
+	// ZhHant The message in zh-Hant
+	ZhHant *string `json:"zh-Hant,omitempty"`
+}
+
+// Assignment2_Description A very short summary of the description.
+type Assignment2_Description struct {
+	union json.RawMessage
 }
 
 // Assignment2_Reward The reward for completing the assignment.
 type Assignment2_Reward struct {
+	union json.RawMessage
+}
+
+// Assignment2Title0 defines model for .
+type Assignment2Title0 = string
+
+// Assignment2Title1 When passing in ivl-IV as Accept-Language, all available languages are returned
+type Assignment2Title1 struct {
+	// DeDE The message in de-DE
+	DeDE *string `json:"de-DE,omitempty"`
+
+	// EnUS The message in en-US
+	EnUS *string `json:"en-US,omitempty"`
+
+	// EsES The message in es-ES
+	EsES *string `json:"es-ES,omitempty"`
+
+	// FrFR The message in fr-FR
+	FrFR *string `json:"fr-FR,omitempty"`
+
+	// ItIT The message in it-IT
+	ItIT *string `json:"it-IT,omitempty"`
+
+	// PlPL The message in pl-PL
+	PlPL *string `json:"pl-PL,omitempty"`
+
+	// RuRU The message in ru-RU
+	RuRU *string `json:"ru-RU,omitempty"`
+
+	// ZhHans The message in zh-Hans
+	ZhHans *string `json:"zh-Hans,omitempty"`
+
+	// ZhHant The message in zh-Hant
+	ZhHant *string `json:"zh-Hant,omitempty"`
+}
+
+// Assignment2_Title The title of the assignment.
+type Assignment2_Title struct {
 	union json.RawMessage
 }
 
@@ -119,7 +233,7 @@ type Dispatch struct {
 	Id *int32 `json:"id,omitempty"`
 
 	// Message The message this dispatch represents.
-	Message *string `json:"message,omitempty"`
+	Message *Dispatch_Message `json:"message,omitempty"`
 
 	// Published When the dispatch was published.
 	Published *time.Time `json:"published,omitempty"`
@@ -128,10 +242,48 @@ type Dispatch struct {
 	Type *int32 `json:"type,omitempty"`
 }
 
+// DispatchMessage0 defines model for .
+type DispatchMessage0 = string
+
+// DispatchMessage1 When passing in ivl-IV as Accept-Language, all available languages are returned
+type DispatchMessage1 struct {
+	// DeDE The message in de-DE
+	DeDE *string `json:"de-DE,omitempty"`
+
+	// EnUS The message in en-US
+	EnUS *string `json:"en-US,omitempty"`
+
+	// EsES The message in es-ES
+	EsES *string `json:"es-ES,omitempty"`
+
+	// FrFR The message in fr-FR
+	FrFR *string `json:"fr-FR,omitempty"`
+
+	// ItIT The message in it-IT
+	ItIT *string `json:"it-IT,omitempty"`
+
+	// PlPL The message in pl-PL
+	PlPL *string `json:"pl-PL,omitempty"`
+
+	// RuRU The message in ru-RU
+	RuRU *string `json:"ru-RU,omitempty"`
+
+	// ZhHans The message in zh-Hans
+	ZhHans *string `json:"zh-Hans,omitempty"`
+
+	// ZhHant The message in zh-Hant
+	ZhHant *string `json:"zh-Hant,omitempty"`
+}
+
+// Dispatch_Message The message this dispatch represents.
+type Dispatch_Message struct {
+	union json.RawMessage
+}
+
 // Event An ongoing event on a Planet.
 type Event struct {
 	// CampaignId The identifier of the Campaign linked to this event.
-	CampaignId *int64 `json:"campaignId,omitempty"`
+	CampaignId *int32 `json:"campaignId,omitempty"`
 
 	// EndTime When the event will end.
 	EndTime *time.Time `json:"endTime,omitempty"`
@@ -279,7 +431,7 @@ type Planet struct {
 	MaxHealth *int64 `json:"maxHealth,omitempty"`
 
 	// Name The name of the planet, as shown in game.
-	Name *string `json:"name,omitempty"`
+	Name *Planet_Name `json:"name,omitempty"`
 
 	// Position The coordinates of this planet on the galactic war map.
 	Position *Planet_Position `json:"position,omitempty"`
@@ -304,6 +456,44 @@ type Planet_Biome struct {
 
 // Planet_Event Information on the active event ongoing on this planet, if one is active.
 type Planet_Event struct {
+	union json.RawMessage
+}
+
+// PlanetName0 defines model for .
+type PlanetName0 = string
+
+// PlanetName1 When passing in ivl-IV as Accept-Language, all available languages are returned
+type PlanetName1 struct {
+	// DeDE The message in de-DE
+	DeDE *string `json:"de-DE,omitempty"`
+
+	// EnUS The message in en-US
+	EnUS *string `json:"en-US,omitempty"`
+
+	// EsES The message in es-ES
+	EsES *string `json:"es-ES,omitempty"`
+
+	// FrFR The message in fr-FR
+	FrFR *string `json:"fr-FR,omitempty"`
+
+	// ItIT The message in it-IT
+	ItIT *string `json:"it-IT,omitempty"`
+
+	// PlPL The message in pl-PL
+	PlPL *string `json:"pl-PL,omitempty"`
+
+	// RuRU The message in ru-RU
+	RuRU *string `json:"ru-RU,omitempty"`
+
+	// ZhHans The message in zh-Hans
+	ZhHans *string `json:"zh-Hans,omitempty"`
+
+	// ZhHant The message in zh-Hant
+	ZhHant *string `json:"zh-Hant,omitempty"`
+}
+
+// Planet_Name The name of the planet, as shown in game.
+type Planet_Name struct {
 	union json.RawMessage
 }
 
@@ -338,7 +528,7 @@ type PlanetCoordinates struct {
 // PlanetEvent An ongoing event on a planet.
 type PlanetEvent struct {
 	// CampaignId The unique identifier of a related campaign.
-	CampaignId *int64 `json:"campaignId,omitempty"`
+	CampaignId *int32 `json:"campaignId,omitempty"`
 
 	// EventType A numerical identifier that indicates what type of event this is.
 	EventType *int32 `json:"eventType,omitempty"`
@@ -755,6 +945,130 @@ func (t *Assignment_Setting) UnmarshalJSON(b []byte) error {
 	return err
 }
 
+// AsAssignment2Briefing0 returns the union data inside the Assignment2_Briefing as a Assignment2Briefing0
+func (t Assignment2_Briefing) AsAssignment2Briefing0() (Assignment2Briefing0, error) {
+	var body Assignment2Briefing0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAssignment2Briefing0 overwrites any union data inside the Assignment2_Briefing as the provided Assignment2Briefing0
+func (t *Assignment2_Briefing) FromAssignment2Briefing0(v Assignment2Briefing0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAssignment2Briefing0 performs a merge with any union data inside the Assignment2_Briefing, using the provided Assignment2Briefing0
+func (t *Assignment2_Briefing) MergeAssignment2Briefing0(v Assignment2Briefing0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsAssignment2Briefing1 returns the union data inside the Assignment2_Briefing as a Assignment2Briefing1
+func (t Assignment2_Briefing) AsAssignment2Briefing1() (Assignment2Briefing1, error) {
+	var body Assignment2Briefing1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAssignment2Briefing1 overwrites any union data inside the Assignment2_Briefing as the provided Assignment2Briefing1
+func (t *Assignment2_Briefing) FromAssignment2Briefing1(v Assignment2Briefing1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAssignment2Briefing1 performs a merge with any union data inside the Assignment2_Briefing, using the provided Assignment2Briefing1
+func (t *Assignment2_Briefing) MergeAssignment2Briefing1(v Assignment2Briefing1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t Assignment2_Briefing) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *Assignment2_Briefing) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsAssignment2Description0 returns the union data inside the Assignment2_Description as a Assignment2Description0
+func (t Assignment2_Description) AsAssignment2Description0() (Assignment2Description0, error) {
+	var body Assignment2Description0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAssignment2Description0 overwrites any union data inside the Assignment2_Description as the provided Assignment2Description0
+func (t *Assignment2_Description) FromAssignment2Description0(v Assignment2Description0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAssignment2Description0 performs a merge with any union data inside the Assignment2_Description, using the provided Assignment2Description0
+func (t *Assignment2_Description) MergeAssignment2Description0(v Assignment2Description0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsAssignment2Description1 returns the union data inside the Assignment2_Description as a Assignment2Description1
+func (t Assignment2_Description) AsAssignment2Description1() (Assignment2Description1, error) {
+	var body Assignment2Description1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAssignment2Description1 overwrites any union data inside the Assignment2_Description as the provided Assignment2Description1
+func (t *Assignment2_Description) FromAssignment2Description1(v Assignment2Description1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAssignment2Description1 performs a merge with any union data inside the Assignment2_Description, using the provided Assignment2Description1
+func (t *Assignment2_Description) MergeAssignment2Description1(v Assignment2Description1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t Assignment2_Description) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *Assignment2_Description) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
 // AsReward2 returns the union data inside the Assignment2_Reward as a Reward2
 func (t Assignment2_Reward) AsReward2() (Reward2, error) {
 	var body Reward2
@@ -791,6 +1105,68 @@ func (t *Assignment2_Reward) UnmarshalJSON(b []byte) error {
 	return err
 }
 
+// AsAssignment2Title0 returns the union data inside the Assignment2_Title as a Assignment2Title0
+func (t Assignment2_Title) AsAssignment2Title0() (Assignment2Title0, error) {
+	var body Assignment2Title0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAssignment2Title0 overwrites any union data inside the Assignment2_Title as the provided Assignment2Title0
+func (t *Assignment2_Title) FromAssignment2Title0(v Assignment2Title0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAssignment2Title0 performs a merge with any union data inside the Assignment2_Title, using the provided Assignment2Title0
+func (t *Assignment2_Title) MergeAssignment2Title0(v Assignment2Title0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsAssignment2Title1 returns the union data inside the Assignment2_Title as a Assignment2Title1
+func (t Assignment2_Title) AsAssignment2Title1() (Assignment2Title1, error) {
+	var body Assignment2Title1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAssignment2Title1 overwrites any union data inside the Assignment2_Title as the provided Assignment2Title1
+func (t *Assignment2_Title) FromAssignment2Title1(v Assignment2Title1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAssignment2Title1 performs a merge with any union data inside the Assignment2_Title, using the provided Assignment2Title1
+func (t *Assignment2_Title) MergeAssignment2Title1(v Assignment2Title1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t Assignment2_Title) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *Assignment2_Title) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
 // AsPlanet returns the union data inside the Campaign2_Planet as a Planet
 func (t Campaign2_Planet) AsPlanet() (Planet, error) {
 	var body Planet
@@ -823,6 +1199,68 @@ func (t Campaign2_Planet) MarshalJSON() ([]byte, error) {
 }
 
 func (t *Campaign2_Planet) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsDispatchMessage0 returns the union data inside the Dispatch_Message as a DispatchMessage0
+func (t Dispatch_Message) AsDispatchMessage0() (DispatchMessage0, error) {
+	var body DispatchMessage0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromDispatchMessage0 overwrites any union data inside the Dispatch_Message as the provided DispatchMessage0
+func (t *Dispatch_Message) FromDispatchMessage0(v DispatchMessage0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeDispatchMessage0 performs a merge with any union data inside the Dispatch_Message, using the provided DispatchMessage0
+func (t *Dispatch_Message) MergeDispatchMessage0(v DispatchMessage0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsDispatchMessage1 returns the union data inside the Dispatch_Message as a DispatchMessage1
+func (t Dispatch_Message) AsDispatchMessage1() (DispatchMessage1, error) {
+	var body DispatchMessage1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromDispatchMessage1 overwrites any union data inside the Dispatch_Message as the provided DispatchMessage1
+func (t *Dispatch_Message) FromDispatchMessage1(v DispatchMessage1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeDispatchMessage1 performs a merge with any union data inside the Dispatch_Message, using the provided DispatchMessage1
+func (t *Dispatch_Message) MergeDispatchMessage1(v DispatchMessage1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t Dispatch_Message) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *Dispatch_Message) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
@@ -895,6 +1333,68 @@ func (t Planet_Event) MarshalJSON() ([]byte, error) {
 }
 
 func (t *Planet_Event) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsPlanetName0 returns the union data inside the Planet_Name as a PlanetName0
+func (t Planet_Name) AsPlanetName0() (PlanetName0, error) {
+	var body PlanetName0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromPlanetName0 overwrites any union data inside the Planet_Name as the provided PlanetName0
+func (t *Planet_Name) FromPlanetName0(v PlanetName0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergePlanetName0 performs a merge with any union data inside the Planet_Name, using the provided PlanetName0
+func (t *Planet_Name) MergePlanetName0(v PlanetName0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsPlanetName1 returns the union data inside the Planet_Name as a PlanetName1
+func (t Planet_Name) AsPlanetName1() (PlanetName1, error) {
+	var body PlanetName1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromPlanetName1 overwrites any union data inside the Planet_Name as the provided PlanetName1
+func (t *Planet_Name) FromPlanetName1(v PlanetName1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergePlanetName1 performs a merge with any union data inside the Planet_Name, using the provided PlanetName1
+func (t *Planet_Name) MergePlanetName1(v PlanetName1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t Planet_Name) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *Planet_Name) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
@@ -1188,6 +1688,9 @@ func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
 
 // The interface specification for the client above.
 type ClientInterface interface {
+	// Get request
+	Get(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetApiV1AssignmentsAll request
 	GetApiV1AssignmentsAll(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -1241,6 +1744,18 @@ type ClientInterface interface {
 
 	// GetRawApiV2AssignmentWar801 request
 	GetRawApiV2AssignmentWar801(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+}
+
+func (c *Client) Get(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
 }
 
 func (c *Client) GetApiV1AssignmentsAll(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -1457,6 +1972,33 @@ func (c *Client) GetRawApiV2AssignmentWar801(ctx context.Context, reqEditors ...
 		return nil, err
 	}
 	return c.Client.Do(req)
+}
+
+// NewGetRequest generates requests for Get
+func NewGetRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
 }
 
 // NewGetApiV1AssignmentsAllRequest generates requests for GetApiV1AssignmentsAll
@@ -2023,6 +2565,9 @@ func WithBaseURL(baseURL string) ClientOption {
 
 // ClientWithResponsesInterface is the interface specification for the client with responses above.
 type ClientWithResponsesInterface interface {
+	// GetWithResponse request
+	GetWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetResponse, error)
+
 	// GetApiV1AssignmentsAllWithResponse request
 	GetApiV1AssignmentsAllWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetApiV1AssignmentsAllResponse, error)
 
@@ -2076,6 +2621,28 @@ type ClientWithResponsesInterface interface {
 
 	// GetRawApiV2AssignmentWar801WithResponse request
 	GetRawApiV2AssignmentWar801WithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetRawApiV2AssignmentWar801Response, error)
+}
+
+type GetResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *string
+}
+
+// Status returns HTTPResponse.Status
+func (r GetResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
 }
 
 type GetApiV1AssignmentsAllResponse struct {
@@ -2474,6 +3041,15 @@ func (r GetRawApiV2AssignmentWar801Response) StatusCode() int {
 	return 0
 }
 
+// GetWithResponse request returning *GetResponse
+func (c *ClientWithResponses) GetWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetResponse, error) {
+	rsp, err := c.Get(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetResponse(rsp)
+}
+
 // GetApiV1AssignmentsAllWithResponse request returning *GetApiV1AssignmentsAllResponse
 func (c *ClientWithResponses) GetApiV1AssignmentsAllWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetApiV1AssignmentsAllResponse, error) {
 	rsp, err := c.GetApiV1AssignmentsAll(ctx, reqEditors...)
@@ -2634,6 +3210,32 @@ func (c *ClientWithResponses) GetRawApiV2AssignmentWar801WithResponse(ctx contex
 		return nil, err
 	}
 	return ParseGetRawApiV2AssignmentWar801Response(rsp)
+}
+
+// ParseGetResponse parses an HTTP response from a GetWithResponse call
+func ParseGetResponse(rsp *http.Response) (*GetResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest string
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
 }
 
 // ParseGetApiV1AssignmentsAllResponse parses an HTTP response from a GetApiV1AssignmentsAllWithResponse call

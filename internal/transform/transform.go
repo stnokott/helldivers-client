@@ -9,8 +9,6 @@ import (
 	"github.com/stnokott/helldivers-client/internal/api"
 )
 
-// TODO: use https://github.com/switchupcb/copygen
-
 // APIData contains all relevant (unprocessed) data from the API, used for further processing.
 type APIData struct {
 	WarID       *api.WarId

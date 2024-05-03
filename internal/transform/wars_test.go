@@ -1,3 +1,5 @@
+//go:build !goverter
+
 package transform
 
 import (
@@ -113,7 +115,8 @@ func TestWar(t *testing.T) {
 				WarID: &warID,
 				War:   &war,
 			}
-			got, err := Wars(data)
+			converter := &ConverterImpl{}
+			got, err := Wars(converter, data)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("War() err = %v, wantErr %v", err, tt.wantErr)
 				return
