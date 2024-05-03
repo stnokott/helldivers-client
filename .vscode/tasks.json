@@ -48,6 +48,22 @@
 			"group": "test"
 		},
 		{
+			"type": "shell",
+			"label": "run pprof",
+			"command": "go",
+			"args": [
+				"run",
+				"github.com/joho/godotenv/cmd/godotenv@v1.5.1",
+				"-f",
+				".env.dev",
+				"go",
+				"test",
+				"-bench=^BenchmarkPProf$"
+			],
+			"problemMatcher": "$go",
+			"group": "test"
+		},
+		{
 			"label": "build snapshot",
 			"type": "shell",
 			"command": "go run github.com/goreleaser/goreleaser@v1.25.1 release --skip=publish --clean --snapshot --config=build/.goreleaser.yaml",

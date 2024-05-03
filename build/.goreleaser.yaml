@@ -24,6 +24,8 @@ builds:
       - -X main.version={{ .Version  }}
       - -X main.commit={{ .ShortCommit }}
       - -X main.buildDate={{ .Date }}
+    flags:
+      - -pgo=build/cpu.pprof
   - id: windows
     <<: *default_build
     goos:
