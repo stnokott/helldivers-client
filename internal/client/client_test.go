@@ -113,8 +113,8 @@ func TestClientAssignments(t *testing.T) {
 		return
 	}
 	firstItem := (*got)[0]
-	if firstItem.Title == nil || *firstItem.Title == "" {
-		t.Error("got[0].Title is empty, expected non-empty")
+	if firstItem.Id == nil || *firstItem.Id == 0 {
+		t.Error("got[0].Id is empty, expected non-empty")
 		return
 	}
 }
@@ -149,8 +149,8 @@ func TestClientDispatches(t *testing.T) {
 		return
 	}
 	firstItem := (*got)[0]
-	if firstItem.Message == nil || *firstItem.Message == "" {
-		t.Error("got[0].Message is empty, expected non-empty")
+	if firstItem.Id == nil || *firstItem.Id == 0 {
+		t.Error("got[0].Id is empty, expected non-empty")
 		return
 	}
 }

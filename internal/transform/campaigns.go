@@ -6,7 +6,8 @@ import (
 	"github.com/stnokott/helldivers-client/internal/db"
 )
 
-func Campaigns(data APIData) ([]db.EntityMerger, error) {
+// Campaigns converts API data into mergable DB entities.
+func Campaigns(c Converter, data APIData) ([]db.EntityMerger, error) {
 	if data.Campaigns == nil {
 		return nil, errors.New("got nil campaigns slice")
 	}
@@ -14,17 +15,11 @@ func Campaigns(data APIData) ([]db.EntityMerger, error) {
 	src := *data.Campaigns
 	mergers := make([]db.EntityMerger, len(src))
 	for i, campaign := range src {
-		if campaign.Id == nil ||
-			campaign.Type == nil ||
-			campaign.Count == nil {
-			return nil, errFromNils(&campaign)
+		merger, err := c.ConvertCampaign(campaign)
+		if err != nil {
+			return nil, err
 		}
-
-		mergers[i] = &db.Campaign{
-			ID:    *campaign.Id,
-			Type:  *campaign.Type,
-			Count: *campaign.Count,
-		}
+		mergers[i] = merger
 	}
 	return mergers, nil
 }

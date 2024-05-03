@@ -12,9 +12,17 @@ import (
 	"github.com/stnokott/helldivers-client/internal/db"
 )
 
+func mustDispatchMessage(from api.DispatchMessage0) *api.Dispatch_Message {
+	dispatchMessage := new(api.Dispatch_Message)
+	if err := dispatchMessage.FromDispatchMessage0(from); err != nil {
+		panic(err)
+	}
+	return dispatchMessage
+}
+
 var validDispatch = api.Dispatch{
 	Id:        ptr(int32(678)),
-	Message:   ptr("A dispatch message"),
+	Message:   mustDispatchMessage("A dispatch message"),
 	Published: ptr(time.Date(2025, 1, 2, 3, 4, 5, 6, time.UTC)),
 	Type:      ptr(int32(111)),
 }

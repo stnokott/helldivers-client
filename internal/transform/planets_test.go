@@ -1,3 +1,5 @@
+//go:build !goverter
+
 package transform
 
 import (
@@ -9,6 +11,14 @@ import (
 	"github.com/stnokott/helldivers-client/internal/db"
 	"github.com/stnokott/helldivers-client/internal/db/gen"
 )
+
+func mustPlanetName(from api.PlanetName0) *api.Planet_Name {
+	planetName := new(api.Planet_Name)
+	if err := planetName.FromPlanetName0(from); err != nil {
+		panic(err)
+	}
+	return planetName
+}
 
 func mustPlanetPosition(from api.Position) *api.Planet_Position {
 	planetPosition := new(api.Planet_Position)
@@ -36,7 +46,7 @@ func mustPlanetStatistics(from api.Statistics) *api.Planet_Statistics {
 
 var validPlanet = api.Planet{
 	Index: ptr(int32(3)),
-	Name:  ptr("A planet"),
+	Name:  mustPlanetName("A planet"),
 	Biome: mustPlanetBiome(api.Biome{
 		Name:        ptr("Foobiome"),
 		Description: ptr("Foodescription"),
@@ -181,7 +191,8 @@ func TestPlanets(t *testing.T) {
 					planet,
 				},
 			}
-			got, err := Planets(data)
+			converter := &ConverterImpl{}
+			got, err := Planets(converter, data)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Planets() err = %v, wantErr %v", err, tt.wantErr)
 				return

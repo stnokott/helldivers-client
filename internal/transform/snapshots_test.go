@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/stnokott/helldivers-client/internal/api"
 	"github.com/stnokott/helldivers-client/internal/copytest"
 	"github.com/stnokott/helldivers-client/internal/db"
@@ -111,6 +112,7 @@ func TestSnapshots(t *testing.T) {
 			want: []db.EntityMerger{
 				&db.Snapshot{
 					Snapshot: gen.Snapshot{
+						CreateTime:            pgtype.Timestamp{Valid: false},
 						AssignmentSnapshotIds: nil,
 						CampaignIds:           []int32{987},
 						DispatchIds:           []int32{678},
@@ -132,6 +134,7 @@ func TestSnapshots(t *testing.T) {
 					PlanetSnapshots: []db.PlanetSnapshot{
 						{
 							PlanetSnapshot: gen.PlanetSnapshot{
+								ID:                 -1,
 								PlanetID:           456,
 								Health:             2441141122,
 								CurrentOwner:       "Humans",
@@ -262,7 +265,8 @@ func TestSnapshots(t *testing.T) {
 				Campaigns:   &[]api.Campaign2{campaign},
 				Dispatches:  &[]api.Dispatch{dispatch},
 			}
-			got, err := Snapshot(data)
+			converter := &ConverterImpl{}
+			got, err := Snapshot(converter, data)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Snapshot() err = %v, wantErr %v", err, tt.wantErr)
 				return

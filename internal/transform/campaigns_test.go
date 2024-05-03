@@ -1,3 +1,5 @@
+//go:build !goverter
+
 package transform
 
 import (
@@ -61,7 +63,8 @@ func TestCampaigns(t *testing.T) {
 					campaign,
 				},
 			}
-			got, err := Campaigns(data)
+			converter := &ConverterImpl{}
+			got, err := Campaigns(converter, data)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Campaigns() err = %v, wantErr %v", err, tt.wantErr)
 				return
