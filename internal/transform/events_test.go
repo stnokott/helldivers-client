@@ -28,7 +28,7 @@ func mustPlanetEvent(from api.Event) *api.Planet_Event {
 
 var validEventPlanet = api.Planet{
 	Index: ptr(int32(888)),
-	Name:  ptr("A planet"),
+	Name:  mustPlanetName("A planet"),
 	Event: mustPlanetEvent(
 		api.Event{
 			Id:                ptr(int32(997)),
@@ -37,7 +37,7 @@ var validEventPlanet = api.Planet{
 			EventType:         ptr(int32(667)),
 			Faction:           ptr("Terminids"),
 			MaxHealth:         ptr(int64(4455667788)),
-			CampaignId:        ptr(int64(123)),
+			CampaignId:        ptr(int32(123)),
 			Health:            nil, // not required, persisted in dynamic snapshots
 			JointOperationIds: nil, // not mapped currently
 		},
@@ -48,7 +48,7 @@ var validEventCampaign = api.Campaign2{
 	Id: ptr(int32(123)),
 	Planet: mustCampaignPlanet(api.Planet{
 		Index: ptr(int32(888)),
-		Name:  ptr("Foo"),
+		Name:  mustPlanetName("Foo"),
 	}),
 }
 
@@ -116,7 +116,8 @@ func TestEvent(t *testing.T) {
 					validEventCampaign, // campaign remains static
 				},
 			}
-			got, err := Events(data)
+			converter := &ConverterImpl{}
+			got, err := Events(converter, data)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Events() err = %v, wantErr %v", err, tt.wantErr)
 				return

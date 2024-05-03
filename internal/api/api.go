@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-//go:generate oapi-codegen --config=oapi-codegen.cfg.yaml http://localhost:4000/Helldivers-2-API.json
+//go:generate go run github.com/deepmap/oapi-codegen/v2/cmd/oapi-codegen@v2.1.0 --config=oapi-codegen.cfg.yaml http://localhost:4000/Helldivers-2-API.json
 func respErr(resp *http.Response) error {
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
