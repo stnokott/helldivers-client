@@ -2,6 +2,8 @@ name: Release snapshot
 
 on:
   workflow_dispatch:
+  push:
+    branches-ignore: [main]
 
 jobs:
   build_snapshot:
