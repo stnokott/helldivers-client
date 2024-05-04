@@ -5,6 +5,9 @@ on:
   push:
     branches-ignore: [main]
 
+permissions:
+  packages: write
+
 jobs:
   build_snapshot:
     name: Release snapshot

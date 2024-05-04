@@ -38,7 +38,7 @@ jobs:
         with:
           distribution: goreleaser
           version: v1.25.1
-          args: release --config=build/.goreleaser.yaml --clean --snapshot
+          args: release --config=build/.goreleaser.yaml --clean --snapshot --skip=docker
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # we now essentially simulate the "nightly" feature of goreleaser,
