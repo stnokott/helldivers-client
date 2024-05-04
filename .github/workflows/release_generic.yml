@@ -59,7 +59,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: stnokott/helldivers-client:latest-snapshot
+          tags: ghcr.io/stnokott/helldivers-client:latest-snapshot
           platforms: linux/amd64  # TODO: copying binaries for multiple platforms
       - uses: actions/upload-artifact@v4
         with:
