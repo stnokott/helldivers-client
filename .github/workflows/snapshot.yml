@@ -1,0 +1,11 @@
+name: Release snapshot
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build_snapshot:
+    name: Release snapshot
+    uses: ./.github/workflows/release_generic.yml
+    with:
+      snapshot: true

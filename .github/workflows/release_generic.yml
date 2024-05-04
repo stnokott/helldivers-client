@@ -19,8 +19,7 @@ jobs:
       - uses: actions/setup-go@v5.0.0
         with:
           go-version-file: "go.mod"
-      - if: inputs.snapshot == false
-        name: Login to GitHub Container Registry
+      - name: Login to GitHub Container Registry
         run: docker login ghcr.io -u stnokott -p ${{ secrets.GITHUB_TOKEN }}
       - if: inputs.snapshot == false
         uses: goreleaser/goreleaser-action@v5.0.0
@@ -35,7 +34,7 @@ jobs:
         with:
           distribution: goreleaser
           version: v1.25.1
-          args: release --config=build/.goreleaser.yaml --clean --snapshot --skip=publish
+          args: release --config=build/.goreleaser.yaml --clean --snapshot
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - if: inputs.snapshot == true

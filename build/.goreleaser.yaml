@@ -25,14 +25,21 @@ builds:
       - -X main.commit={{ .ShortCommit }}
       - -X main.buildDate={{ .Date }}
     flags:
-      - -pgo=build/cpu.pprof
-  - id: windows
-    <<: *default_build
+      - >-
+        {{- if .IsSnapshot -}}
+          -pgo=off
+        {{- else -}}
+          -pgo=build/default.pprof
+        {{- end -}}
+  - <<: *default_build
+    id: windows
     goos:
       - windows
 
 dockers:
-  - use: buildx
+  - &default_docker
+    skip_push: "{{ .IsSnapshot }}"
+    use: buildx
     image_templates:
       - "ghcr.io/stnokott/{{ .ProjectName }}:{{ .Version }}-amd64"
       - "ghcr.io/stnokott/{{ .ProjectName }}:latest-amd64"
@@ -46,14 +53,24 @@ dockers:
     dockerfile: Dockerfile
     extra_files:
       - "scripts/migrations"
+  - <<: *default_docker
+    skip_push: "{{ not .IsSnapshot }}"
+    image_templates:
+      - "ghcr.io/stnokott/{{ .ProjectName }}:latest-snapshot"
 
 docker_manifests:
-  - name_template: "ghcr.io/stnokott/{{ .ProjectName }}:{{ .Version }}"
+  - skip_push: "{{ .IsSnapshot }}"
+    name_template: "ghcr.io/stnokott/{{ .ProjectName }}:{{ .Version }}"
     image_templates:
       - "ghcr.io/stnokott/{{ .ProjectName }}:{{ .Version }}-amd64"
       - "ghcr.io/stnokott/{{ .ProjectName }}:latest-amd64"
+  - skip_push: "{{ not .IsSnapshot }}"
+    name_template: "ghcr.io/stnokott/{{ .ProjectName }}:latest-snapshot"
+    image_templates:
+      - "ghcr.io/stnokott/{{ .ProjectName }}:latest-snapshot"
 
 changelog:
+  disable: "{{ .IsSnapshot }}"
   sort: asc
   abbrev: -1
   use: github
@@ -101,6 +118,7 @@ archives:
     format: zip
 
 release:
+  disable: "{{ .IsSnapshot }}" # don't release when we're publishing a snapshot
   target_commitish: "{{ .FullCommit }}"
   github:
     owner: stnokott
