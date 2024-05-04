@@ -2,80 +2,40 @@
 package main
 
 import (
-	"fmt"
+	"flag"
 	"log"
 	"os"
 	"os/signal"
-	"time"
-
-	"github.com/stnokott/helldivers-client/internal/client"
-	"github.com/stnokott/helldivers-client/internal/config"
-	"github.com/stnokott/helldivers-client/internal/db"
-	"github.com/stnokott/helldivers-client/internal/worker"
 )
 
 var (
-	projectName = "helldivers-client"
-	version     = "0.0.0"
-	commit      = "dev"
-	buildDate   = "now"
+	pprofDuration = flag.Duration("pprof-duration", 0, "how long to profile for (e.g. 30m)")
+	pprofOut      = flag.String("pprof-out", "default.pprof", "where to save the profile")
 )
-
-const (
-	databaseName   = "helldivers2"
-	dbReadyTimeout = 30 * time.Second
-)
-
-const apiReadyTimeout = 30 * time.Second
 
 func main() {
-	fmt.Printf("%s v%s %s built %s\n\n", projectName, version, commit, buildDate)
+	flag.Parse()
 
-	cfg := config.MustGet()
-	logger := loggerFor("main")
+	workerStopChan := make(chan struct{})
 
-	dbClient, err := db.New(cfg, loggerFor("postgresql"))
-	if err != nil {
-		logger.Fatal(err)
-	}
-	if err = waitFor(dbClient, dbReadyTimeout, logger); err != nil {
-		logger.Fatal(err)
-	}
-
-	defer func() {
-		if errInner := dbClient.Disconnect(); errInner != nil {
-			logger.Println(errInner)
-		}
-	}()
-	if err = dbClient.MigrateUp("./scripts/migrations"); err != nil {
-		logger.Fatal(err)
-	}
-
-	apiClient, err := client.New(cfg, loggerFor("api"))
-	if err != nil {
-		logger.Fatal(err)
-	}
-	if err = waitFor(apiClient, apiReadyTimeout, logger); err != nil {
-		logger.Fatal(err)
-	}
-
-	worker := worker.New(apiClient, dbClient, loggerFor("worker"))
-	stopWorkerChan := make(chan struct{}, 1)
-
-	stopSignal(stopWorkerChan, logger)
-	worker.Run(cfg.WorkerInterval, stopWorkerChan)
-}
-
-func stopSignal(stopChan chan<- struct{}, logger *log.Logger) {
-	osSignalChan := make(chan os.Signal, 1)
+	// stop worker on SIGINT
+	osSignalChan := make(chan os.Signal)
 	signal.Notify(osSignalChan, os.Interrupt)
 	go func() {
 		s := <-osSignalChan
-		logger.Printf("received %s signal, stopping once current process finishes", s.String())
-		stopChan <- struct{}{}
+		log.Printf("main loop received %s signal, sending stop signal to worker\n", s.String())
+		workerStopChan <- struct{}{}
 	}()
-}
 
-func loggerFor(name string) *log.Logger {
-	return log.New(os.Stdout, name+" | ", log.Ldate|log.Ltime|log.Lmsgprefix)
+	// check if profiling is enabled
+	if *pprofDuration != 0 {
+		log.Printf("profiling enabled, duration=%s, out=%s\n", pprofDuration.String(), *pprofOut)
+		if err := startProfiling(*pprofDuration, *pprofOut, workerStopChan); err != nil {
+			log.Fatalln(err)
+		}
+	}
+
+	// we separate the run() and main() function so that we can include additional
+	// pre- and post-mainloop logic like profiling.
+	run(workerStopChan)
 }

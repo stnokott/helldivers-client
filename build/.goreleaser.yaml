@@ -24,8 +24,15 @@ builds:
       - -X main.version={{ .Version  }}
       - -X main.commit={{ .ShortCommit }}
       - -X main.buildDate={{ .Date }}
-  - id: windows
-    <<: *default_build
+    flags:
+      - >-
+        {{- if .IsSnapshot -}}
+          -pgo=off
+        {{- else -}}
+          -pgo=build/default.pprof
+        {{- end -}}
+  - <<: *default_build
+    id: windows
     goos:
       - windows
 

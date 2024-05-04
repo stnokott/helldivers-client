@@ -7,6 +7,10 @@ on:
         required: false
         type: boolean
         default: false
+      publish_snapshot_docker:
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   goreleaser:
@@ -19,15 +23,18 @@ jobs:
       - uses: actions/setup-go@v5.0.0
         with:
           go-version-file: "go.mod"
-      - if: inputs.snapshot == false
-        name: Login to GitHub Container Registry
-        run: docker login ghcr.io -u stnokott -p ${{ secrets.GITHUB_TOKEN }}
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3.1.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - if: inputs.snapshot == false
         uses: goreleaser/goreleaser-action@v5.0.0
         with:
           distribution: goreleaser
           version: v1.25.1
-          args: release --config=build/.goreleaser.yaml --clean 
+          args: release --config=build/.goreleaser.yaml --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - if: inputs.snapshot == true
@@ -35,11 +42,23 @@ jobs:
         with:
           distribution: goreleaser
           version: v1.25.1
-          args: release --config=build/.goreleaser.yaml --clean --snapshot --skip=publish
+          args: release --config=build/.goreleaser.yaml --clean --snapshot --skip=docker
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - if: inputs.snapshot == true
-        uses: actions/upload-artifact@v4
+      # we now essentially simulate the "nightly" feature of goreleaser,
+      # because I'm a poor hobby developer
+      - if: inputs.snapshot == true && inputs.publish_snapshot_docker == true
+        name: copy binary to root dir
+        run: cp dist/*_linux_*/app ./app
+      - if: inputs.snapshot == true && inputs.publish_snapshot_docker == true
+        name: Build and push snapshot Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/stnokott/helldivers-client:latest-snapshot
+          platforms: linux/amd64  # TODO: copying binaries for multiple platforms
+      - uses: actions/upload-artifact@v4
         with:
           name: release-binary
           path: |
