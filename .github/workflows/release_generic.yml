@@ -3,15 +3,10 @@ name: Generic Release
 on:
   workflow_call:
     inputs:
-      nightly:
-        description: will build a nightly release with no version tag and PGO disabled.
+      snapshot:
         required: false
         type: boolean
         default: false
-      artifacts:
-        required: false
-        type: boolean
-        default: true
 
 jobs:
   goreleaser:
@@ -26,17 +21,23 @@ jobs:
           go-version-file: "go.mod"
       - name: Login to GitHub Container Registry
         run: docker login ghcr.io -u stnokott -p ${{ secrets.GITHUB_TOKEN }}
-      - if: inputs.nightly == true
-        run: echo "BUILD_NIGHTLY=1" >> $GITHUB_ENV
-      - uses: goreleaser/goreleaser-action@v5.0.0
+      - if: inputs.snapshot == false
+        uses: goreleaser/goreleaser-action@v5.0.0
         with:
           distribution: goreleaser
           version: v1.25.1
-          args: release --config=build/.goreleaser.yaml --clean 
+          args: release --config=build/.goreleaser.yaml --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - if: inputs.artifacts == true
-        uses: actions/upload-artifact@v4
+      - if: inputs.snapshot == true
+        uses: goreleaser/goreleaser-action@v5.0.0
+        with:
+          distribution: goreleaser
+          version: v1.25.1
+          args: release --config=build/.goreleaser.yaml --clean --snapshot
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/upload-artifact@v4
         with:
           name: release-binary
           path: |

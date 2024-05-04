@@ -10,5 +10,4 @@ jobs:
     name: Release snapshot
     uses: ./.github/workflows/release_generic.yml
     with:
-      nightly: true
-      artifacts: false
+      snapshot: true
