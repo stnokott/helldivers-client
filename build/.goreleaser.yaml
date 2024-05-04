@@ -26,7 +26,7 @@ builds:
       - -X main.buildDate={{ .Date }}
     flags:
       - >-
-        {{- if .IsSnapshot -}}
+        {{- if eq (index .Env "BUILD_NIGHTLY") "1" -}}
           -pgo=off
         {{- else -}}
           -pgo=build/default.pprof
@@ -38,7 +38,7 @@ builds:
 
 dockers:
   - &default_docker
-    skip_push: "{{ .IsSnapshot }}"
+    skip_push: '{{ eq (index .Env "BUILD_NIGHTLY") "1" }}'
     use: buildx
     image_templates:
       - "ghcr.io/stnokott/{{ .ProjectName }}:{{ .Version }}-amd64"
@@ -54,23 +54,23 @@ dockers:
     extra_files:
       - "scripts/migrations"
   - <<: *default_docker
-    skip_push: "{{ not .IsSnapshot }}"
+    skip_push: '{{ not eq (index .Env "BUILD_NIGHTLY") "1" }}'
     image_templates:
       - "ghcr.io/stnokott/{{ .ProjectName }}:latest-snapshot"
 
 docker_manifests:
-  - skip_push: "{{ .IsSnapshot }}"
+  - skip_push: '{{ eq (index .Env "BUILD_NIGHTLY") "1" }}'
     name_template: "ghcr.io/stnokott/{{ .ProjectName }}:{{ .Version }}"
     image_templates:
       - "ghcr.io/stnokott/{{ .ProjectName }}:{{ .Version }}-amd64"
       - "ghcr.io/stnokott/{{ .ProjectName }}:latest-amd64"
-  - skip_push: "{{ not .IsSnapshot }}"
+  - skip_push: '{{ not eq (index .Env "BUILD_NIGHTLY") "1" }}'
     name_template: "ghcr.io/stnokott/{{ .ProjectName }}:latest-snapshot"
     image_templates:
       - "ghcr.io/stnokott/{{ .ProjectName }}:latest-snapshot"
 
 changelog:
-  disable: "{{ .IsSnapshot }}"
+  disable: '{{ eq (index .Env "BUILD_NIGHTLY") "1" }}'
   sort: asc
   abbrev: -1
   use: github
@@ -118,7 +118,7 @@ archives:
     format: zip
 
 release:
-  disable: "{{ .IsSnapshot }}" # don't release when we're publishing a snapshot
+  disable: '{{ eq (index .Env "BUILD_NIGHTLY") "1" }}'
   target_commitish: "{{ .FullCommit }}"
   github:
     owner: stnokott

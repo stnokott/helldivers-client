@@ -1,4 +1,4 @@
-name: Release snapshot
+name: Release nightly
 
 on:
   workflow_dispatch:
@@ -10,4 +10,5 @@ jobs:
     name: Release snapshot
     uses: ./.github/workflows/release_generic.yml
     with:
-      snapshot: true
+      nightly: true
+      artifacts: false
