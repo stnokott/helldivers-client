@@ -24,7 +24,11 @@ jobs:
         with:
           go-version-file: "go.mod"
       - name: Login to GitHub Container Registry
-        run: docker login ghcr.io -u stnokott -p ${{ secrets.GITHUB_TOKEN }}
+        uses: docker/login-action@v3.1.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - if: inputs.snapshot == false
         uses: goreleaser/goreleaser-action@v5.0.0
         with:
@@ -43,9 +47,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # we now essentially simulate the "nightly" feature of goreleaser,
       # because I'm a poor hobby developer
-      - if: inputs.snapshot == true && inputs.publish_snapshot_docker == true
-        name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      #- if: inputs.snapshot == true && inputs.publish_snapshot_docker == true
+      #  name: Set up Docker Buildx
+      #  uses: docker/setup-buildx-action@v3
       - if: inputs.snapshot == true && inputs.publish_snapshot_docker == true
         name: copy binary to root dir
         run: cp dist/*_linux_*/app ./app
