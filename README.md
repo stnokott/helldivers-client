@@ -60,3 +60,21 @@ services:
     networks:
       - default
 ```
+
+## Development
+
+### PGO
+
+We use `PGO` for build optimization.
+To collect a new CPU profile from a representative productive environment, do the following:
+1. Run the "Release snapshot" action on your current working branch.
+   This will build and publish a snapshot release of the code on your branch **without PGO**.
+2. Pull the `ghcr.io/stnokott/helldivers-client:latest-snapshot` Docker image
+3. Run this image in the same Docker stack as you would do with the regular image.
+   Use the following parameters to control profiling behaviour:
+
+   `--pprof-duration=30m` -> How long the profiling should run for.
+   
+   `--pprof-out=default.pprof` -> Where to save the generated profile to.
+4. Once finished, commit the newly generated profile file as `build/default.pprof` to your branch.
+   It will be automatically picked up for the next release.

@@ -25,9 +25,14 @@ builds:
       - -X main.commit={{ .ShortCommit }}
       - -X main.buildDate={{ .Date }}
     flags:
-      - -pgo=build/cpu.pprof
-  - id: windows
-    <<: *default_build
+      - >-
+        {{- if .IsSnapshot -}}
+          -pgo=off
+        {{- else -}}
+          -pgo=build/default.pprof
+        {{- end -}}
+  - <<: *default_build
+    id: windows
     goos:
       - windows
 
