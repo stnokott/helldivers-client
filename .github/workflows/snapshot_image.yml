@@ -1,0 +1,17 @@
+name: Push Snapshot image
+
+on:
+  workflow_dispatch:
+  push:
+    branches-ignore: [main]
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  push:
+    name: Build test snapshot
+    uses: ./.github/workflows/snapshot_generic.yml
+    with:
+      docker_push: true

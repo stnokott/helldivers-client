@@ -9,9 +9,9 @@ on:
 jobs:
   build_snapshot:
     name: Build test snapshot
-    uses: ./.github/workflows/release_generic.yml
+    uses: ./.github/workflows/snapshot_generic.yml
     with:
-      snapshot: true
+      docker_push: false
   unit_tests:
     name: Run Unit Tests
     runs-on: ubuntu-latest
