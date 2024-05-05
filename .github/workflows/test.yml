@@ -27,7 +27,7 @@ jobs:
         run: go get .
 
       - name: Run tests
-        run: go test -v ./...
+        run: go test -v -shuffle=on ./...
 
   integration_tests:
     name: Run Integration Tests
