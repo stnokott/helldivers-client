@@ -12,9 +12,6 @@ on:
         type: boolean
         default: false
 
-env:
-  SNAPSHOT_DOCKER_NAME: ghcr.io/${{ github.actor }}/${{ github.repository }}:latest-snapshot
-
 jobs:
   goreleaser:
     runs-on: ubuntu-latest
@@ -32,15 +29,35 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - uses: goreleaser/goreleaser-action@v5.0.0
+      - if: inputs.snapshot == false
+        uses: goreleaser/goreleaser-action@v5.0.0
         with:
           distribution: goreleaser
           version: v1.25.1
-          args: |
-            release --config=build/.goreleaser.yaml --clean \
-            ${{ inputs.snapshot == true && '--snapshot --skip=docker' || ''}}
+          args: release --config=build/.goreleaser.yaml --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - if: inputs.snapshot == true
+        uses: goreleaser/goreleaser-action@v5.0.0
+        with:
+          distribution: goreleaser
+          version: v1.25.1
+          args: release --config=build/.goreleaser.yaml --clean --snapshot --skip=docker
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # we now essentially simulate the "nightly" feature of goreleaser,
+      # because I'm a poor hobby developer
+      - if: inputs.snapshot == true && inputs.publish_snapshot_docker == true
+        name: copy binary to root dir
+        run: cp dist/*_linux_*/app ./app
+      - if: inputs.snapshot == true && inputs.publish_snapshot_docker == true
+        name: Build and push snapshot Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/stnokott/helldivers-client:latest-snapshot
+          platforms: linux/amd64  # TODO: copying binaries for multiple platforms
       - uses: actions/upload-artifact@v4
         with:
           name: release-binary
@@ -48,39 +65,3 @@ jobs:
             dist/*.zip
             dist/*.tar.gz
           retention-days: 2
-
-  push_snapshot:
-    if: inputs.publish_snapshot_docker == true
-    needs: goreleaser
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        os: [linux, windows]
-    steps:
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3.1.0
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions/download-artifact@v4.1.7
-        with:
-          name: release-binary
-          pattern: "*.${{ matrix.os == 'windows' && 'zip' || 'tar.gz' }}"
-      - name: extract
-        run: |
-          ${{
-            matrix.os == 'windows'
-            && 'unzip *_${{ matrix.os }}_*.zip'
-            || 'tar -xf *_${{ matrix.os }}_*.tar.gz'
-           }}
-      - if: matrix.os == 'windows'
-        name: rename binary
-        run: mv app.exe app
-      - name: Build and push snapshot Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: true
-          tags: ${{ env.SNAPSHOT_DOCKER_NAME }}
-          platforms: ${{ matrix.os }}/amd64
