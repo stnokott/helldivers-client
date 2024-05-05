@@ -17,6 +17,7 @@ type Planet struct {
 	Hazards []gen.Hazard
 }
 
+// Merge implements EntityMerger.
 func (p *Planet) Merge(ctx context.Context, tx *gen.Queries, onMerge onMergeFunc) error {
 	biomeName, err := mergeBiome(ctx, tx, p.Biome, onMerge)
 	if err != nil {

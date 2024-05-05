@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	env "go-simpler.org/env"
+	"go-simpler.org/env"
 )
 
 const envPrefix = "HELL"
@@ -23,7 +23,6 @@ type Config struct {
 // Any required environment variables which are not provided will cause the
 // application to print usage and exit.
 func MustGet() *Config {
-
 	c := new(Config)
 	if err := env.Load(c, nil); err != nil {
 		fmt.Printf("failed to read config from ENV: %v\n", err)

@@ -16,6 +16,7 @@ type Assignment struct {
 	Tasks []gen.AssignmentTask
 }
 
+// Merge implements EntityMerger.
 func (a *Assignment) Merge(ctx context.Context, tx *gen.Queries, onMerge onMergeFunc) error {
 	// Since we have static assignment IDs, but Identity task IDs, we cannot easily merge both together.
 	// (Composite types also don't work properly yet, see https://github.com/sqlc-dev/sqlc/issues/2760)
@@ -32,7 +33,7 @@ func (a *Assignment) Merge(ctx context.Context, tx *gen.Queries, onMerge onMerge
 		}
 	}
 
-	taskIDs, err := insertAssignmentTasks(ctx, tx, a.Tasks, onMerge)
+	taskIDs, err := insertAssignmentTasks(ctx, tx, a.Tasks)
 	if err != nil {
 		return err
 	}
@@ -46,7 +47,7 @@ func (a *Assignment) Merge(ctx context.Context, tx *gen.Queries, onMerge onMerge
 	return nil
 }
 
-func insertAssignmentTasks(ctx context.Context, tx *gen.Queries, tasks []gen.AssignmentTask, onMerge onMergeFunc) ([]int64, error) {
+func insertAssignmentTasks(ctx context.Context, tx *gen.Queries, tasks []gen.AssignmentTask) ([]int64, error) {
 	taskIDs := make([]int64, len(tasks))
 	for i, task := range tasks {
 		taskID, err := tx.InsertAssignmentTask(ctx, gen.InsertAssignmentTaskParams{

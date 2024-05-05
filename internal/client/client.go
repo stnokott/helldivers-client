@@ -17,12 +17,12 @@ type Client struct {
 	log *log.Logger
 }
 
-const maxHTTPRetries = 3
+const _maxHTTPRetries = 3
 
 // New creates a new client instance
 func New(cfg *config.Config, logger *log.Logger) (*Client, error) {
 	options := api.WithHTTPClient(
-		newRateLimitHTTPClient(maxHTTPRetries, logger),
+		newRateLimitHTTPClient(_maxHTTPRetries, logger),
 	)
 	c, err := api.NewClientWithResponses(cfg.APIRootURL, options)
 	if err != nil {
@@ -54,26 +54,6 @@ func (c *Client) Connect(ctx context.Context) error {
 	}
 }
 
-func processResp[
-	T any,
-	PT interface{ Data() (*T, error) },
-](
-	ctx context.Context,
-	requestFunc func(context.Context, ...api.RequestEditorFn) (PT, error),
-) (*T, error) {
-	resp, err := requestFunc(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("request failed: %w", err)
-	}
-
-	data, err := resp.Data()
-	if err != nil {
-		return nil, fmt.Errorf("request response unavailable: %w", err)
-	}
-
-	return data, nil
-}
-
 // WarID returns the ID of the current war
 func (c *Client) WarID(ctx context.Context) (*api.WarId, error) {
 	return processResp(ctx, c.api.GetRawApiWarSeasonCurrentWarIDWithResponse)
@@ -102,4 +82,24 @@ func (c *Client) Dispatches(ctx context.Context) (*[]api.Dispatch, error) {
 // Planets returns all planets in the current war
 func (c *Client) Planets(ctx context.Context) (*[]api.Planet, error) {
 	return processResp(ctx, c.api.GetApiV1PlanetsAllWithResponse)
+}
+
+func processResp[
+	T any,
+	PT interface{ Data() (*T, error) },
+](
+	ctx context.Context,
+	requestFunc func(context.Context, ...api.RequestEditorFn) (PT, error),
+) (*T, error) {
+	resp, err := requestFunc(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("request failed: %w", err)
+	}
+
+	data, err := resp.Data()
+	if err != nil {
+		return nil, fmt.Errorf("request response unavailable: %w", err)
+	}
+
+	return data, nil
 }
