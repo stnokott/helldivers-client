@@ -1,3 +1,6 @@
+// package main implements a custom `sqlc` generator.
+//
+// It generates an enum with all `sqlc` table names as values.
 package main
 
 import (
@@ -20,7 +23,7 @@ var funcMap = template.FuncMap{
 	"fmtConstValue": fmtConstValue,
 }
 
-func run(ctx context.Context, req *plugin.GenerateRequest) (*plugin.GenerateResponse, error) {
+func run(_ context.Context, req *plugin.GenerateRequest) (*plugin.GenerateResponse, error) {
 	tmpl, err := template.New("enums.tmpl").Funcs(funcMap).ParseFS(templates, "enums.tmpl")
 	if err != nil {
 		return nil, err

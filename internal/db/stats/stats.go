@@ -11,17 +11,8 @@ import (
 	"github.com/jedib0t/go-pretty/v6/table"
 )
 
-type Collector interface {
-	Inserted(table gen.Table, n int64)
-	Updated(table gen.Table, n int64)
-	Noop(table gen.Table, n int64)
-	Print(logger *log.Logger)
-}
-
-// compile-time interface implementation assertion.
-var _ Collector = mergeStats{}
-
-type mergeStats map[gen.Table]*tblMergeStats
+// Collector collects per-table C(R)U(D)-statistics.
+type Collector map[gen.Table]*tblMergeStats
 
 type tblMergeStats struct {
 	Inserted int64
@@ -29,24 +20,28 @@ type tblMergeStats struct {
 	Noop     int64
 }
 
-func NewCollector() mergeStats {
-	s := mergeStats{}
+// NewCollector creates a new mergeStats instance.
+func NewCollector() Collector {
+	s := Collector{}
 	for _, tbl := range gen.AllTables {
 		s[tbl] = &tblMergeStats{}
 	}
 	return s
 }
 
-func (s mergeStats) Inserted(table gen.Table, n int64) {
-	s[table].Inserted += n
+// Inserted adds `n` inserts to the statistics for `table`.
+func (c Collector) Inserted(table gen.Table, n int64) {
+	c[table].Inserted += n
 }
 
-func (s mergeStats) Updated(table gen.Table, n int64) {
-	s[table].Updated += n
+// Updated adds `n` inserts to the statistics for `table`.
+func (c Collector) Updated(table gen.Table, n int64) {
+	c[table].Updated += n
 }
 
-func (s mergeStats) Noop(table gen.Table, n int64) {
-	s[table].Noop += n
+// Noop adds `n` inserts to the statistics for `table`.
+func (c Collector) Noop(table gen.Table, n int64) {
+	c[table].Noop += n
 }
 
 func statOrNan(x int64) string {
@@ -56,13 +51,13 @@ func statOrNan(x int64) string {
 	return "-"
 }
 
-func (s mergeStats) renderTable() string {
+func (c Collector) renderTable() string {
 	w := table.NewWriter()
 
 	w.AppendHeader(table.Row{"Table Name", "Inserted", "Updated", "Unchanged"})
 
 	total := tblMergeStats{}
-	for tableName, stats := range s {
+	for tableName, stats := range c {
 		w.AppendRow(table.Row{
 			tableName,
 			statOrNan(stats.Inserted),
@@ -84,8 +79,10 @@ func (s mergeStats) renderTable() string {
 	return w.Render()
 }
 
-func (s mergeStats) Print(logger *log.Logger) {
-	rendered := s.renderTable()
+// Print prints the collected statistics to `logger` per line, retaining
+// potential logging prefixes.
+func (c Collector) Print(logger *log.Logger) {
+	rendered := c.renderTable()
 	lines := strings.Split(rendered, "\n")
 	for _, line := range lines {
 		logger.Println(line)

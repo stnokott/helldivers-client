@@ -19,12 +19,14 @@ type Snapshot struct {
 	Statistics          gen.SnapshotStatistic
 }
 
+// PlanetSnapshot wraps all snapshots relevant for a planet.
 type PlanetSnapshot struct {
 	gen.PlanetSnapshot
 	Event      *gen.EventSnapshot
 	Statistics gen.SnapshotStatistic
 }
 
+// Merge implements EntityMerger.
 func (s *Snapshot) Merge(ctx context.Context, tx *gen.Queries, onMerge onMergeFunc) error {
 	warSnapID, err := insertWarSnapshot(ctx, tx, s.WarSnapshot, onMerge)
 	if err != nil {

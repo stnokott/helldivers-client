@@ -13,6 +13,7 @@ var _ EntityMerger = (*Dispatch)(nil)
 // Dispatch implements EntityMerger
 type Dispatch gen.Dispatch
 
+// Merge implements EntityMerger.
 func (d *Dispatch) Merge(ctx context.Context, tx *gen.Queries, onMerge onMergeFunc) error {
 	exists, err := tx.DispatchExists(ctx, d.ID)
 	if err != nil {

@@ -80,10 +80,12 @@ func (c *Client) Disconnect() error {
 	return nil
 }
 
+// PGTimestamp converts a `time.Time` to a `pgx`-compatible `pgtype.Timestamp`.
 func PGTimestamp(t time.Time) pgtype.Timestamp {
 	return pgtype.Timestamp{Time: t, Valid: true}
 }
 
+// PGUint64 converts a `uint64` to a `pgx`-compatible `pgtype.Numeric`.
 func PGUint64(x uint64) pgtype.Numeric {
 	return pgtype.Numeric{Int: new(big.Int).SetUint64(x), Valid: true}
 }

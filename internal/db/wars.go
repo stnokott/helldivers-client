@@ -13,6 +13,7 @@ var _ EntityMerger = (*War)(nil)
 // War implements EntityMerger
 type War gen.War
 
+// Merge implements EntityMerger.
 func (w *War) Merge(ctx context.Context, tx *gen.Queries, onMerge onMergeFunc) error {
 	exists, err := tx.WarExists(ctx, w.ID)
 	if err != nil {
