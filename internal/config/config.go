@@ -28,7 +28,7 @@ func MustGet() *Config {
 	if err := env.Load(c, nil); err != nil {
 		fmt.Printf("failed to read config from ENV: %v\n", err)
 		fmt.Println("Usage:")
-		env.Usage(c, os.Stdout)
+		env.Usage(c, os.Stdout, nil)
 		os.Exit(1)
 	}
 	return c
