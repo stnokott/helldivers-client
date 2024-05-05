@@ -18,6 +18,7 @@ type Collector interface {
 	Print(logger *log.Logger)
 }
 
+// compile-time interface implementation assertion.
 var _ Collector = mergeStats{}
 
 type mergeStats map[gen.Table]*tblMergeStats

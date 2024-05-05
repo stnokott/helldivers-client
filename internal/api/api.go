@@ -8,14 +8,6 @@ import (
 )
 
 //go:generate go run github.com/deepmap/oapi-codegen@v2.1.0 --config=oapi-codegen.cfg.yaml http://localhost:4000/Helldivers-2-API.json
-func respErr(resp *http.Response) error {
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		body = []byte("n/a")
-	}
-	_ = resp.Body.Close()
-	return fmt.Errorf("HTTP status %s: '%s'", resp.Status, string(body))
-}
 
 // Data implements the interface required for client processing
 func (resp *GetRawApiWarSeasonCurrentWarIDResponse) Data() (*WarId, error) {
@@ -63,4 +55,13 @@ func (resp *GetApiV1PlanetsAllResponse) Data() (*[]Planet, error) {
 		return resp.JSON200, nil
 	}
 	return nil, respErr(resp.HTTPResponse)
+}
+
+func respErr(resp *http.Response) error {
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		body = []byte("n/a")
+	}
+	_ = resp.Body.Close()
+	return fmt.Errorf("HTTP status %s: '%s'", resp.Status, string(body))
 }
