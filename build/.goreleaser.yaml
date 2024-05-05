@@ -9,8 +9,7 @@ before:
     - go mod verify
 
 builds:
-  - &default_build
-    id: linux
+  - id: linux
     binary: app
     env:
       - CGO_ENABLED=0
@@ -31,10 +30,6 @@ builds:
         {{- else -}}
           -pgo=build/default.pprof
         {{- end -}}
-  - <<: *default_build
-    id: windows
-    goos:
-      - windows
 
 dockers:
   - use: buildx
