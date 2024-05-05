@@ -9,4 +9,4 @@ WORKDIR /code
 
 ENV CGO_ENABLED=0
 
-CMD ["go", "test", "--tags=integration", "./..."]
+CMD ["go", "test", "-shuffle=on", "--tags=integration", "./..."]
