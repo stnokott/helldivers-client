@@ -37,7 +37,7 @@ jobs:
           distribution: goreleaser
           version: v1.25.1
           args: |
-            release --config=build/.goreleaser.yaml --clean
+            release --config=build/.goreleaser.yaml --clean \
             ${{ inputs.snapshot == true && '--snapshot --skip=docker' || ''}}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
