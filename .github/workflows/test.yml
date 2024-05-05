@@ -7,19 +7,23 @@ on:
     types: [created, edited]
 
 jobs:
+  
   build_snapshot:
     name: Build test snapshot
     uses: ./.github/workflows/snapshot_generic.yml
     with:
       docker_push: false
+
   unit_tests:
     name: Run Unit Tests
     runs-on: ubuntu-latest
     steps:
-      - name: Check out code
+
+      - name: Checkout
         uses: actions/checkout@v4.1.4
 
-      - uses: actions/setup-go@v5.0.1
+      - name: Setup Go
+        uses: actions/setup-go@v5.0.1
         with:
           go-version-file: "go.mod"
 
@@ -36,14 +40,15 @@ jobs:
       COMPOSE_FILE: ./build/test/docker-compose.yaml
       DOCKER_USER: ${{ secrets.DOCKER_USER }}
       DOCKER_PASS: ${{ secrets.DOCKER_PASS }}
-  
     steps:
-      - name: Check out code
+
+      - name: Checkout
         uses: actions/checkout@v4.1.4
 
       # prepare local Go (outside of Docker) so that we can leverage the cache
       # inside the Docker build step (via go mod vendor)
-      - uses: actions/setup-go@v5.0.1
+      - name: Setup Go
+        uses: actions/setup-go@v5.0.1
         with:
           go-version-file: "go.mod"
       

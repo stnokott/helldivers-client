@@ -1,4 +1,4 @@
-name: Push Snapshot image
+name: Release Snapshot
 
 on:
   workflow_dispatch:
@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   push:
-    name: Build test snapshot
+    name: Release snapshot
     uses: ./.github/workflows/snapshot_generic.yml
     with:
       docker_push: true
