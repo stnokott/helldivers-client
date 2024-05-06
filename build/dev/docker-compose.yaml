@@ -5,7 +5,7 @@ networks:
 services:
   api:
     build:
-      context: https://github.com/helldivers-2/api.git#27867d76eacaafec7ee32a89d1d10ad25eddc5cc
+      context: https://github.com/helldivers-2/api.git#08a0fc5a15bfd38b66629ebb293dec35e0dbde00
       dockerfile: ./src/Helldivers-2-API/Dockerfile
       args:
         BUILD_CONFIGURATION: DEBUG
