@@ -61,7 +61,7 @@ jobs:
         run: docker login -u $DOCKER_USER -p $DOCKER_PASS
 
       - name: Build and create docker images
-        run: docker compose up --no-create --build
+        run: docker compose up --no-start --build
       
       - name: Run tests in container
         run: docker compose up --exit-code-from=app --attach=app
