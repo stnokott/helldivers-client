@@ -34,8 +34,8 @@ builds:
 dockers:
   - use: buildx
     image_templates:
-      - "ghcr.io/stnokott/{{ .ProjectName }}:{{ .Version }}-amd64"
-      - "ghcr.io/stnokott/{{ .ProjectName }}:latest-amd64"
+      - "ghcr.io/stnokott/{{ .ProjectName }}:{{ .Version }}"
+      - "ghcr.io/stnokott/{{ .ProjectName }}:latest"
     build_flag_templates:
       - "--pull"
       - "--label=org.opencontainers.image.created={{.Date}}"
@@ -46,12 +46,6 @@ dockers:
     dockerfile: Dockerfile
     extra_files:
       - "scripts/migrations"
-
-docker_manifests:
-  - name_template: "ghcr.io/stnokott/{{ .ProjectName }}:{{ .Version }}"
-    image_templates:
-      - "ghcr.io/stnokott/{{ .ProjectName }}:{{ .Version }}-amd64"
-      - "ghcr.io/stnokott/{{ .ProjectName }}:latest-amd64"
 
 changelog:
   sort: asc

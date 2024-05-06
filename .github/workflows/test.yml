@@ -5,16 +5,20 @@ on:
     branches: [main]
   pull_request_review_comment:
     types: [created, edited]
+  schedule:
+    - cron: "0 0 * * *"
 
 jobs:
   
   build_snapshot:
+    if: ${{ github.event_name != 'schedule' }}
     name: Build test snapshot
     uses: ./.github/workflows/snapshot_generic.yml
     with:
       docker_push: false
 
   unit_tests:
+    if: ${{ github.event_name != 'schedule' }}
     name: Run Unit Tests
     runs-on: ubuntu-latest
     steps:
