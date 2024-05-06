@@ -1,7 +1,7 @@
 ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/stnokott/helldivers-client)
-![GitHub Release](https://img.shields.io/github/v/release/stnokott/helldivers-client)
-![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/stnokott/helldivers-client/test.yml?branch=main&event=schedule&label=integration%20tests)
+![GitHub Release](https://img.shields.io/github/v/release/stnokott/helldivers-client?logo=docker)
 ![Github Container Registry Image Size](https://ghcr-badge.egpl.dev/stnokott/helldivers-client/size?tag=latest)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/stnokott/helldivers-client/test.yml?branch=main&event=schedule&label=integration%20tests)
 
 # Helldivers 2 Client
 
