@@ -23,7 +23,7 @@ func startProfiling(duration time.Duration, out string, stopChan chan<- struct{}
 	// wait for duration
 	go func() {
 		<-time.After(duration)
-		fmt.Printf("profiling duration reached, stopping worker")
+		fmt.Println("profiling duration reached, stopping worker")
 		// stop profiling
 		pprof.StopCPUProfile()
 		if err := fCPU.Close(); err != nil {
