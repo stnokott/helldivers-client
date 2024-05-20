@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/stnokott/helldivers-client/internal/api"
 	"github.com/stnokott/helldivers-client/internal/copytest"
 	"github.com/stnokott/helldivers-client/internal/db"
@@ -51,16 +52,16 @@ var validAssignment = api.Assignment2{
 	Briefing:    mustAssignmentBriefing("Foo briefing"),
 	Description: mustAssignmentDescription("Foo description"),
 	Expiration:  ptr(time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)),
-	Progress:    &[]int32{1, 2, 3},
+	Progress:    &[]uint64{1, 2, 3},
 	Reward: mustAssignment2Reward(api.Reward2{
-		Amount: ptr(int32(100)),
+		Amount: ptr(uint64(100)),
 		Type:   ptr(int32(3)),
 	}),
 	Tasks: &[]api.Task2{
 		{
 			Type:       ptr(int32(4)),
-			ValueTypes: &[]int32{2, 3, 4},
-			Values:     &[]int32{5, 6, 7},
+			ValueTypes: &[]uint64{2, 3, 4},
+			Values:     &[]uint64{5, 6, 7},
 		},
 	},
 }
@@ -88,13 +89,13 @@ func TestAssignments(t *testing.T) {
 						Description:  "Foo description",
 						Expiration:   db.PGTimestamp(time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)),
 						RewardType:   3,
-						RewardAmount: 100,
+						RewardAmount: db.PGUint64(100),
 					},
 					Tasks: []gen.AssignmentTask{
 						{
 							TaskType:   4,
-							ValueTypes: []int32{2, 3, 4},
-							Values:     []int32{5, 6, 7},
+							ValueTypes: []pgtype.Numeric{db.PGUint64(2), db.PGUint64(3), db.PGUint64(4)},
+							Values:     []pgtype.Numeric{db.PGUint64(5), db.PGUint64(6), db.PGUint64(7)},
 						},
 					},
 				},

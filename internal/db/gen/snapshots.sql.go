@@ -43,7 +43,7 @@ RETURNING id
 
 type InsertAssignmentSnapshotParams struct {
 	AssignmentID int64
-	Progress     []int32
+	Progress     []pgtype.Numeric
 }
 
 func (q *Queries) InsertAssignmentSnapshot(ctx context.Context, arg InsertAssignmentSnapshotParams) (int64, error) {

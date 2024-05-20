@@ -23,11 +23,11 @@ func (c *ConverterImpl) ConvertAssignmentSnapshot(source api.Assignment2) (gen.A
 		return genAssignmentSnapshot, fmt.Errorf("error setting field AssignmentID: %w", err)
 	}
 	genAssignmentSnapshot.AssignmentID = xint64
-	int32List, err := MustInt32Slice(source.Progress)
+	pgtypeNumericList, err := MustNumericSlice(source.Progress)
 	if err != nil {
 		return genAssignmentSnapshot, fmt.Errorf("error setting field Progress: %w", err)
 	}
-	genAssignmentSnapshot.Progress = int32List
+	genAssignmentSnapshot.Progress = pgtypeNumericList
 	return genAssignmentSnapshot, nil
 }
 func (c *ConverterImpl) ConvertAssignmentSnapshots(source []api.Assignment2) ([]gen.AssignmentSnapshot, error) {
@@ -51,16 +51,16 @@ func (c *ConverterImpl) ConvertAssignmentTask(source api.Task2) (gen.AssignmentT
 		return genAssignmentTask, fmt.Errorf("error setting field TaskType: %w", err)
 	}
 	genAssignmentTask.TaskType = xint32
-	int32List, err := MustInt32Slice(source.Values)
+	pgtypeNumericList, err := MustNumericSlice(source.Values)
 	if err != nil {
 		return genAssignmentTask, fmt.Errorf("error setting field Values: %w", err)
 	}
-	genAssignmentTask.Values = int32List
-	int32List2, err := MustInt32Slice(source.ValueTypes)
+	genAssignmentTask.Values = pgtypeNumericList
+	pgtypeNumericList2, err := MustNumericSlice(source.ValueTypes)
 	if err != nil {
 		return genAssignmentTask, fmt.Errorf("error setting field ValueTypes: %w", err)
 	}
-	genAssignmentTask.ValueTypes = int32List2
+	genAssignmentTask.ValueTypes = pgtypeNumericList2
 	return genAssignmentTask, nil
 }
 func (c *ConverterImpl) ConvertAssignmentTasks(source []api.Task2) ([]gen.AssignmentTask, error) {
@@ -89,11 +89,11 @@ func (c *ConverterImpl) ConvertCampaign(source api.Campaign2) (*db.Campaign, err
 		return nil, fmt.Errorf("error setting field Type: %w", err)
 	}
 	dbCampaign.Type = xint322
-	xint323, err := MustInt32Ptr(source.Count)
+	pgtypeNumeric, err := MustNumeric(source.Count)
 	if err != nil {
 		return nil, fmt.Errorf("error setting field Count: %w", err)
 	}
-	dbCampaign.Count = xint323
+	dbCampaign.Count = pgtypeNumeric
 	return &dbCampaign, nil
 }
 func (c *ConverterImpl) ConvertDispatch(source api.Dispatch) (*db.Dispatch, error) {
@@ -328,11 +328,11 @@ func (c *ConverterImpl) ConvertSingleAssignment(source api.Assignment2) (*gen.As
 		return nil, fmt.Errorf("error setting field RewardType: %w", err)
 	}
 	genAssignment.RewardType = xint32
-	xint322, err := parseAssignmentRewardAmount(source.Reward)
+	pgtypeNumeric, err := parseAssignmentRewardAmount(source.Reward)
 	if err != nil {
 		return nil, fmt.Errorf("error setting field RewardAmount: %w", err)
 	}
-	genAssignment.RewardAmount = xint322
+	genAssignment.RewardAmount = pgtypeNumeric
 	return &genAssignment, nil
 }
 func (c *ConverterImpl) ConvertSinglePlanet(source api.Planet) (gen.Planet, error) {

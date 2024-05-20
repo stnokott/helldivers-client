@@ -25,7 +25,7 @@ type Assignment struct {
 	Id32 *int64 `json:"id32,omitempty"`
 
 	// Progress A list of numbers, how they represent progress is unknown.
-	Progress *[]int32 `json:"progress,omitempty"`
+	Progress *[]uint64 `json:"progress,omitempty"`
 
 	// Setting Contains detailed information on this assignment like briefing, rewards, ...
 	Setting *Assignment_Setting `json:"setting,omitempty"`
@@ -52,7 +52,7 @@ type Assignment2 struct {
 	Id *int64 `json:"id,omitempty"`
 
 	// Progress A list of numbers, how they represent progress is unknown.
-	Progress *[]int32 `json:"progress,omitempty"`
+	Progress *[]uint64 `json:"progress,omitempty"`
 
 	// Reward The reward for completing the assignment.
 	Reward *Assignment2_Reward `json:"reward,omitempty"`
@@ -195,7 +195,7 @@ type Biome struct {
 // Campaign Contains information of ongoing campaigns.
 type Campaign struct {
 	// Count A numerical count, the amount of campaigns the planet has seen.
-	Count *int32 `json:"count,omitempty"`
+	Count *uint64 `json:"count,omitempty"`
 
 	// Id The identifier of this campaign.
 	Id *int32 `json:"id,omitempty"`
@@ -210,7 +210,7 @@ type Campaign struct {
 // Campaign2 Represents an ongoing campaign on a planet.
 type Campaign2 struct {
 	// Count Indicates how many campaigns have already been fought on this Planet.
-	Count *int32 `json:"count,omitempty"`
+	Count *uint64 `json:"count,omitempty"`
 
 	// Id The unique identifier of this Campaign.
 	Id *int32 `json:"id,omitempty"`
@@ -668,10 +668,10 @@ type Position struct {
 // Reward Represents the reward of an Assignment.
 type Reward struct {
 	// Amount The amount of Type the players will receive upon completion.
-	Amount *int32 `json:"amount,omitempty"`
+	Amount *uint64 `json:"amount,omitempty"`
 
 	// Id32 Internal identifier of this Reward.
-	Id32 *int32 `json:"id32,omitempty"`
+	Id32 *uint64 `json:"id32,omitempty"`
 
 	// Type The type of reward, currently only one value is known: 1 which represents Medals
 	Type *int32 `json:"type,omitempty"`
@@ -680,7 +680,7 @@ type Reward struct {
 // Reward2 The reward for completing an Assignment.
 type Reward2 struct {
 	// Amount The amount of Type that will be awarded.
-	Amount *int32 `json:"amount,omitempty"`
+	Amount *uint64 `json:"amount,omitempty"`
 
 	// Type The type of reward (medals, super credits, ...).
 	Type *int32 `json:"type,omitempty"`
@@ -791,10 +791,10 @@ type Task struct {
 	Type *int32 `json:"type,omitempty"`
 
 	// ValueTypes A list of numerical values, purpose unknown.
-	ValueTypes *[]int32 `json:"valueTypes,omitempty"`
+	ValueTypes *[]uint64 `json:"valueTypes,omitempty"`
 
 	// Values A list of numerical values, purpose unknown.
-	Values *[]int32 `json:"values,omitempty"`
+	Values *[]uint64 `json:"values,omitempty"`
 }
 
 // Task2 Represents a task in an Assignment that needs to be completed
@@ -804,10 +804,10 @@ type Task2 struct {
 	Type *int32 `json:"type,omitempty"`
 
 	// ValueTypes A list of numbers, purpose unknown
-	ValueTypes *[]int32 `json:"valueTypes,omitempty"`
+	ValueTypes *[]uint64 `json:"valueTypes,omitempty"`
 
 	// Values A list of numbers, purpose unknown.
-	Values *[]int32 `json:"values,omitempty"`
+	Values *[]uint64 `json:"values,omitempty"`
 }
 
 // War Global information of the ongoing war.

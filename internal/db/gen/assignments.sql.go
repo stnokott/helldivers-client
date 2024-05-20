@@ -53,8 +53,8 @@ INSERT INTO assignment_tasks (
 
 type InsertAssignmentTaskParams struct {
 	TaskType   int32
-	Values     []int32
-	ValueTypes []int32
+	Values     []pgtype.Numeric
+	ValueTypes []pgtype.Numeric
 }
 
 func (q *Queries) InsertAssignmentTask(ctx context.Context, arg InsertAssignmentTaskParams) (int64, error) {
@@ -86,7 +86,7 @@ type MergeAssignmentParams struct {
 	Expiration   pgtype.Timestamp
 	TaskIds      []int64
 	RewardType   int32
-	RewardAmount int32
+	RewardAmount pgtype.Numeric
 }
 
 func (q *Queries) MergeAssignment(ctx context.Context, arg MergeAssignmentParams) (int64, error) {

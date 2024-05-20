@@ -20,13 +20,13 @@ var validAssignment = Assignment{
 		Description:  "Bardescription",
 		Expiration:   PGTimestamp(time.Date(2024, 1, 2, 3, 4, 5, 6, time.UTC)),
 		RewardType:   8,
-		RewardAmount: 100,
+		RewardAmount: PGUint64(100),
 	},
 	Tasks: []gen.AssignmentTask{
 		{
 			TaskType:   9,
-			Values:     []int32{7, 8, 9},
-			ValueTypes: []int32{42, 44, 46},
+			Values:     []pgtype.Numeric{PGUint64(7), PGUint64(8), PGUint64(9)},
+			ValueTypes: []pgtype.Numeric{PGUint64(42), PGUint64(44), PGUint64(46)},
 		},
 	},
 }
@@ -61,8 +61,8 @@ func TestAssignmentsSchema(t *testing.T) {
 		{
 			name: "mismatched assignment task array lengths",
 			modifier: func(a *Assignment) {
-				a.Tasks[0].Values = []int32{2, 3, 4}
-				a.Tasks[0].ValueTypes = []int32{5, 6}
+				a.Tasks[0].Values = []pgtype.Numeric{PGUint64(2), PGUint64(3), PGUint64(4)}
+				a.Tasks[0].ValueTypes = []pgtype.Numeric{PGUint64(5), PGUint64(6)}
 			},
 			wantErr: true,
 		},

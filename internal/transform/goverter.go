@@ -141,6 +141,19 @@ func MustNumeric(ptr *uint64) (pgtype.Numeric, error) {
 	return db.PGUint64(x), nil
 }
 
+// MustNumericSlice dereferences an uint64 or returns an error if nil.
+func MustNumericSlice(ptr *[]uint64) ([]pgtype.Numeric, error) {
+	deref, err := mustPtr(ptr)
+	if err != nil {
+		return nil, err
+	}
+	out := make([]pgtype.Numeric, len(deref))
+	for i, x := range deref {
+		out[i] = db.PGUint64(x)
+	}
+	return out, nil
+}
+
 // MustTimestamp converts a timestamp into a pgx-compatible type or an error if nil.
 func MustTimestamp(ptr *time.Time) (pgtype.Timestamp, error) {
 	t, err := mustPtr(ptr)

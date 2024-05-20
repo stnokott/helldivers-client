@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/stnokott/helldivers-client/internal/api"
 	"github.com/stnokott/helldivers-client/internal/db"
 )
@@ -80,15 +81,15 @@ func parseAssignmentRewardType(source *api.Assignment2_Reward) (int32, error) {
 	return *parsed.Type, nil
 }
 
-func parseAssignmentRewardAmount(source *api.Assignment2_Reward) (int32, error) {
+func parseAssignmentRewardAmount(source *api.Assignment2_Reward) (pgtype.Numeric, error) {
 	parsed, err := parseAssignmentReward(source)
 	if err != nil {
-		return -1, err
+		return pgtype.Numeric{}, err
 	}
 	if parsed.Amount == nil {
-		return -1, errors.New("reward amount is nil")
+		return pgtype.Numeric{}, errors.New("reward amount is nil")
 	}
-	return *parsed.Amount, nil
+	return db.PGUint64(*parsed.Amount), nil
 }
 
 func parseAssignmentReward(in *api.Assignment2_Reward) (api.Reward2, error) {

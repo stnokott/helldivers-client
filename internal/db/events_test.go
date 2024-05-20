@@ -15,7 +15,7 @@ import (
 var validEventCampaign = Campaign{
 	ID:    123,
 	Type:  55,
-	Count: 678,
+	Count: PGUint64(678),
 }
 var validEvent = Event{
 	CampaignID: 123,
