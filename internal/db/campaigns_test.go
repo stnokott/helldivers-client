@@ -4,8 +4,10 @@ package db
 
 import (
 	"context"
+	"math/big"
 	"testing"
 
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/stnokott/helldivers-client/internal/copytest"
 	"github.com/stnokott/helldivers-client/internal/db/gen"
 )
@@ -13,7 +15,7 @@ import (
 var validCampaign = Campaign{
 	ID:    5,
 	Type:  8,
-	Count: 100,
+	Count: PGUint64(100),
 }
 
 func TestCampaignsSchema(t *testing.T) {
@@ -32,7 +34,7 @@ func TestCampaignsSchema(t *testing.T) {
 		{
 			name: "negative count",
 			modifier: func(c *Campaign) {
-				c.Count = -1
+				c.Count = pgtype.Numeric{Int: big.NewInt(-1), Valid: true}
 			},
 			wantErr: true,
 		},

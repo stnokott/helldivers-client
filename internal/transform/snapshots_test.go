@@ -72,7 +72,7 @@ var validPlanetSnapshot = api.Planet{
 
 var validAssignmentSnapshot = api.Assignment2{
 	Id:       ptr(int64(7)),
-	Progress: &[]int32{5, 6, 7},
+	Progress: &[]uint64{5, 6, 7},
 }
 
 var validCampaignSnapshot = api.Campaign2{
@@ -128,7 +128,7 @@ func TestSnapshots(t *testing.T) {
 						{
 							ID:           -1,
 							AssignmentID: 7,
-							Progress:     []int32{5, 6, 7},
+							Progress:     []pgtype.Numeric{db.PGUint64(5), db.PGUint64(6), db.PGUint64(7)},
 						},
 					},
 					PlanetSnapshots: []db.PlanetSnapshot{

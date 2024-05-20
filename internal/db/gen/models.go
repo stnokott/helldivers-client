@@ -24,14 +24,14 @@ type Assignment struct {
 	// The type of reward (medals, super credits, ...)
 	RewardType int32
 	// The amount of Type that will be awarded
-	RewardAmount int32
+	RewardAmount pgtype.Numeric
 }
 
 type AssignmentSnapshot struct {
 	ID           int64
 	AssignmentID int64
 	// A list of numbers, how they represent progress is unknown.
-	Progress []int32
+	Progress []pgtype.Numeric
 }
 
 // Represents a task in an Assignment that needs to be completed to finish the assignment
@@ -41,9 +41,9 @@ type AssignmentTask struct {
 	// The type of task this represents
 	TaskType int32
 	// A list of numbers, purpose unknown
-	Values []int32
+	Values []pgtype.Numeric
 	// A list of numbers, purpose unknown
-	ValueTypes []int32
+	ValueTypes []pgtype.Numeric
 }
 
 // Represents information about a biomes of a planet.
@@ -59,7 +59,7 @@ type Campaign struct {
 	// The type of campaign, this should be mapped onto an enum
 	Type int32
 	// Indicates how many campaigns have already been fought on this Planet
-	Count int32
+	Count pgtype.Numeric
 }
 
 // Represents a message from high command to the players, usually updates on the status of the war effort.

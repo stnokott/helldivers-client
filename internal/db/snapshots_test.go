@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/stnokott/helldivers-client/internal/copytest"
 	"github.com/stnokott/helldivers-client/internal/db/gen"
 )
@@ -27,13 +28,13 @@ var validAssignmentSnapshot = Assignment{
 		Description:  "Bardescription",
 		Expiration:   PGTimestamp(time.Date(2024, 1, 2, 3, 4, 5, 6, time.UTC)),
 		RewardType:   8,
-		RewardAmount: 100,
+		RewardAmount: PGUint64(100),
 	},
 	Tasks: []gen.AssignmentTask{
 		{
 			TaskType:   9,
-			Values:     []int32{7, 8, 9},
-			ValueTypes: []int32{42, 44, 46},
+			Values:     []pgtype.Numeric{PGUint64(7), PGUint64(8), PGUint64(9)},
+			ValueTypes: []pgtype.Numeric{PGUint64(42), PGUint64(44), PGUint64(46)},
 		},
 	},
 }
@@ -41,7 +42,7 @@ var validAssignmentSnapshot = Assignment{
 var validCampaignSnapshot = Campaign{
 	ID:    5,
 	Type:  8,
-	Count: 100,
+	Count: PGUint64(100),
 }
 
 var validEventSnapshot = Event{
@@ -102,7 +103,7 @@ var validSnapshot = Snapshot{
 	AssignmentSnapshots: []gen.AssignmentSnapshot{
 		{
 			AssignmentID: 3,
-			Progress:     []int32{2, 3, 4},
+			Progress:     []pgtype.Numeric{PGUint64(2), PGUint64(3), PGUint64(4)},
 		},
 	},
 	PlanetSnapshots: []PlanetSnapshot{

@@ -13,7 +13,7 @@ import (
 
 var validCampaign = api.Campaign2{
 	Id:    ptr(int32(987)),
-	Count: ptr(int32(123)),
+	Count: ptr(uint64(123)),
 	Type:  ptr(int32(7)),
 }
 
@@ -35,7 +35,7 @@ func TestCampaigns(t *testing.T) {
 				&db.Campaign{
 					ID:    987,
 					Type:  7,
-					Count: 123,
+					Count: db.PGUint64(123),
 				},
 			},
 			wantErr: false,

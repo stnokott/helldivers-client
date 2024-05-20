@@ -7,6 +7,8 @@ package gen
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const campaignExists = `-- name: CampaignExists :one
@@ -47,7 +49,7 @@ WHERE FALSE IN (
 type MergeCampaignParams struct {
 	ID    int32
 	Type  int32
-	Count int32
+	Count pgtype.Numeric
 }
 
 func (q *Queries) MergeCampaign(ctx context.Context, arg MergeCampaignParams) (int64, error) {
