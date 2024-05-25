@@ -7,28 +7,43 @@ package worker
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
+	health "github.com/stnokott/healthchecks"
+
 	"github.com/stnokott/helldivers-client/internal/client"
+	"github.com/stnokott/helldivers-client/internal/config"
 	"github.com/stnokott/helldivers-client/internal/db"
 	"github.com/stnokott/helldivers-client/internal/transform"
 )
 
 // Worker coordinates communication between API and DB.
 type Worker struct {
-	api *client.Client
-	db  *db.Client
-	log *log.Logger
+	api         *client.Client
+	db          *db.Client
+	healthcheck health.Notifier
+	log         *log.Logger
 }
 
 // New creates a new Worker instance.
-func New(api *client.Client, db *db.Client, logger *log.Logger) *Worker {
-	return &Worker{
-		api: api,
-		db:  db,
-		log: logger,
+func New(api *client.Client, db *db.Client, cfg *config.Config, logger *log.Logger) (*Worker, error) {
+	var healthcheck health.Notifier
+	if cfg.HealthchecksURL != "" {
+		var err error
+		healthcheck, err = health.FromURL(cfg.HealthchecksURL)
+		if err != nil {
+			return nil, fmt.Errorf("preparing healthcheck: %w", err)
+		}
 	}
+
+	return &Worker{
+		api:         api,
+		db:          db,
+		healthcheck: healthcheck,
+		log:         logger,
+	}, nil
 }
 
 // Run schedules a new sync job at the specified interval. It is blocking.
@@ -59,16 +74,21 @@ func (w *Worker) Run(interval time.Duration, stop <-chan struct{}) {
 func (w *Worker) do(timeout time.Duration) {
 	w.log.Println("synchronizing")
 
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	w.healthNotify(ctx, healthcheckStart)
+
 	var err error
 	defer func() {
 		if err != nil {
 			w.log.Printf("error: %v", err)
+			w.healthNotify(ctx, healthcheckFail)
+		} else {
+			w.healthNotify(ctx, healthcheckSuccess)
 		}
 		w.log.Println("synchronized")
 	}()
-
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
-	defer cancel()
 
 	data := w.queryData(ctx)
 
