@@ -58,7 +58,10 @@ func run(stopChan <-chan struct{}) {
 		logger.Fatal(err)
 	}
 
-	worker := worker.New(apiClient, dbClient, loggerFor("worker"))
+	worker, err := worker.New(apiClient, dbClient, cfg, loggerFor("worker"))
+	if err != nil {
+		logger.Fatal(err)
+	}
 
 	worker.Run(cfg.WorkerInterval, stopChan)
 }

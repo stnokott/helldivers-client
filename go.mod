@@ -9,6 +9,7 @@ require (
 	github.com/jinzhu/copier v0.4.0
 	github.com/oapi-codegen/runtime v1.1.1
 	github.com/sqlc-dev/plugin-sdk-go v1.23.0
+	github.com/stnokott/healthchecks v0.2.0
 	go-simpler.org/env v0.12.0
 	golang.org/x/text v0.15.0
 )

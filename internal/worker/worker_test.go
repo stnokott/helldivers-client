@@ -22,7 +22,11 @@ func mustWorker() *Worker {
 	if err != nil {
 		panic(err)
 	}
-	return New(api, db, log.Default())
+	worker, err := New(api, db, cfg, log.Default())
+	if err != nil {
+		panic(err)
+	}
+	return worker
 }
 
 func TestWorkerQueryData(t *testing.T) {
