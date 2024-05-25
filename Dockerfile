@@ -1,6 +1,8 @@
 FROM alpine:3.19.1 AS tzbuild
 
-RUN apk update && apk add --no-cache tzdata
+RUN apk update && \
+	apk add --no-cache tzdata ca-certificates && \
+	rm -rf /var/cache/apk/*
 
 FROM scratch
 
