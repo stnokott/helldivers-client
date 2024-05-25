@@ -32,6 +32,6 @@ func (w *Worker) healthNotify(ctx context.Context, t healthcheckType) {
 
 	w.log.Println("signalling healthcheck", healthName)
 	if err := healthFunc(ctx); err != nil {
-		w.log.Println("WARN: failed to signal:", err)
+		w.log.Printf("WARN: failed to signal %s: %v", healthName, err)
 	}
 }
