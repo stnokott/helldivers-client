@@ -28,7 +28,7 @@ func (a *Assignment) Merge(ctx context.Context, tx *gen.Queries, onMerge onMerge
 		return fmt.Errorf("check if assignment (ID=%d) exists: %w", a.ID, err)
 	}
 	if exists {
-		if err = tx.DeleteAssignmentTasks(ctx, a.TaskIds); err != nil {
+		if err = tx.DeleteAssignmentTasks(ctx, a.ID); err != nil {
 			return fmt.Errorf("delete assignment tasks: %w", err)
 		}
 	}
