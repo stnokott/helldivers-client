@@ -24,11 +24,17 @@ func (q *Queries) AssignmentExists(ctx context.Context, id int64) (bool, error) 
 
 const deleteAssignmentTasks = `-- name: DeleteAssignmentTasks :exec
 DELETE FROM assignment_tasks
-WHERE id = ANY($1::bigint[])
+WHERE id IN (
+    SELECT assignment_tasks.id
+    FROM assignments
+    JOIN assignment_tasks
+        ON assignment_tasks.id = ANY(task_ids)
+    WHERE assignments.id = $1
+)
 `
 
-func (q *Queries) DeleteAssignmentTasks(ctx context.Context, ids []int64) error {
-	_, err := q.db.Exec(ctx, deleteAssignmentTasks, ids)
+func (q *Queries) DeleteAssignmentTasks(ctx context.Context, assignmentID int64) error {
+	_, err := q.db.Exec(ctx, deleteAssignmentTasks, assignmentID)
 	return err
 }
 
@@ -73,9 +79,6 @@ INSERT INTO assignments (
 )
 ON CONFLICT (id) DO UPDATE
     SET title=$2, briefing=$3, description=$4, expiration=$5, task_ids=$6, reward_type=$7, reward_amount=$8
-WHERE FALSE IN (
-    EXCLUDED.title=$2, EXCLUDED.briefing=$3, EXCLUDED.description=$4, EXCLUDED.expiration=$5, EXCLUDED.reward_type=$7, EXCLUDED.reward_amount=$8
-)
 `
 
 type MergeAssignmentParams struct {

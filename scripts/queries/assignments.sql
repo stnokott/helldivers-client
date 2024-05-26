@@ -13,9 +13,7 @@ INSERT INTO assignments (
 )
 ON CONFLICT (id) DO UPDATE
     SET title=$2, briefing=$3, description=$4, expiration=$5, task_ids=$6, reward_type=$7, reward_amount=$8
-WHERE FALSE IN (
-    EXCLUDED.title=$2, EXCLUDED.briefing=$3, EXCLUDED.description=$4, EXCLUDED.expiration=$5, EXCLUDED.reward_type=$7, EXCLUDED.reward_amount=$8
-);
+;
 
 -- name: InsertAssignmentTask :one
 INSERT INTO assignment_tasks (
@@ -27,4 +25,10 @@ RETURNING id;
 
 -- name: DeleteAssignmentTasks :exec
 DELETE FROM assignment_tasks
-WHERE id = ANY(sqlc.arg(ids)::bigint[]);
+WHERE id IN (
+    SELECT assignment_tasks.id
+    FROM assignments
+    JOIN assignment_tasks
+        ON assignment_tasks.id = ANY(task_ids)
+    WHERE assignments.id = sqlc.arg(assignment_id)
+);

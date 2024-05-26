@@ -104,6 +104,13 @@ type Hazard struct {
 	Description string
 }
 
+type InvalidAssignmentTask struct {
+	ID         int64
+	TaskType   int32
+	Values     []pgtype.Numeric
+	ValueTypes []pgtype.Numeric
+}
+
 // Represents information of a planet from the "WarInfo" endpoint returned by ArrowHead's API
 type Planet struct {
 	// The unique identifier ArrowHead assigned to this planet
