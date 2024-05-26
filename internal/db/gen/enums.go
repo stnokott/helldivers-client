@@ -5,22 +5,21 @@ package gen
 type Table int
 
 const (
-	TableWars                   Table = iota + 1 // Wars
-	TableCampaigns                               // Campaigns
-	TableEvents                                  // Events
-	TableBiomes                                  // Biomes
-	TableHazards                                 // Hazards
-	TablePlanets                                 // Planets
-	TableAssignmentTasks                         // Assignment Tasks
-	TableAssignments                             // Assignments
-	TableDispatches                              // Dispatches
-	TableWarSnapshots                            // War Snapshots
-	TableEventSnapshots                          // Event Snapshots
-	TableAssignmentSnapshots                     // Assignment Snapshots
-	TableSnapshotStatistics                      // Snapshot Statistics
-	TablePlanetSnapshots                         // Planet Snapshots
-	TableSnapshots                               // Snapshots
-	TableInvalidAssignmentTasks                  //   Invalid Assignment Tasks
+	TableWars                Table = iota + 1 // Wars
+	TableCampaigns                            // Campaigns
+	TableEvents                               // Events
+	TableBiomes                               // Biomes
+	TableHazards                              // Hazards
+	TablePlanets                              // Planets
+	TableAssignmentTasks                      // Assignment Tasks
+	TableAssignments                          // Assignments
+	TableDispatches                           // Dispatches
+	TableWarSnapshots                         // War Snapshots
+	TableEventSnapshots                       // Event Snapshots
+	TableAssignmentSnapshots                  // Assignment Snapshots
+	TableSnapshotStatistics                   // Snapshot Statistics
+	TablePlanetSnapshots                      // Planet Snapshots
+	TableSnapshots                            // Snapshots
 )
 
 var AllTables = []Table{
@@ -39,5 +38,4 @@ var AllTables = []Table{
 	TableSnapshotStatistics,
 	TablePlanetSnapshots,
 	TableSnapshots,
-	TableInvalidAssignmentTasks,
 }
