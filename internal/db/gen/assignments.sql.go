@@ -43,12 +43,13 @@ func (q *Queries) GetAssignment(ctx context.Context, id int64) (int64, error) {
 	return id, err
 }
 
-const insertAssignmentTask = `-- name: InsertAssignmentTask :execrows
+const insertAssignmentTask = `-- name: InsertAssignmentTask :one
 INSERT INTO assignment_tasks (
     task_type, values, value_types
 ) VALUES (
     $1, $2, $3
 )
+RETURNING id
 `
 
 type InsertAssignmentTaskParams struct {
@@ -58,11 +59,10 @@ type InsertAssignmentTaskParams struct {
 }
 
 func (q *Queries) InsertAssignmentTask(ctx context.Context, arg InsertAssignmentTaskParams) (int64, error) {
-	result, err := q.db.Exec(ctx, insertAssignmentTask, arg.TaskType, arg.Values, arg.ValueTypes)
-	if err != nil {
-		return 0, err
-	}
-	return result.RowsAffected(), nil
+	row := q.db.QueryRow(ctx, insertAssignmentTask, arg.TaskType, arg.Values, arg.ValueTypes)
+	var id int64
+	err := row.Scan(&id)
+	return id, err
 }
 
 const mergeAssignment = `-- name: MergeAssignment :execrows

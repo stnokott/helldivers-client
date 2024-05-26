@@ -17,12 +17,13 @@ WHERE FALSE IN (
     EXCLUDED.title=$2, EXCLUDED.briefing=$3, EXCLUDED.description=$4, EXCLUDED.expiration=$5, EXCLUDED.reward_type=$7, EXCLUDED.reward_amount=$8
 );
 
--- name: InsertAssignmentTask :execrows
+-- name: InsertAssignmentTask :one
 INSERT INTO assignment_tasks (
     task_type, values, value_types
 ) VALUES (
     $1, $2, $3
-);
+)
+RETURNING id;
 
 -- name: DeleteAssignmentTasks :exec
 DELETE FROM assignment_tasks
