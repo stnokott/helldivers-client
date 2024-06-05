@@ -34,10 +34,10 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run Goreleaser (snapshot)
-        uses: goreleaser/goreleaser-action@v5.1.0
+        uses: goreleaser/goreleaser-action@v6
         with:
           distribution: goreleaser
-          version: v1.25.1
+          version: latest
           args: release --config=build/.goreleaser.yaml --clean --snapshot --skip=docker
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
