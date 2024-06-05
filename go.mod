@@ -11,7 +11,7 @@ require (
 	github.com/sqlc-dev/plugin-sdk-go v1.23.0
 	github.com/stnokott/healthchecks v0.2.0
 	go-simpler.org/env v0.12.0
-	golang.org/x/text v0.15.0
+	golang.org/x/text v0.16.0
 )
 
 require (
@@ -27,11 +27,10 @@ require (
 	github.com/mattn/go-runewidth v0.0.15 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
-	golang.org/x/crypto v0.20.0 // indirect
-	golang.org/x/net v0.21.0 // indirect
-	golang.org/x/sync v0.6.0 // indirect
-	golang.org/x/sys v0.17.0 // indirect
-	golang.org/x/tools v0.17.0 // indirect
+	golang.org/x/crypto v0.23.0 // indirect
+	golang.org/x/net v0.25.0 // indirect
+	golang.org/x/sync v0.7.0 // indirect
+	golang.org/x/sys v0.20.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240123012728-ef4313101c80 // indirect
 	google.golang.org/grpc v1.62.1 // indirect
 	google.golang.org/protobuf v1.33.0 // indirect
