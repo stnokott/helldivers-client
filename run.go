@@ -63,7 +63,9 @@ func run(stopChan <-chan struct{}) {
 		logger.Fatal(err)
 	}
 
-	worker.Run(cfg.WorkerInterval, stopChan)
+	if err = worker.Run(cfg.WorkerCron, stopChan); err != nil {
+		logger.Fatal(err)
+	}
 }
 
 func loggerFor(name string) *log.Logger {

@@ -37,7 +37,7 @@ services:
     environment:
       POSTGRES_URI: postgresql://root:REPLACEME@db:5432/helldivers  # IMPORTANT: use same credentials as in the <db> container.
       API_URL: http://api:8080
-      WORKER_INTERVAL: 5m  # How frequent the API is queried. Should be no less than API update interval below. (optional, default=5m)
+      WORKER_CRON: "*/5 * * * *"  # Cron expression defining how frequent the API is queried. Should be no less than API update interval below. (optional, default is every 5min)
       HEALTHCHECKS_URL: https://hc-ping.com/aaaaaaaa-1111-bbbb-2222-dddddddddddd # healthchecks.io URL. (optional)
       TZ: Europe/Berlin
     networks:
