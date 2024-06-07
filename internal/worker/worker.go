@@ -11,6 +11,8 @@ import (
 	"log"
 	"time"
 
+	"github.com/go-co-op/gocron/v2"
+	"github.com/google/uuid"
 	health "github.com/stnokott/healthchecks"
 
 	"github.com/stnokott/helldivers-client/internal/client"
@@ -47,34 +49,46 @@ func New(api *client.Client, db *db.Client, cfg *config.Config, logger *log.Logg
 }
 
 // Run schedules a new sync job at the specified interval. It is blocking.
-func (w *Worker) Run(interval time.Duration, stop <-chan struct{}) {
-	ticker := time.NewTicker(interval)
-	defer ticker.Stop()
+func (w *Worker) Run(cron string, stop <-chan struct{}) error {
+	// create scheduler
+	scheduler, err := gocron.NewScheduler()
+	if err != nil {
+		return fmt.Errorf("creating scheduler: %w", err)
+	}
 
-	w.log.Printf("worker running every %s", interval.String())
-
-	// setting timeout to configured interval minus a few seconds to
-	// account for rate limit and other overhead
-	workTimeout := time.Duration(interval) - 5*time.Second
-
-	// this construct forces w.do() to run immediately after starting the ticker.
-	// (by default, NewTicker sends the first tick after interval has expired for the 1st time)
-	for {
-		w.do(workTimeout)
-		select {
-		case <-ticker.C:
-			continue
-		case <-stop:
-			w.log.Println("received stop signal")
-			return
+	printNextRun := func() {
+		if next, errNext := scheduler.Jobs()[0].NextRun(); errNext == nil {
+			w.log.Printf("next run at %v", next)
 		}
 	}
+
+	// create scheduled job
+	_, err = scheduler.NewJob(
+		gocron.CronJob(cron, false),
+		gocron.NewTask(w.do),
+		gocron.WithSingletonMode(gocron.LimitModeWait),
+		gocron.WithEventListeners(gocron.AfterJobRuns(func(_ uuid.UUID, _ string) {
+			printNextRun()
+		})),
+	)
+	if err != nil {
+		return fmt.Errorf("creating scheduled job: %w", err)
+	}
+
+	scheduler.Start()
+
+	w.log.Printf("started scheduler with cron <%s>", cron)
+	printNextRun()
+
+	<-stop
+	w.log.Println("received stop signal")
+	return scheduler.Shutdown()
 }
 
-func (w *Worker) do(timeout time.Duration) {
+func (w *Worker) do() {
 	w.log.Println("synchronizing")
 
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
 	w.healthNotify(ctx, healthcheckStart)

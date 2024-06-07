@@ -17,7 +17,7 @@ services:
     environment:
       POSTGRES_URI: postgresql://postgres:dev@db:5432/helldivers
       API_URL: http://api:8080
-      WORKER_INTERVAL: 30s
+      WORKER_CRON: "*/5 * * * *"
       TZ: Europe/Berlin
     networks:
       - default
