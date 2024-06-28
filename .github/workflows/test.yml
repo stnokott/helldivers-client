@@ -24,7 +24,7 @@ jobs:
     steps:
 
       - name: Checkout
-        uses: actions/checkout@v4.1.6
+        uses: actions/checkout@v4.1.7
 
       - name: Setup Go
         uses: actions/setup-go@v5.0.1
@@ -47,7 +47,7 @@ jobs:
     steps:
 
       - name: Checkout
-        uses: actions/checkout@v4.1.6
+        uses: actions/checkout@v4.1.7
 
       # prepare local Go (outside of Docker) so that we can leverage the cache
       # inside the Docker build step (via go mod vendor)
